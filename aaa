@@ -1,0 +1,55 @@
+Nazvy: List processing ...
+
+
+LispIM:
+	imbrue - zbortit
+	IMHO
+	imitant - imitace/padelek
+	imitation - imitace/nahrazka/napodobenina
+	immune
+	improved
+	imp - sotek/dareba
+
+LispIK:
+	improved
+	impresive
+	kamikaze
+
+[def undefined [] [undefined]]
+[list l [1 undefined]]
+
+[def fact [1] 1]
+[def fact [n]
+	[def aa [] [print n]]
+	[* n [fact [- n 1]]]
+]
+
+[def a [] [fact 3]]
+[def b [] [b]]
+
+[main 
+	[print [fact 5]]
+	[print [fact 121211]]
+	[print [a]]
+	[print [b]]
+]
+
+{def a {c}
+  {print c}
+}
+
+/def a /c\
+  /print c\
+\
+
+\def a \c/
+  \print c/
+/
+
+[def a [c]
+  [print c]
+]
+
+(def a (c)
+  (print c)
+)
