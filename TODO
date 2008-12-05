@@ -1,5 +1,9 @@
-Na vse jedna velka struktura?
+min prasacky parametry
 
-Vymyslet zpusob jak provadet porovnavani symbolu v konstatnim case
+Parsovani zdrojaku
 
-Vymyslet zpusob prace s prameti a GC
+stav sveta - jak na nej?
+porovnavani symbolu v konstatnim case
+tecka-dvojice notace (pro datove struktury) = Dotted Pair Notation
+
+prace s prameti a GC

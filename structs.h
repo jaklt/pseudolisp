@@ -5,8 +5,9 @@
 
 typedef enum {
 	FUNKCE,
-	SEZNAM,
+	LIST,
 	HODNOTA,
+	NIL,
 	TANK,
 	PARAMETR
 } E_TYP;
@@ -49,15 +50,13 @@ typedef struct SList {
 
 typedef struct SFunkce {
 	int built_in : 1;
+	int pocet_parametru;
 
 	union {
 		Symbol *(*odkaz)(List *);
 		List *struktura;
 
 	} telo;
-
-	// struct SFunkce *vysledky;
-	int pocet_parametru;
 } Funkce;
 
 
@@ -86,5 +85,9 @@ Symbol *new_Symbol(E_TYP typ, void *symbol);
  */
 Tank *new_Tank(Funkce *fce, List *parametry);
 
+
+int uvolnit(E_TYP, void *co); // ???
+
+void *clone(E_TYP, void *co); // ???
 
 #endif

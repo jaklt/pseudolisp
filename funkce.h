@@ -5,7 +5,7 @@
 
 
 Funkce **get_array_of_funtions();
-Symbol *operace_s_cisly(int (*operace)(int, int), List *l);
+Symbol *operace_s_cisly(int (*operace)(int, int), List *l); // ??
 
 
 Symbol *map(Funkce *f, List *l);
@@ -15,7 +15,6 @@ Symbol *filter(Funkce *f, List *l);
 
 /** Funkce pro podporu fungovani programu */
 Symbol *call(Funkce *f, List *parametry);
-Symbol *run_main(/* ??????? */);
 Symbol *def(char *jmeno, List *parametry);
 Symbol *print(List *parametry);
 
@@ -28,7 +27,14 @@ Symbol *deleno(List *parametry);
 /** Funkce logickych operaci */
 Symbol *op_and(List *parametry);
 Symbol *op_or (List *parametry);
-Symbol *op_not(List *parametry); // jen jeden
+Symbol *op_not(List *parametry);
 Symbol *op_if (List *parametry);
+
+/** Funkce pro praci s Listy */
+Symbol *list(List *parametry);
+Symbol *append(List *parametry);
+Symbol *head(List *l);
+Symbol *tail(List *l);
+Symbol *intersection(List *l); // prunik
 
 #endif

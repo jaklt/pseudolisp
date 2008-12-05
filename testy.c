@@ -32,7 +32,9 @@ static int testy_slozenych_funkci()
 
 	Funkce *a = new_Funkce(telo, 1);
 
-
+	Symbol *vysledek = call(a, new_List(new_Symbol(HODNOTA, new_Hodnota(CISLO, 8))));
+	printf("vysledek2: %d\n", vysledek->typ);
+	printf("parametr: %d\n", *((int *)telo->dalsi->dalsi->symbol->odkaz));
 
 	return 0;
 }
@@ -51,7 +53,7 @@ static int funkcni_testy()
 	List *l = array_to_List(s, n);
 
 //	Symbol *vysl = krat(l);
-	Symbol *vysl = call(f[3], l);
+	Symbol *vysl = call(f[0], l);
 	printf("vysledek: %d\n", ((Hodnota *)vysl->odkaz)->h.cislo);
 
 	return 0;

@@ -8,8 +8,6 @@
 Funkce **get_array_of_funtions()
 {
 	// - vytvoreni instanci vsech built-in funkci
-	// - provazani techto instanci prasacky pres pointery na 
-	//   opravdove funkce s pridanim priznaku built-in
 
 	#define n 4
 	static Funkce *array[n];
@@ -58,6 +56,49 @@ static int is_symbol_cislo(Symbol *s)
 }
 
 
+// eventuelni misto pro optimalizace prevedenim na pole
+Symbol *get_parametr(int kolikaty, List *parametry)
+{
+	if (kolikaty < 1) return NULL;
+
+	while (kolikaty > 1) {
+		parametry = parametry->dalsi;
+		kolikaty--;
+	}
+
+	return parametry->symbol;
+}
+
+
+List *doplnit_parametry(List *parametry, List *kam)
+{
+	List *volani = new_List(NULL);
+	List *vysledek = volani;
+	List *l = kam;
+	Symbol *s;
+
+	while (l != NULL) {
+		if (l->symbol->typ == LIST) {
+			s = new_Symbol(LIST, doplnit_parametry(parametry, (List *)l->symbol->odkaz));
+		} else if (l->symbol->typ == PARAMETR) {
+			s = get_parametr(*((int *)l->symbol->odkaz), parametry);
+		//	s = new_Symbol(s->typ, s);
+		} else {
+			s = new_Symbol(l->symbol->typ, l->symbol->odkaz);
+		}
+
+		volani->dalsi = new_List(s);
+		volani = volani->dalsi;
+
+		l = l->dalsi;
+	}
+
+	// uvolnit(LIST, volani);
+	l = vysledek->dalsi;
+	return l; 
+}
+
+
 Symbol *call(Funkce *f, List *parametry)
 {
 	List *l = parametry;
@@ -67,22 +108,23 @@ Symbol *call(Funkce *f, List *parametry)
 		i++; l = l->dalsi;
 	}
 
-	// FIXME
-	if (i < f->pocet_parametru) return new_Symbol(TANK, new_Tank(f, parametry));
+	// FIXME nutno dodat jeste prolezeni vsech parametru a doplneni jich
+	if (i < f->pocet_parametru)
+		return new_Symbol(TANK, new_Tank(f, parametry)); // TODO klonovat
 
 
 	if (f->built_in == BUILT_IN) {
 		return f->telo.odkaz(parametry);
 
 	} else {
-		l = f->telo.struktura;
-
+		// konvence je takova, ze prvni prvek listu vzdy odpovida bud:
+		// - funkci/tanku = jde o volani funkce
+		// - odkaz na funkci list/NULL (nikoliv NIL) = jde o list
+		l = doplnit_parametry(parametry, f->telo.struktura);
 	}
 
 
-
-
-	return NULL;
+	return new_Symbol(NIL, NULL);
 }
 
 
@@ -111,20 +153,32 @@ Symbol *reduce(Funkce *f, List *l)
  * ------------------
  */
 
-List *head(List *l)
+Symbol *head(List *l)
 {
 	if (l == NULL) return NULL;
 
-	return (List *)l->symbol;
+	return l->symbol;
 }
 
 
-List *tail(List *l)
+Symbol *tail(List *l)
 {
 	if (l == NULL || l->dalsi == NULL)
 		return NULL;
 
-	return l->dalsi;
+	return new_Symbol(LIST, l->dalsi);
+}
+
+
+Symbol *list(List *parametry)
+{
+	return new_Symbol(LIST, parametry);
+}
+
+
+Symbol *append(List *parametry)
+{
+	return NULL;
 }
 
 
