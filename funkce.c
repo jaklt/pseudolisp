@@ -99,18 +99,84 @@ List *doplnit_parametry(List *parametry, List *kam)
 }
 
 
-Symbol *call(Funkce *f, List *parametry)
+int delka_listu(List *l)
 {
-	List *l = parametry;
-
 	int i = 0;
 	while (l != NULL) {
 		i++; l = l->dalsi;
 	}
 
-	// FIXME nutno dodat jeste prolezeni vsech parametru a doplneni jich
-	if (i < f->pocet_parametru)
-		return new_Symbol(TANK, new_Tank(f, parametry)); // TODO klonovat
+	return i;
+}
+
+
+List *posledni_z_listu(List *l)
+{
+	if (l == NULL) return NULL;
+
+	while (l->dalsi != NULL) l = l->dalsi;
+
+	return l;
+}
+
+
+List *clone_List(List *l /*, int kolik */)
+{
+	if (l == NULL /*|| kolik == 0*/) return NULL;
+
+	List *nl = new_List(l->symbol);
+
+	while (l->dalsi != NULL /* && kolik > 0 */) {
+		l = l->dalsi;
+		nl->dalsi = new_List(l->symbol);
+		nl = nl->dalsi;
+		/* kolik--; */
+	}
+
+	return nl;
+}
+
+
+Symbol *result(List *telo)
+{
+	if (telo == NULL) return NULL;
+	Funkce *f = NULL;
+	List *parametry = NULL;
+
+	if (telo->symbol->typ == FUNKCE) {
+		f = (Funkce *)telo->symbol->odkaz;
+		parametry = telo->dalsi;
+
+	} else if (telo->symbol->typ == TANK){
+		Tank *t = (Tank *)telo->symbol->odkaz;
+		Symbol *s = new_Symbol(TANK, t);
+		int pocet_parametru;
+
+		while (s->typ == TANK) {
+			pocet_parametru = delka_listu(t->parametry);
+
+			if (pocet_parametru >= t->funkce->pocet_parametru)
+				s = call(t->funkce, t->parametry);
+			else
+				/* ... */;
+		}
+
+	}
+
+	// A jak resit kdyz mam [Tank a1 a2 a3 a4] a Tank spolu s a1 vrati tank??
+	// - zavolat novej tank s tolika parametrama kolik bude potrebovat?
+	// - vratit proste vysledek [Tank a1]?
+
+	return NULL;
+}
+
+
+Symbol *call(Funkce *f, List *parametry)
+{
+	List *l = parametry;
+
+	if (delka_listu(parametry) < f->pocet_parametru)
+		return new_Symbol(TANK, new_Tank(f, clone_List(parametry)));
 
 
 	if (f->built_in == BUILT_IN) {
@@ -128,9 +194,25 @@ Symbol *call(Funkce *f, List *parametry)
 }
 
 
+// bude hodit pozdej, ale rozhodne nepouzivat v call :-(
+Symbol *resolve_Tank(Tank *t)
+{
+	Symbol *s = new_Symbol(TANK, t);
+
+	while (s->typ == TANK 
+		&& delka_listu(t->parametry) >= t->funkce->pocet_parametru) {
+
+		s = call(t->funkce, t->parametry);
+		t = (s->typ == TANK) ? (Tank *)s->odkaz : NULL;
+	}
+
+	return s;
+}
+
+
 Symbol *reduce(Funkce *f, List *l)
 {
-	if (l == NULL) return NULL;
+	if (l == NULL || f == NULL) return NULL;
 
 	List *nl = new_List(l->symbol);
 	nl->dalsi = new_List(NULL);
@@ -221,8 +303,9 @@ Symbol *deleno(List *parametry)
 
 Symbol *operace_s_cisly(int (*operace)(int, int), List *l)
 {
-	if (l->dalsi == NULL) return 0; // FIXME
+	if (l->dalsi == NULL) return NULL; // FIXME
 
+	// TODO poresit tanky
 	if (!is_symbol_cislo(l->symbol) || !is_symbol_cislo(l->dalsi->symbol))
 		return 0;
 

@@ -2,8 +2,32 @@ min prasacky parametry
 
 Parsovani zdrojaku
 
+error signalizace
+
 stav sveta - jak na nej?
 porovnavani symbolu v konstatnim case
 tecka-dvojice notace (pro datove struktury) = Dotted Pair Notation
 
 prace s prameti a GC
+
+rozmyslet zda nema byt u Tanku i aktualni pocet parametru
+= rychlejsi pri porovnavani zda je to jeste tank, nebo vysledek tanku
+= pomalejsi pri pripojovani parametru, ale stejne se tenhle pruchod musi provist
+  takze se mozna vlastne provede dopredu
+
+----------------------------------------------
+
+TODO pocitat s tim, ze v Tanky je treba resit (s vyjimkou volani funkce)
+	az v teto nejnizsi urovni. Je treba to napsat vic obecne, aby se mohlo
+	pracovat i s mnozinama, cislama a podobnejma vecma jednotne.
+	(Pri reseni tanku)
+
+Vrstvy:
+	- zavolani funkce s danymi parametry
+	- sestaveni tela funkce a doplneni parametru kde je to nutne
+	- zjisteni zda neni funkce tank, pokud jo, hazet do nej parametry
+	  a volat jej dokud neni funkce nebo blbost -> error
+	  (pokud se jedna o tank tak vyreseni zda je to vubec funkce)
+	- vraceni tanku s volanim ziskane funkce a zbyvajicimi parametry
+
+Tohle cele provadet tak dlouho dokud se nevrati neco co neni tank

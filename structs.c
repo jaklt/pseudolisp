@@ -69,7 +69,7 @@ Symbol *new_Symbol(E_TYP typ, void *symbol)
 	Symbol *s = (Symbol *) malloc(sizeof(Symbol));
 
 	s->typ = typ;
-	s->odkaz = symbol;
+	s->odkaz = (void *)symbol;
 
 	return s;
 }

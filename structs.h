@@ -91,3 +91,26 @@ int uvolnit(E_TYP, void *co); // ???
 void *clone(E_TYP, void *co); // ???
 
 #endif
+
+/* Implementace v Lue:
+typedef struct {
+	int t;
+	Value v;
+} TObject;
+
+typedef union {
+	GCObject *gc;
+	void *p;
+	lua_Number n;
+	int b;
+} Value;
+ */
+
+/*
+ * Promyslet dvouzasobnikovou
+ * implementaci.
+ *
+ * Ale zas tezko tady slouzit,
+ * protoze se tezko rozezna operand
+ * od operatoru.
+ */

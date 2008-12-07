@@ -13,7 +13,7 @@ static int testy_slozenych_funkci();
 int test()
 {
 //	listove_testy();
-	funkcni_testy();
+//	funkcni_testy();
 	testy_slozenych_funkci();
 
 	return 0;
@@ -25,7 +25,7 @@ static int testy_slozenych_funkci()
 	// 	plus minus krat deleno
 	Funkce **f = get_array_of_funtions();
 
-	int parametr = 1;
+	int parametr = 1; // TODO takhle ne!!!
 	List *telo = new_List(new_Symbol(FUNKCE, f[0]));
 	telo->dalsi = new_List(new_Symbol(HODNOTA, new_Hodnota(CISLO, 3)));
 	telo->dalsi->dalsi = new_List(new_Symbol(PARAMETR, &parametr));
@@ -33,7 +33,7 @@ static int testy_slozenych_funkci()
 	Funkce *a = new_Funkce(telo, 1);
 
 	Symbol *vysledek = call(a, new_List(new_Symbol(HODNOTA, new_Hodnota(CISLO, 8))));
-	printf("vysledek2: %d\n", vysledek->typ);
+	printf("typ vysledku: %d\n", vysledek->typ);
 	printf("parametr: %d\n", *((int *)telo->dalsi->dalsi->symbol->odkaz));
 
 	return 0;
