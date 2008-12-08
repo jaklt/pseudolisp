@@ -25,16 +25,15 @@ static int testy_slozenych_funkci()
 	// 	plus minus krat deleno
 	Funkce **f = get_array_of_funtions();
 
-	int parametr = 1; // TODO takhle ne!!!
 	List *telo = new_List(new_Symbol(FUNKCE, f[0]));
-	telo->dalsi = new_List(new_Symbol(HODNOTA, new_Hodnota(CISLO, 3)));
-	telo->dalsi->dalsi = new_List(new_Symbol(PARAMETR, &parametr));
+	telo->dalsi = new_List(new_Ordinal(CISLO, 3));
+	telo->dalsi->dalsi = new_List(new_Ordinal(PARAMETR, 1));
 
 	Funkce *a = new_Funkce(telo, 1);
 
-	Symbol *vysledek = call(a, new_List(new_Symbol(HODNOTA, new_Hodnota(CISLO, 8))));
-	printf("typ vysledku: %d\n", vysledek->typ);
-	printf("parametr: %d\n", *((int *)telo->dalsi->dalsi->symbol->odkaz));
+	Symbol *vysledek = call(a, new_List(new_Ordinal(CISLO, 8)));
+	printf("typ vysledku: %d ", vysledek->typ);
+	printf("parametr: %d\n", a->telo.struktura->dalsi->dalsi->symbol->s.cislo);
 
 	return 0;
 }
@@ -47,14 +46,14 @@ static int funkcni_testy()
 	Symbol *s[n];
 
 	for (int i=0; i<n; i++) {
-		s[i] = new_Symbol(HODNOTA, new_Hodnota(CISLO, i+3));
+		s[i] = new_Ordinal(CISLO, i+3);
 	}
 
 	List *l = array_to_List(s, n);
 
 //	Symbol *vysl = krat(l);
 	Symbol *vysl = call(f[0], l);
-	printf("vysledek: %d\n", ((Hodnota *)vysl->odkaz)->h.cislo);
+	printf("vysledek: %d\n", vysl->s.cislo);
 
 	return 0;
 }
@@ -64,12 +63,10 @@ static int listove_testy()
 {
 	const int n = 10;
 	Symbol *s[n];
-	Hodnota *h;
 	List *l;
 
 	for (int i=0; i<n; i++) {
-		h = new_Hodnota(CISLO, i*100);
-		s[i] = new_Symbol(HODNOTA, h);
+		s[i] = new_Ordinal(CISLO, i*100);
 	}
 
 	l = array_to_List(s, n);
@@ -81,10 +78,8 @@ static int listove_testy()
 
 static int vypis_list(List *l)
 {
-	Hodnota *h;
 	while (l != NULL) {
-		h = (Hodnota *) (l->symbol->odkaz);
-		printf("%d %3d\n", h->typ, h->h.cislo);
+		printf("%d %3d\n", l->symbol->typ, l->symbol->s.cislo);
 
 		l = l->dalsi;
 	}

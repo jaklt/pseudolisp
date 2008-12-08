@@ -47,20 +47,21 @@ List *array_to_List(Symbol **seznam_symbolu, int pocet_symbolu)
 }
 
 
-Hodnota *new_Hodnota(E_HODNOTA typ, int co)
+Symbol *new_Ordinal(E_TYP typ, int co)
 {
-	Hodnota *h = (Hodnota *) malloc(sizeof(Hodnota));
+	Symbol *s = (Symbol *) malloc(sizeof(Symbol));
 
-	h->typ = typ;
+	s->typ = typ;
 
 	switch (typ) {
-		case CISLO: h->h.cislo = co; break;
-		case BOOL: h->h.boolean = co; break;
-		case ZNAK:  h->h.znak = (char) co; break;
+		case PARAMETR:
+		case CISLO: s->s.cislo   =        co; break;
+		case  BOOL: s->s.boolean =        co; break;
+		case  ZNAK: s->s.znak    = (char) co; break;
+		default: break;
 	}
 
-	return h;
-
+	return s;
 }
 
 
@@ -69,7 +70,7 @@ Symbol *new_Symbol(E_TYP typ, void *symbol)
 	Symbol *s = (Symbol *) malloc(sizeof(Symbol));
 
 	s->typ = typ;
-	s->odkaz = (void *)symbol;
+	s->s.odkaz = (void *)symbol;
 
 	return s;
 }

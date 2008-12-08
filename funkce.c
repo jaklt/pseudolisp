@@ -49,8 +49,7 @@ static int is_symbol_tank(Symbol *s)
 static int is_symbol_cislo(Symbol *s)
 {
 	if (s == NULL) return 0;
-	if (s->typ != HODNOTA) return 0;
-	if ( ((Hodnota *)s->odkaz)->typ != CISLO) return 0;
+	if (s->typ != CISLO) return 0;
 
 	return 1;
 }
@@ -79,12 +78,13 @@ List *doplnit_parametry(List *parametry, List *kam)
 
 	while (l != NULL) {
 		if (l->symbol->typ == LIST) {
-			s = new_Symbol(LIST, doplnit_parametry(parametry, (List *)l->symbol->odkaz));
+			s = new_Symbol(LIST,
+				doplnit_parametry(parametry, (List *)l->symbol->s.odkaz));
 		} else if (l->symbol->typ == PARAMETR) {
-			s = get_parametr(*((int *)l->symbol->odkaz), parametry);
-		//	s = new_Symbol(s->typ, s);
+			s = get_parametr(l->symbol->s.cislo, parametry);
+		//	s = new_Symbol(s->typ, ???);
 		} else {
-			s = new_Symbol(l->symbol->typ, l->symbol->odkaz);
+			s = l->symbol;
 		}
 
 		volani->dalsi = new_List(s);
@@ -93,7 +93,6 @@ List *doplnit_parametry(List *parametry, List *kam)
 		l = l->dalsi;
 	}
 
-	// uvolnit(LIST, volani);
 	l = vysledek->dalsi;
 	return l; 
 }
@@ -144,11 +143,11 @@ Symbol *result(List *telo)
 	List *parametry = NULL;
 
 	if (telo->symbol->typ == FUNKCE) {
-		f = (Funkce *)telo->symbol->odkaz;
+		f = (Funkce *)telo->symbol->s.odkaz;
 		parametry = telo->dalsi;
 
 	} else if (telo->symbol->typ == TANK){
-		Tank *t = (Tank *)telo->symbol->odkaz;
+		Tank *t = (Tank *)telo->symbol->s.odkaz;
 		Symbol *s = new_Symbol(TANK, t);
 		int pocet_parametru;
 
@@ -203,7 +202,7 @@ Symbol *resolve_Tank(Tank *t)
 		&& delka_listu(t->parametry) >= t->funkce->pocet_parametru) {
 
 		s = call(t->funkce, t->parametry);
-		t = (s->typ == TANK) ? (Tank *)s->odkaz : NULL;
+		t = (s->typ == TANK) ? (Tank *)s->s.odkaz : NULL;
 	}
 
 	return s;
@@ -309,9 +308,9 @@ Symbol *operace_s_cisly(int (*operace)(int, int), List *l)
 	if (!is_symbol_cislo(l->symbol) || !is_symbol_cislo(l->dalsi->symbol))
 		return 0;
 
-	int a = ((Hodnota *)l->symbol->odkaz)->h.cislo;
-	int b = ((Hodnota *)l->dalsi->symbol->odkaz)->h.cislo;
+	int a = l->symbol->s.cislo;
+	int b = l->dalsi->symbol->s.cislo;
 
 	int vysledek = (*operace)(a, b);
-	return new_Symbol(HODNOTA, new_Hodnota(CISLO, vysledek));
+	return new_Ordinal(CISLO, vysledek);
 }
