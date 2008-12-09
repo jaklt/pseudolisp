@@ -31,9 +31,10 @@ static int testy_slozenych_funkci()
 
 	Funkce *a = new_Funkce(telo, 1);
 
-	Symbol *vysledek = call(a, new_List(new_Ordinal(CISLO, 8)));
+	Symbol *vysledek = resolve_Tank(call(a, new_List(new_Ordinal(CISLO, 8))));
 	printf("typ vysledku: %d ", vysledek->typ);
 	printf("parametr: %d\n", a->telo.struktura->dalsi->dalsi->symbol->s.cislo);
+	printf("vysledek: %d\n", (int)vysledek->s.cislo);
 
 	return 0;
 }

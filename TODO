@@ -16,6 +16,10 @@ rozmyslet zda nema byt u Tanku i aktualni pocet parametru
   takze se mozna vlastne provede dopredu
 
 ----------------------------------------------
+Bonus
+defm = definice memorizovane funkce u ktere se pamatuji vysledky
+
+----------------------------------------------
 
 TODO pocitat s tim, ze v Tanky je treba resit (s vyjimkou volani funkce)
 	az v teto nejnizsi urovni. Je treba to napsat vic obecne, aby se mohlo

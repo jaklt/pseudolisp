@@ -6,6 +6,7 @@
 
 Funkce **get_array_of_funtions();
 Symbol *operace_s_cisly(int (*operace)(int, int), List *l); // ??
+Symbol *resolve_Tank(Symbol *s);
 
 
 Symbol *map(Funkce *f, List *l);
@@ -35,6 +36,6 @@ Symbol *list(List *parametry);
 Symbol *append(List *parametry);
 Symbol *head(List *l);
 Symbol *tail(List *l);
-Symbol *intersection(List *l); // prunik
-
+// Symbol *list_intersection(List *l); // prunik
+// Symbol *list_union(List *l); // sjednoceni
 #endif

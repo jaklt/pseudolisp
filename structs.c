@@ -85,3 +85,21 @@ Tank *new_Tank(Funkce *fce, List *parametry)
 
 	return t;
 }
+
+
+Symbol *new_Symbol_List(Symbol *symbol)
+{
+	return new_Symbol(LIST, new_List(symbol));
+}
+
+
+Symbol *new_Symbol_Funkce(List *telo_funkce, int pocet_symbolu)
+{
+	return new_Symbol(FUNKCE, new_Funkce(telo_funkce, pocet_symbolu));
+}
+
+
+Symbol *new_Symbol_Tank(Funkce *fce, List *parametry)
+{
+	return new_Symbol(TANK, new_Tank(fce, parametry));
+}

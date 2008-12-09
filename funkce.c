@@ -3,6 +3,7 @@
 #include "funkce.h"
 #include "structs.h"
 
+static List *f_append(List *a, List *b);
 
 
 Funkce **get_array_of_funtions()
@@ -38,25 +39,8 @@ Funkce **get_array_of_funtions()
 
 
 
-static int is_symbol_tank(Symbol *s)
-{
-	if (s == NULL) return 0;
-
-	return s->typ == TANK;
-}
-
-
-static int is_symbol_cislo(Symbol *s)
-{
-	if (s == NULL) return 0;
-	if (s->typ != CISLO) return 0;
-
-	return 1;
-}
-
-
 // eventuelni misto pro optimalizace prevedenim na pole
-Symbol *get_parametr(int kolikaty, List *parametry)
+Symbol *get_parametr(List *parametry, int kolikaty)
 {
 	if (kolikaty < 1) return NULL;
 
@@ -81,7 +65,7 @@ List *doplnit_parametry(List *parametry, List *kam)
 			s = new_Symbol(LIST,
 				doplnit_parametry(parametry, (List *)l->symbol->s.odkaz));
 		} else if (l->symbol->typ == PARAMETR) {
-			s = get_parametr(l->symbol->s.cislo, parametry);
+			s = get_parametr(parametry, l->symbol->s.cislo);
 		//	s = new_Symbol(s->typ, ???);
 		} else {
 			s = l->symbol;
@@ -136,67 +120,62 @@ List *clone_List(List *l /*, int kolik */)
 }
 
 
-Symbol *result(List *telo)
+Symbol *result(List *l)
 {
-	if (telo == NULL) return NULL;
-	Funkce *f = NULL;
-	List *parametry = NULL;
+	if (l == NULL) return NULL;
+	if (l->symbol == NULL) return new_Symbol(LIST, l);
 
-	if (telo->symbol->typ == FUNKCE) {
-		f = (Funkce *)telo->symbol->s.odkaz;
-		parametry = telo->dalsi;
+	Funkce *f;
 
-	} else if (telo->symbol->typ == TANK){
-		Tank *t = (Tank *)telo->symbol->s.odkaz;
-		Symbol *s = new_Symbol(TANK, t);
-		int pocet_parametru;
+	if (l->symbol->typ == TANK) {
+		f = ((Tank *)l->symbol->s.odkaz)->funkce;
+		// potencionalni leak, protoze zmizi odkaz na l
+		l = f_append( ((Tank *)l->dalsi->symbol->s.odkaz)->parametry, l);
+	} else if (l->symbol->typ == FUNKCE) {
+		f = (Funkce *)l->symbol->s.odkaz;
+		l = l->dalsi;
+	} else
+		return NULL;
 
-		while (s->typ == TANK) {
-			pocet_parametru = delka_listu(t->parametry);
-
-			if (pocet_parametru >= t->funkce->pocet_parametru)
-				s = call(t->funkce, t->parametry);
-			else
-				/* ... */;
-		}
-
-	}
-
-	// A jak resit kdyz mam [Tank a1 a2 a3 a4] a Tank spolu s a1 vrati tank??
-	// - zavolat novej tank s tolika parametrama kolik bude potrebovat?
-	// - vratit proste vysledek [Tank a1]?
-
-	return NULL;
+	return new_Symbol_Tank(f, l);
 }
 
 
 Symbol *call(Funkce *f, List *parametry)
 {
+	if (f == NULL) return NULL;
+
 	List *l = parametry;
 
 	if (delka_listu(parametry) < f->pocet_parametru)
 		return new_Symbol(TANK, new_Tank(f, clone_List(parametry)));
 
-
-	if (f->built_in == BUILT_IN) {
+	if (f->built_in == BUILT_IN)
 		return f->telo.odkaz(parametry);
 
-	} else {
-		// konvence je takova, ze prvni prvek listu vzdy odpovida bud:
-		// - funkci/tanku = jde o volani funkce
-		// - odkaz na funkci list/NULL (nikoliv NIL) = jde o list
-		l = doplnit_parametry(parametry, f->telo.struktura);
-	}
 
+	// konvence je takova, ze prvni prvek listu vzdy odpovida bud:
+	// - funkci/tanku = jde o volani funkce
+	// - odkaz na funkci list/NULL (nikoliv NIL) = jde o list
+	l = doplnit_parametry(parametry, f->telo.struktura);
 
-	return new_Symbol(NIL, NULL);
+	if (l->symbol->typ == TANK)
+		l->symbol = resolve_Tank(l->symbol);
+
+	return result(l);
+
+	// nejsou vyreseny vnorene struktury:
+	//
+	// (a b c d (e f g) h i j) = pro e Tank/Funkci
 }
 
 
 // bude hodit pozdej, ale rozhodne nepouzivat v call :-(
-Symbol *resolve_Tank(Tank *t)
+Symbol *resolve_Tank(Symbol *s)
 {
-	Symbol *s = new_Symbol(TANK, t);
+	if (s == NULL || s->typ != TANK) return s;
+
+	Tank *t = (Tank *)s->s.odkaz;
 
 	while (s->typ == TANK 
 		&& delka_listu(t->parametry) >= t->funkce->pocet_parametru) {
@@ -218,7 +197,7 @@ Symbol *reduce(Funkce *f, List *l)
 	l = l->dalsi;
 
 	while (l != NULL) {	
-		if (is_symbol_tank(l->symbol)) call(NULL, NULL); // XXX
+		if (l->symbol->typ == TANK) call(NULL, NULL); // XXX
 		nl->dalsi->symbol = l->symbol;
 		nl->symbol = call(f, nl);
 
@@ -256,6 +235,27 @@ Symbol *list(List *parametry)
 	return new_Symbol(LIST, parametry);
 }
 
+
+// TODO vic hezky
+static List *f_append(List *a, List *b)
+{
+	List *result = new_List(NULL);
+	List *l = result;
+
+	while (a != NULL) {
+		l->dalsi = new_List(a->symbol);
+		l = l->dalsi;
+		a = a->dalsi;
+	}
+
+	while (b != NULL) {
+		l->dalsi = new_List(b->symbol);
+		l = l->dalsi;
+		b = b->dalsi;
+	}
+
+	return result->dalsi;
+}
 
 Symbol *append(List *parametry)
 {
@@ -300,6 +300,15 @@ Symbol *deleno(List *parametry)
 }
 
 
+static int is_symbol_cislo(Symbol *s)
+{
+	if (s == NULL) return 0;
+	if (s->typ != CISLO) return 0;
+
+	return 1;
+}
+
+// TODO napsat vic obecne pro jakykoliv typ a funkci
 Symbol *operace_s_cisly(int (*operace)(int, int), List *l)
 {
 	if (l->dalsi == NULL) return NULL; // FIXME
