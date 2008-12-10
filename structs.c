@@ -56,7 +56,7 @@ Symbol *new_Ordinal(E_TYP typ, int co)
 	switch (typ) {
 		case PARAMETR:
 		case CISLO: s->s.cislo   =        co; break;
-		case  BOOL: s->s.boolean =        co; break;
+		case  BOOL: s->s.boolean = (int)  co; break;
 		case  ZNAK: s->s.znak    = (char) co; break;
 		default: break;
 	}

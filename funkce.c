@@ -303,6 +303,7 @@ Symbol *deleno(List *parametry)
 static int is_symbol_cislo(Symbol *s)
 {
 	if (s == NULL) return 0;
+	if (s->typ == TANK) s = resolve_Tank(s);
 	if (s->typ != CISLO) return 0;
 
 	return 1;
@@ -314,12 +315,59 @@ Symbol *operace_s_cisly(int (*operace)(int, int), List *l)
 	if (l->dalsi == NULL) return NULL; // FIXME
 
 	// TODO poresit tanky
-	if (!is_symbol_cislo(l->symbol) || !is_symbol_cislo(l->dalsi->symbol))
-		return 0;
+	if ( !is_symbol_cislo(l->symbol) || !is_symbol_cislo(l->dalsi->symbol))
+		return NULL;
 
 	int a = l->symbol->s.cislo;
 	int b = l->dalsi->symbol->s.cislo;
 
 	int vysledek = (*operace)(a, b);
 	return new_Ordinal(CISLO, vysledek);
+}
+
+
+
+static Symbol *f_plus2(int a, int b) { return new_Ordinal(CISLO, a+b); }
+Symbol *cisla(Symbol *(*operace)(int, int), Symbol *a, Symbol *b);
+
+Symbol *provadec(
+		Symbol *(),
+		Symbol *(*overeni)(Symbol *(), Symbol *, Symbol *),
+		List *l
+	);
+
+
+Symbol *plus2(List *parametry)
+{
+	return provadec(f_plus2, cisla, parametry);
+}
+
+
+Symbol *cisla(Symbol *(*operace)(int, int), Symbol *a, Symbol *b)
+{
+	if (a == NULL || b == NULL) return NULL;
+	if (a->typ != CISLO || b->typ != CISLO) return NULL; // error
+
+	return operace(a->s.cislo, b->s.cislo);
+}
+
+
+Symbol *provadec(
+		Symbol *(*operace)(void),
+		Symbol *(*overeni)(Symbol *(*operace)(void), Symbol *, Symbol *),
+		List *l
+	)
+{
+	if (l == NULL) return NULL;
+	Symbol *s = l->symbol;
+	l = l->dalsi;
+
+	while (l != NULL) {	
+		if (l->symbol->typ == TANK) call(NULL, NULL); // XXX
+
+		s = overeni(operace, resolve_Tank(s), resolve_Tank(l->symbol));
+		l= l->dalsi;
+	}
+
+	return s;
 }

@@ -2,6 +2,7 @@
 #define STRUCT_H
 
 // TODO pridat t_cislo pro cisla
+// typedef double t_cislo;
 
 typedef enum {
 	FUNKCE,
@@ -52,7 +53,7 @@ typedef struct SFunkce {
 typedef struct STank {
 	Funkce *funkce;
 	List *parametry;
-} Tank;
+} Tank; // alias Thunk
 
 
 Funkce *get_Funkce(char *jmeno);

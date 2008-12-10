@@ -8,8 +8,10 @@ Funkce **get_array_of_funtions();
 Symbol *operace_s_cisly(int (*operace)(int, int), List *l); // ??
 Symbol *resolve_Tank(Symbol *s);
 
+Symbol *plus2 (List *parametry);
 
-Symbol *map(Funkce *f, List *l);
+
+Symbol *map   (Funkce *f, List *l);
 Symbol *reduce(Funkce *f, List *l);
 Symbol *filter(Funkce *f, List *l);
 
