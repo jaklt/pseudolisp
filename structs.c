@@ -41,8 +41,6 @@ List *array_to_List(Symbol **seznam_symbolu, int pocet_symbolu)
 		l++;
 	}
 
-	l->dalsi = NULL;
-
 	return ret;
 }
 

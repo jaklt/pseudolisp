@@ -12,9 +12,9 @@ static int testy_slozenych_funkci();
 
 int test()
 {
-//	listove_testy();
+	listove_testy();
 	funkcni_testy();
-//	testy_slozenych_funkci();
+	testy_slozenych_funkci();
 
 	return 0;
 }
@@ -42,7 +42,7 @@ static int testy_slozenych_funkci()
 
 static int funkcni_testy()
 {
-//	Funkce **f = get_array_of_funtions();
+	Funkce **f = get_array_of_funtions();
 	const int n = 5;
 	Symbol *s[n];
 
@@ -54,8 +54,7 @@ static int funkcni_testy()
 	vypis_list(l);
 
 //	Symbol *vysl = krat(l);
-//	Symbol *vysl = call(f[0], l);
-	Symbol *vysl = plus2(l);
+	Symbol *vysl = call(f[0], l);
 	printf("vysledek: %d\n", vysl->s.cislo);
 
 	return 0;
@@ -73,13 +72,13 @@ static int listove_testy()
 	}
 
 	l = array_to_List(s, n);
-//	vypis_list(l);
+	vypis_list(l);
 
-	List *nl = new_List(new_Symbol(LIST, l));
+/*	List *nl = new_List(new_Symbol(LIST, l));
 	nl->dalsi = new_List(new_Symbol(LIST, l));
 	Symbol *list = append(nl);
 	if (list != NULL && list->typ == LIST) vypis_list((List *)list->s.odkaz);
-
+*/
 	return 0;
 }
 

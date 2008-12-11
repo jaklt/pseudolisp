@@ -3,6 +3,13 @@
 #include "funkce.h"
 #include "structs.h"
 
+
+static Symbol *vnitrni_reduce(
+		Symbol *(),
+		Symbol *(*overeni)(Symbol *(), Symbol *, Symbol *),
+		List *l
+	);
+
 static List *f_append(List *a, List *b);
 
 
@@ -173,7 +180,10 @@ Symbol *call(Funkce *f, List *parametry)
 // bude hodit pozdej, ale rozhodne nepouzivat v call :-(
 Symbol *resolve_Tank(Symbol *s)
 {
+	if (s == NULL) return NULL;
+	if (s->typ == LIST) s = result((List *)s->s.odkaz);
 	if (s == NULL || s->typ != TANK) return s;
+
 
 	Tank *t = (Tank *)s->s.odkaz;
 
@@ -232,7 +242,9 @@ Symbol *tail(List *l)
 
 Symbol *list(List *parametry)
 {
-	return new_Symbol(LIST, parametry);
+	List *l = new_List(NULL);
+	l->dalsi = parametry;
+	return new_Symbol(LIST, l);
 }
 
 
@@ -268,79 +280,19 @@ Symbol *append(List *parametry)
  * ---------------------------
  */
 
-static int f_plus(int a, int b) { return a+b; }
-
-Symbol *plus(List *parametry)
-{
-	return operace_s_cisly(f_plus, parametry);
-}
-
-
-static int f_krat(int a, int b) { return a*b; }
-
-Symbol *krat(List *parametry)
-{
-	return operace_s_cisly(f_krat, parametry);
-}
-
-
-static int f_minus(int a, int b) { return a-b; }
-
-Symbol *minus(List *parametry)
-{
-	return operace_s_cisly(f_minus, parametry);
-}
-
-
-static int f_deleno(int a, int b) { return a/b; }
-
-Symbol *deleno(List *parametry)
-{
-	return operace_s_cisly(f_deleno, parametry);
-}
-
-
-static int is_symbol_cislo(Symbol *s)
-{
-	if (s == NULL) return 0;
-	if (s->typ == TANK) s = resolve_Tank(s);
-	if (s->typ != CISLO) return 0;
-
-	return 1;
-}
-
-// TODO napsat vic obecne pro jakykoliv typ a funkci
-Symbol *operace_s_cisly(int (*operace)(int, int), List *l)
-{
-	if (l->dalsi == NULL) return NULL; // FIXME
-
-	// TODO poresit tanky
-	if ( !is_symbol_cislo(l->symbol) || !is_symbol_cislo(l->dalsi->symbol))
-		return NULL;
-
-	int a = l->symbol->s.cislo;
-	int b = l->dalsi->symbol->s.cislo;
-
-	int vysledek = (*operace)(a, b);
-	return new_Ordinal(CISLO, vysledek);
-}
-
-
-
-static Symbol *f_plus2(int a, int b) { return new_Ordinal(CISLO, a+b); }
 Symbol *cisla(Symbol *(*operace)(int, int), Symbol *a, Symbol *b);
 
-Symbol *provadec(
-		Symbol *(),
-		Symbol *(*overeni)(Symbol *(), Symbol *, Symbol *),
-		List *l
-	);
+
+static Symbol *f_plus  (int a, int b) { return new_Ordinal(CISLO, a+b); }
+static Symbol *f_krat  (int a, int b) { return new_Ordinal(CISLO, a*b); }
+static Symbol *f_minus (int a, int b) { return new_Ordinal(CISLO, a-b); }
+static Symbol *f_deleno(int a, int b) { return new_Ordinal(CISLO, a/b); }
 
 
-Symbol *plus2(List *parametry)
-{
-	return provadec(f_plus2, cisla, parametry);
-}
+Symbol *plus  (List *parametry) { return vnitrni_reduce(f_plus,   cisla, parametry); }
+Symbol *krat  (List *parametry) { return vnitrni_reduce(f_krat,   cisla, parametry); }
+Symbol *minus (List *parametry) { return vnitrni_reduce(f_minus,  cisla, parametry); }
+Symbol *deleno(List *parametry) { return vnitrni_reduce(f_deleno, cisla, parametry); }
 
 
 Symbol *cisla(Symbol *(*operace)(int, int), Symbol *a, Symbol *b)
@@ -352,7 +304,7 @@ Symbol *cisla(Symbol *(*operace)(int, int), Symbol *a, Symbol *b)
 }
 
 
-Symbol *provadec(
+static Symbol *vnitrni_reduce(
 		Symbol *(*operace)(void),
 		Symbol *(*overeni)(Symbol *(*operace)(void), Symbol *, Symbol *),
 		List *l
@@ -362,9 +314,7 @@ Symbol *provadec(
 	Symbol *s = l->symbol;
 	l = l->dalsi;
 
-	while (l != NULL) {	
-		if (l->symbol->typ == TANK) call(NULL, NULL); // XXX
-
+	while (l != NULL && s != NULL) {	
 		s = overeni(operace, resolve_Tank(s), resolve_Tank(l->symbol));
 		l= l->dalsi;
 	}
