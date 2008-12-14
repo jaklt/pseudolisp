@@ -2,6 +2,7 @@
 
 #include "funkce.h"
 #include "structs.h"
+#include "error.h"
 
 
 static Symbol *vnitrni_reduce(
@@ -72,7 +73,7 @@ List *doplnit_parametry(List *parametry, List *kam)
 			s = new_Symbol(LIST,
 				doplnit_parametry(parametry, (List *)l->symbol->s.odkaz));
 		} else if (l->symbol->typ == PARAMETR) {
-			s = get_parametr(parametry, l->symbol->s.cislo);
+			s = get_parametr(parametry, l->symbol->s.znak);
 		//	s = new_Symbol(s->typ, ???);
 		} else {
 			s = l->symbol;
@@ -85,6 +86,7 @@ List *doplnit_parametry(List *parametry, List *kam)
 	}
 
 	l = vysledek->dalsi;
+	// TODO uvolnit volani(NULL) a podobne
 	return l; 
 }
 
@@ -177,7 +179,6 @@ Symbol *call(Funkce *f, List *parametry)
 }
 
 
-// bude hodit pozdej, ale rozhodne nepouzivat v call :-(
 Symbol *resolve_Tank(Symbol *s)
 {
 	if (s == NULL) return NULL;
@@ -187,11 +188,11 @@ Symbol *resolve_Tank(Symbol *s)
 
 	Tank *t = (Tank *)s->s.odkaz;
 
-	while (s->typ == TANK 
+	while (t != NULL && s->typ == TANK 
 		&& delka_listu(t->parametry) >= t->funkce->pocet_parametru) {
 
 		s = call(t->funkce, t->parametry);
-		t = (s->typ == TANK) ? (Tank *)s->s.odkaz : NULL;
+		t = (s != NULL && s->typ == TANK) ? (Tank *)s->s.odkaz : NULL;
 	}
 
 	return s;
@@ -280,13 +281,13 @@ Symbol *append(List *parametry)
  * ---------------------------
  */
 
-Symbol *cisla(Symbol *(*operace)(int, int), Symbol *a, Symbol *b);
+Symbol *cisla(Symbol *(*operace)(t_cislo, t_cislo), Symbol *a, Symbol *b);
 
 
-static Symbol *f_plus  (int a, int b) { return new_Ordinal(CISLO, a+b); }
-static Symbol *f_krat  (int a, int b) { return new_Ordinal(CISLO, a*b); }
-static Symbol *f_minus (int a, int b) { return new_Ordinal(CISLO, a-b); }
-static Symbol *f_deleno(int a, int b) { return new_Ordinal(CISLO, a/b); }
+static Symbol *f_plus  (t_cislo a, t_cislo b) { return new_Ordinal(CISLO, a+b); }
+static Symbol *f_krat  (t_cislo a, t_cislo b) { return new_Ordinal(CISLO, a*b); }
+static Symbol *f_minus (t_cislo a, t_cislo b) { return new_Ordinal(CISLO, a-b); }
+static Symbol *f_deleno(t_cislo a, t_cislo b) { return new_Ordinal(CISLO, a/b); }
 
 
 Symbol *plus  (List *parametry) { return vnitrni_reduce(f_plus,   cisla, parametry); }
@@ -295,14 +296,19 @@ Symbol *minus (List *parametry) { return vnitrni_reduce(f_minus,  cisla, paramet
 Symbol *deleno(List *parametry) { return vnitrni_reduce(f_deleno, cisla, parametry); }
 
 
-Symbol *cisla(Symbol *(*operace)(int, int), Symbol *a, Symbol *b)
+Symbol *cisla(Symbol *(*operace)(t_cislo, t_cislo), Symbol *a, Symbol *b)
 {
-	if (a == NULL || b == NULL) return NULL;
-	if (a->typ != CISLO || b->typ != CISLO) return NULL; // error
+	if (a == NULL || b == NULL) ERROR(PRAZDNA_HODNOTA);
+	if (a->typ != CISLO || b->typ != CISLO) ERROR(OPERACE_NEMA_SMYSL);
 
 	return operace(a->s.cislo, b->s.cislo);
 }
 
+
+/**
+ * Dalsi pomocne funkce
+ * --------------------
+ */
 
 static Symbol *vnitrni_reduce(
 		Symbol *(*operace)(void),

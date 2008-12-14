@@ -1,8 +1,7 @@
 #ifndef STRUCT_H
 #define STRUCT_H
 
-// TODO pridat t_cislo pro cisla
-// typedef double t_cislo;
+typedef double t_cislo;
 
 typedef enum {
 	FUNKCE,
@@ -11,7 +10,7 @@ typedef enum {
 	CISLO,
 	BOOL,
 	ZNAK,
-	TANK,
+	TANK, // alias Thunk ;-)
 	PARAMETR,
 } E_TYP;
 
@@ -24,7 +23,7 @@ typedef struct {
 	int immortal : 1;
 
 	union {
-		int cislo;
+		t_cislo cislo;
 		int boolean : 1;
 		char znak;
 		void *odkaz;
@@ -53,7 +52,7 @@ typedef struct SFunkce {
 typedef struct STank {
 	Funkce *funkce;
 	List *parametry;
-} Tank; // alias Thunk
+} Tank;
 
 
 Funkce *get_Funkce(char *jmeno);
@@ -71,7 +70,7 @@ Symbol *new_Symbol_List(Symbol *symbol);
 Symbol *new_Symbol_Funkce(List *telo_funkce, int pocet_symbolu);
 Symbol *new_Symbol_Tank(Funkce *fce, List *parametry);
 
-Symbol *new_Ordinal(E_TYP typ, int co);
+Symbol *new_Ordinal(E_TYP typ, double co);
 
 /**
  * Vytvori novy Tank, ktery v pripade nutnosti znalosti hodnoty slouzi k

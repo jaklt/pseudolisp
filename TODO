@@ -21,6 +21,19 @@ rozmyslet zda nema byt u Tanku i aktualni pocet parametru
 Bonus
 defm = definice memorizovane funkce u ktere se pamatuji vysledky
 
+
+Funkce apply!
+(define a '(1 2 3 4))
+
+(apply + a)
+
+----------------------------------------------
+
+Co tohle?
+
+(define ((add a) b) (+ a b))
+(define (add a) (lambda (b) (+ a b)))
+
 ----------------------------------------------
 
 TODO pocitat s tim, ze v Tanky je treba resit (s vyjimkou volani funkce)

@@ -45,16 +45,16 @@ List *array_to_List(Symbol **seznam_symbolu, int pocet_symbolu)
 }
 
 
-Symbol *new_Ordinal(E_TYP typ, int co)
+Symbol *new_Ordinal(E_TYP typ, t_cislo co)
 {
 	Symbol *s = (Symbol *) malloc(sizeof(Symbol));
 
 	s->typ = typ;
 
 	switch (typ) {
-		case PARAMETR:
 		case CISLO: s->s.cislo   =        co; break;
 		case  BOOL: s->s.boolean = (int)  co; break;
+		case PARAMETR:
 		case  ZNAK: s->s.znak    = (char) co; break;
 		default: break;
 	}

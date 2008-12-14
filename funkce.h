@@ -15,6 +15,7 @@ Symbol *filter(Funkce *f, List *l);
 
 /** Funkce pro podporu fungovani programu */
 Symbol *call(Funkce *f, List *parametry);
+Symbol *result(List *l); // FIXME neni to privatni funkce?
 Symbol *def(char *jmeno, List *parametry);
 Symbol *print(List *parametry);
 
