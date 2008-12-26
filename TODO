@@ -31,9 +31,23 @@ Funkce apply!
 
 Co tohle?
 
+Viceparametrove:
+[def call [funkce &parametry]
+	[funkce parametry]
+]
+
 (define ((add a) b) (+ a b))
 (define (add a) (lambda (b) (+ a b)))
 
+List comprehension
+	http://en.wikipedia.org/wiki/List_comprehension
+
+Clojure
+	http://clojure.org/functional_programming
+
+nil - means false or empty list
+
+True/false funkce s otaznikem? (null? (list ))
 ----------------------------------------------
 
 TODO pocitat s tim, ze v Tanky je treba resit (s vyjimkou volani funkce)

@@ -8,6 +8,7 @@ typedef enum {
 	PRAZDNA_HODNOTA,
 	OPERACE_NEMA_SMYSL,
 	MOC_HLUBOKA_REKURZE,
+	VNITRNI_CHYBA,
 } E_ERROR;
 
 int throw_error(E_ERROR t);

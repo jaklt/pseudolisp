@@ -14,6 +14,8 @@ typedef enum {
 	PARAMETR,
 } E_TYP;
 
+#define BOOL_TRUE -1
+#define BOOL_FALSE 0
 
 #define BUILT_IN      -1
 #define NOT_BUILT_IN   0

@@ -8,7 +8,11 @@ HEADERS = structs.h funkce.h helpers.h error.h
 OBJ = ${SRC:.c=.o}
 
 PARAMS = -std=c99 -g -Wall -pedantic
+# -pg je pro gprof
+# -g je pro gdb/valgrind
 
+# optimalizace kompilace podle vysledku profielru
+# http://www.abclinuxu.cz/blog/kazdy_den_jinak/2007/5/gcc-a-optimalizace-s-profilerem
 
 all: ${NAME}
 

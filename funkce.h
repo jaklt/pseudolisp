@@ -14,9 +14,9 @@ Symbol *filter(Funkce *f, List *l);
 
 
 /** Funkce pro podporu fungovani programu */
-Symbol *call(Funkce *f, List *parametry);
-Symbol *result(List *l); // FIXME neni to privatni funkce?
-Symbol *def(char *jmeno, List *parametry);
+Symbol *result(Funkce *f, List *parametry);
+Symbol *call(List *l);
+Symbol *def(List *parametry);
 Symbol *print(List *parametry);
 
 /** Funkce matematickych operaci */
@@ -29,13 +29,19 @@ Symbol *deleno(List *parametry);
 Symbol *op_and(List *parametry);
 Symbol *op_or (List *parametry);
 Symbol *op_not(List *parametry);
+
 Symbol *op_if (List *parametry);
+
+/** Funkce pro porovnavani */
+Symbol *eq(List *parametry);
+Symbol *gt(List *parametry);
 
 /** Funkce pro praci s Listy */
 Symbol *list(List *parametry);
 Symbol *append(List *parametry);
 Symbol *head(List *l);
 Symbol *tail(List *l);
+Symbol *take(List *l); // pr: (take 20 list)
 // Symbol *list_intersection(List *l); // prunik
 // Symbol *list_union(List *l); // sjednoceni
 #endif

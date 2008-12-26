@@ -19,6 +19,9 @@ int throw_error(E_ERROR t)
 		case MOC_HLUBOKA_REKURZE:
 			printf("Prekonan maximalni hloubka rekurze (&cislo)");
 			break;
+		case VNITRNI_CHYBA:
+			printf("Spatne sestavene telo funkce");
+			break;
 		default:
 			printf(ERR_START "Neznama chyba\n");
 			break;

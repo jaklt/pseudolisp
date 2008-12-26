@@ -18,7 +18,7 @@ Funkce **get_array_of_funtions()
 {
 	// - vytvoreni instanci vsech built-in funkci
 
-	#define n 4
+	#define n 7
 	static Funkce *array[n];
 	static int hotovson = 1;
 	
@@ -40,6 +40,18 @@ Funkce **get_array_of_funtions()
 		array[3] = new_Funkce(NULL, 2);
 		array[3]->built_in = BUILT_IN;
 		array[3]->telo.odkaz = deleno;
+
+		array[4] = new_Funkce(NULL, 3);
+		array[4]->built_in = BUILT_IN;
+		array[4]->telo.odkaz = op_if;
+
+		array[5] = new_Funkce(NULL, 2);
+		array[5]->built_in = BUILT_IN;
+		array[5]->telo.odkaz = eq;
+
+		array[6] = new_Funkce(NULL, 2);
+		array[6]->built_in = BUILT_IN;
+		array[6]->telo.odkaz = gt;
 	}
 
 	return array;
@@ -47,7 +59,7 @@ Funkce **get_array_of_funtions()
 
 
 
-// eventuelni misto pro optimalizace prevedenim na pole
+// TODO misto pro optimalizace prevedenim na pole
 Symbol *get_parametr(List *parametry, int kolikaty)
 {
 	if (kolikaty < 1) return NULL;
@@ -74,19 +86,17 @@ List *doplnit_parametry(List *parametry, List *kam)
 				doplnit_parametry(parametry, (List *)l->symbol->s.odkaz));
 		} else if (l->symbol->typ == PARAMETR) {
 			s = get_parametr(parametry, l->symbol->s.znak);
-		//	s = new_Symbol(s->typ, ???);
 		} else {
 			s = l->symbol;
 		}
 
 		volani->dalsi = new_List(s);
 		volani = volani->dalsi;
-
 		l = l->dalsi;
 	}
 
 	l = vysledek->dalsi;
-	// TODO uvolnit volani(NULL) a podobne
+	free(vysledek);
 	return l; 
 }
 
@@ -129,7 +139,7 @@ List *clone_List(List *l /*, int kolik */)
 }
 
 
-Symbol *result(List *l)
+Symbol *call(List *l)
 {
 	if (l == NULL) return NULL;
 	if (l->symbol == NULL) return new_Symbol(LIST, l);
@@ -144,20 +154,20 @@ Symbol *result(List *l)
 		f = (Funkce *)l->symbol->s.odkaz;
 		l = l->dalsi;
 	} else
-		return NULL;
+		ERROR(VNITRNI_CHYBA);
 
 	return new_Symbol_Tank(f, l);
 }
 
 
-Symbol *call(Funkce *f, List *parametry)
+Symbol *result(Funkce *f, List *parametry)
 {
 	if (f == NULL) return NULL;
 
 	List *l = parametry;
 
 	if (delka_listu(parametry) < f->pocet_parametru)
-		return new_Symbol(TANK, new_Tank(f, clone_List(parametry)));
+		return new_Symbol(TANK, new_Tank(f, /*clone_List(*/ parametry /*)*/));
 
 	if (f->built_in == BUILT_IN)
 		return f->telo.odkaz(parametry);
@@ -171,7 +181,7 @@ Symbol *call(Funkce *f, List *parametry)
 	if (l->symbol->typ == TANK)
 		l->symbol = resolve_Tank(l->symbol);
 
-	return result(l);
+	return call(l);
 
 	// nejsou vyreseny vnorene struktury:
 	//
@@ -182,22 +192,27 @@ Symbol *call(Funkce *f, List *parametry)
 Symbol *resolve_Tank(Symbol *s)
 {
 	if (s == NULL) return NULL;
-	if (s->typ == LIST) s = result((List *)s->s.odkaz);
+	if (s->typ == LIST) s = call((List *)s->s.odkaz);
 	if (s == NULL || s->typ != TANK) return s;
 
 
 	Tank *t = (Tank *)s->s.odkaz;
 
-	while (t != NULL && s->typ == TANK 
-		&& delka_listu(t->parametry) >= t->funkce->pocet_parametru) {
-
-		s = call(t->funkce, t->parametry);
+	while (t != NULL
+		&& delka_listu(t->parametry) >= t->funkce->pocet_parametru)
+	{
+		s = result(t->funkce, t->parametry);
 		t = (s != NULL && s->typ == TANK) ? (Tank *)s->s.odkaz : NULL;
 	}
 
 	return s;
 }
 
+
+/**
+ * Typicke funkcionalni funkce
+ * ---------------------------
+ */
 
 Symbol *reduce(Funkce *f, List *l)
 {
@@ -208,9 +223,9 @@ Symbol *reduce(Funkce *f, List *l)
 	l = l->dalsi;
 
 	while (l != NULL) {	
-		if (l->symbol->typ == TANK) call(NULL, NULL); // XXX
+		if (l->symbol->typ == TANK) result(NULL, NULL); // XXX
 		nl->dalsi->symbol = l->symbol;
-		nl->symbol = call(f, nl);
+		nl->symbol = result(f, nl);
 
 		l= l->dalsi;
 	}
@@ -249,11 +264,10 @@ Symbol *list(List *parametry)
 }
 
 
-// TODO vic hezky
 static List *f_append(List *a, List *b)
 {
-	List *result = new_List(NULL);
-	List *l = result;
+	List *ret = new_List(NULL);
+	List *l = ret;
 
 	while (a != NULL) {
 		l->dalsi = new_List(a->symbol);
@@ -267,12 +281,30 @@ static List *f_append(List *a, List *b)
 		b = b->dalsi;
 	}
 
-	return result->dalsi;
+	l = ret->dalsi;
+	free(ret);
+	return l;
 }
+
+
+static inline Symbol *f_append_operace(List *a, List *b)
+{
+	return new_Symbol(LIST, f_append(a, b));
+}
+
+
+Symbol *ok_listy(Symbol *(*operace)(List *, List *), Symbol *a, Symbol *b)
+{
+	if (a == NULL || b == NULL) ERROR(PRAZDNA_HODNOTA);
+
+	return operace( (a->typ == LIST) ? (List *)a->s.odkaz : new_List(a),
+			(b->typ == LIST) ? (List *)b->s.odkaz : new_List(b));
+}
+
 
 Symbol *append(List *parametry)
 {
-	return NULL;
+	return vnitrni_reduce(f_append_operace, ok_listy, parametry);
 }
 
 
@@ -281,27 +313,79 @@ Symbol *append(List *parametry)
  * ---------------------------
  */
 
-Symbol *cisla(Symbol *(*operace)(t_cislo, t_cislo), Symbol *a, Symbol *b);
+Symbol *ok_cisla(Symbol *(*operace)(t_cislo, t_cislo), Symbol *a, Symbol *b);
 
 
-static Symbol *f_plus  (t_cislo a, t_cislo b) { return new_Ordinal(CISLO, a+b); }
-static Symbol *f_krat  (t_cislo a, t_cislo b) { return new_Ordinal(CISLO, a*b); }
-static Symbol *f_minus (t_cislo a, t_cislo b) { return new_Ordinal(CISLO, a-b); }
-static Symbol *f_deleno(t_cislo a, t_cislo b) { return new_Ordinal(CISLO, a/b); }
+static inline Symbol *f_plus  (t_cislo a, t_cislo b) { return new_Ordinal(CISLO, a+b); }
+static inline Symbol *f_krat  (t_cislo a, t_cislo b) { return new_Ordinal(CISLO, a*b); }
+static inline Symbol *f_minus (t_cislo a, t_cislo b) { return new_Ordinal(CISLO, a-b); }
+static inline Symbol *f_deleno(t_cislo a, t_cislo b) { return new_Ordinal(CISLO, a/b); }
 
 
-Symbol *plus  (List *parametry) { return vnitrni_reduce(f_plus,   cisla, parametry); }
-Symbol *krat  (List *parametry) { return vnitrni_reduce(f_krat,   cisla, parametry); }
-Symbol *minus (List *parametry) { return vnitrni_reduce(f_minus,  cisla, parametry); }
-Symbol *deleno(List *parametry) { return vnitrni_reduce(f_deleno, cisla, parametry); }
+Symbol *plus  (List *parametry) { return vnitrni_reduce(f_plus,   ok_cisla, parametry); }
+Symbol *krat  (List *parametry) { return vnitrni_reduce(f_krat,   ok_cisla, parametry); }
+Symbol *minus (List *parametry) { return vnitrni_reduce(f_minus,  ok_cisla, parametry); }
+Symbol *deleno(List *parametry) { return vnitrni_reduce(f_deleno, ok_cisla, parametry); }
 
 
-Symbol *cisla(Symbol *(*operace)(t_cislo, t_cislo), Symbol *a, Symbol *b)
+Symbol *ok_cisla(Symbol *(*operace)(t_cislo, t_cislo), Symbol *a, Symbol *b)
 {
 	if (a == NULL || b == NULL) ERROR(PRAZDNA_HODNOTA);
 	if (a->typ != CISLO || b->typ != CISLO) ERROR(OPERACE_NEMA_SMYSL);
 
 	return operace(a->s.cislo, b->s.cislo);
+}
+
+
+/**
+ * Funkce pro porovnavani
+ * ----------------------
+ */
+
+static inline Symbol *f_eq(t_cislo a, t_cislo b)
+{
+	return (a == b) ? new_Ordinal(CISLO, a) : new_Symbol(NIL, NULL); 
+}
+
+
+static inline Symbol *f_gt(t_cislo a, t_cislo b)
+{
+	return (a > b) ? new_Ordinal(CISLO, b) : new_Symbol(NIL, NULL);
+}
+
+
+Symbol *eq(List *parametry)
+{
+	Symbol *vysl = vnitrni_reduce(f_eq, ok_cisla, parametry);
+
+	if (vysl != NULL && vysl->typ != NIL)
+		return new_Ordinal(BOOL, BOOL_TRUE);
+	else
+		return new_Ordinal(BOOL, BOOL_FALSE);
+}
+
+
+Symbol *gt(List *parametry)
+{
+	Symbol *vysl = vnitrni_reduce(f_gt, ok_cisla, parametry);
+
+	if (vysl != NULL && vysl->typ != NIL)
+		return new_Ordinal(BOOL, BOOL_TRUE);
+	else
+		return new_Ordinal(BOOL, BOOL_FALSE);
+}
+
+
+Symbol *op_if(List *parametry)
+{
+	Symbol *s = resolve_Tank(parametry->symbol);
+
+	if (s->typ != BOOL) ERROR(OPERACE_NEMA_SMYSL);
+
+	if (s->s.boolean)
+		return parametry->dalsi->symbol;
+	else
+		return parametry->dalsi->dalsi->symbol;
 }
 
 
@@ -316,7 +400,8 @@ static Symbol *vnitrni_reduce(
 		List *l
 	)
 {
-	if (l == NULL) return NULL;
+	if (l == NULL) ERROR(VNITRNI_CHYBA);
+
 	Symbol *s = l->symbol;
 	l = l->dalsi;
 
