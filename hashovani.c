@@ -90,6 +90,7 @@ static int zvetsit_hash(Hash *h)
 			h->pole[index].hash = stare_pole[i].hash;
 			h->pole[index].jmeno = stare_pole[i].jmeno;
 			h->pole[index].plny = PLNY_HASH;
+			h->pole[index].funkce = stare_pole[i].funkce;
 		}
 	}
 
@@ -98,7 +99,7 @@ static int zvetsit_hash(Hash *h)
 }
 
 
-int add_hash(Hash *h, char *s)
+int add_hash(Hash *h, char *s, Funkce *f)
 {
 	h->prvku++;
 
@@ -111,12 +112,13 @@ int add_hash(Hash *h, char *s)
 	h->pole[index].hash = hash;
 	h->pole[index].jmeno = s;
 	h->pole[index].plny = PLNY_HASH;
+	h->pole[index].funkce = f;
 
 	return 0;
 }
 
 
-HashPrvek *get_hash(Hash *h, char *s)
+Funkce *get_hash(Hash *h, char *s)
 {
 	unsigned long int hash = hash_string(s);
 	unsigned int i = hash % h->velikost;
@@ -126,7 +128,7 @@ HashPrvek *get_hash(Hash *h, char *s)
 
 	if (h->pole[i].hash != hash) return NULL;
 
-	return &h->pole[i];
+	return h->pole[i].funkce;
 }
 
 
@@ -138,6 +140,7 @@ static HashPrvek *clone_HashPrvek(HashPrvek *puvodni, unsigned int velikost)
 		hp[i].jmeno = puvodni[i].jmeno;
 		hp[i].plny = puvodni[i].plny;
 		hp[i].hash = puvodni[i].hash;
+		hp[i].funkce = puvodni[i].funkce;
 	}
 
 
