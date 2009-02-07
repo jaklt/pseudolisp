@@ -1,11 +1,12 @@
 #include <stdio.h>
+#include <string.h>
 // #include <stdlib.h>
 
 #include "funkce.h"
 #include "structs.h"
+#include "helpers.h"
 
 
-static int vypis_list(List *l);
 static int listove_testy();
 static int funkcni_testy();
 static int testy_slozenych_funkci();
@@ -13,7 +14,8 @@ static int zkouska_erroru();
 static int logicke_vyrazy();
 static int testovani_if();
 #define NEXT printf("\n-- dalsi test:\n")
-#define SPRAVNE(a) printf("\t** SPRAVNE: %s **\n", a)
+#define SPRAVNE(a) printf("\t** SPRAVNE: "); printf(a); printf(" **\n");
+#define SPRAVNE_CISLO(a,b) printf("\t** SPRAVNE: "); printf(a,b); printf(" **\n");
 
 int test()
 {
@@ -52,7 +54,9 @@ static int testovani_if()
 	printf("typ vysledku: %d\n", vysl->typ);
 	printf("vysledek: %d\n", (int)vysl->s.cislo);
 
-	SPRAVNE("typ 3");
+	vypis_Symbol(vysl);
+
+	SPRAVNE_CISLO("typ %i", CISLO);
 	return 0;
 }
 
@@ -160,7 +164,7 @@ static int funkcni_testy()
 	}
 
 	List *l = array_to_List(s, n);
-	vypis_list(l);
+	vypis_List(l);
 
 //	Symbol *vysl = krat(l);
 	Symbol *vysl = result(f[0], l);
@@ -182,25 +186,12 @@ static int listove_testy()
 	}
 
 	l = array_to_List(s, n);
-	vypis_list(l);
+	vypis_List(l);
 
 /*	List *nl = new_List(new_Symbol(LIST, l));
 	nl->dalsi = new_List(new_Symbol(LIST, l));
 	Symbol *list = append(nl);
-	if (list != NULL && list->typ == LIST) vypis_list((List *)list->s.odkaz);
+	if (list != NULL && list->typ == LIST) vypis_List((List *)list->s.odkaz);
 */
 	return 0;
 }
-
-
-static int vypis_list(List *l)
-{
-	while (l != NULL) {
-		printf("%d %3d\n", l->symbol->typ, (int) l->symbol->s.cislo);
-
-		l = l->dalsi;
-	}
-
-	return 0;
-}
-

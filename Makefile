@@ -1,5 +1,5 @@
 
-VERSION = 0.0.0
+VERSION = 0.0.2
 NAME = pseudolisp
 
 SRC = ${NAME}.c structs.c funkce.c helpers.c testy.c error.c hashovani.c
@@ -32,6 +32,9 @@ clean:
 
 dist: ${SRC} ${HEADERS}
 	@rm -f ${NAME}-${VERSION}.tar.bz2
-	tar cjf ${NAME}-${VERSION}.tar.bz2 *
+	tar cjf ${NAME}-${VERSION}.tar.bz2 * .git
 
 znova: clean all
+
+tags: 
+	ctags -R .
