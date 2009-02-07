@@ -5,8 +5,8 @@
 
 
 Funkce **get_array_of_funtions();
-Symbol *resolve_Tank(Symbol *s);
-
+List *f_append(List *a, List *b);
+int delka_listu(List *l);
 
 Symbol *map   (Funkce *f, List *l);
 Symbol *reduce(Funkce *f, List *l);
@@ -14,8 +14,6 @@ Symbol *filter(Funkce *f, List *l);
 
 
 /** Funkce pro podporu fungovani programu */
-Symbol *result(Funkce *f, List *parametry);
-Symbol *call(List *l);
 Symbol *def(List *parametry);
 Symbol *print(List *parametry);
 
