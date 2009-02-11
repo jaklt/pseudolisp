@@ -68,7 +68,7 @@ int vypis_Symbol(Symbol *s)
 		case  ZNAK: printf("Char: %c\n", s->s.znak); break;
 		case CISLO: printf("Number: %f\n", (double) s->s.cislo); break;
 		case PARAMETR: printf("%d. parametr\n", (int) s->s.znak); break;
-		default: break;
+		default: printf("Wrong value!\n"); break;
 	}
 
 	return 0;
@@ -82,7 +82,6 @@ int vypis_List(List *l)
 	odsazeni++;
 
 	while (l != NULL) {
-	//	printf("%d %3d\n", l->symbol->typ, (int) l->symbol->s.cislo);
 		odsadit();
 		vypis_Symbol(l->symbol);
 

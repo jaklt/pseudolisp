@@ -73,6 +73,7 @@ Symbol *new_Symbol_Funkce(List *telo_funkce, int pocet_symbolu);
 Symbol *new_Symbol_Tank(Funkce *fce, List *parametry);
 
 Symbol *new_Ordinal(E_TYP typ, double co);
+Symbol *new_NIL();
 
 /**
  * Vytvori novy Tank, ktery v pripade nutnosti znalosti hodnoty slouzi k

@@ -74,6 +74,9 @@ Symbol *new_Symbol(E_TYP typ, void *symbol)
 }
 
 
+Symbol *new_NIL() { return new_Symbol(NIL, NULL); }
+
+
 Tank *new_Tank(Funkce *fce, List *parametry)
 {
 	Tank *t = (Tank *) malloc(sizeof(Tank));

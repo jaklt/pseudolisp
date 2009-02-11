@@ -121,7 +121,7 @@ Symbol *tail(List *l)
 	if (l == NULL || l->dalsi == NULL)
 		return NULL;
 
-	return new_Symbol(LIST, l->dalsi);
+	return list(l->dalsi);
 }
 
 
@@ -151,9 +151,7 @@ List *f_append(List *a, List *b)
 		b = b->dalsi;
 	}
 
-	l = ret->dalsi;
-	free(ret);
-	return l;
+	return ret;
 }
 
 
@@ -163,18 +161,39 @@ static inline Symbol *f_append_operace(List *a, List *b)
 }
 
 
+static List *get_List(Symbol *s)
+{
+	if (s->typ != LIST || ((List *)s->s.odkaz)->symbol != NULL)
+		return NULL;
+	else {
+		List *l = ((List *)s->s.odkaz)->dalsi;
+		return l == NULL ? new_List(new_NIL()) : l;
+	}
+}
+
+
 Symbol *ok_listy(Symbol *(*operace)(List *, List *), Symbol *a, Symbol *b)
 {
 	if (a == NULL || b == NULL) ERROR(PRAZDNA_HODNOTA);
 
-	return operace( (a->typ == LIST) ? (List *)a->s.odkaz : new_List(a),
-			(b->typ == LIST) ? (List *)b->s.odkaz : new_List(b));
+	List *la, *lb;
+
+	if ((la = get_List(a)) == NULL) la = new_List(a);
+	if ((lb = get_List(b)) == NULL) lb = new_List(b);
+
+	return operace(la, lb);
 }
 
 
 Symbol *append(List *parametry)
 {
 	return vnitrni_reduce(f_append_operace, ok_listy, parametry);
+}
+
+
+Symbol *take(List *parametry)
+{
+	return NULL;
 }
 
 
@@ -212,37 +231,36 @@ Symbol *ok_cisla(Symbol *(*operace)(t_cislo, t_cislo), Symbol *a, Symbol *b)
  * ----------------------
  */
 
+static inline Symbol *is_not_null(Symbol *vysl)
+{
+	if (vysl != NULL && vysl->typ != NIL)
+		return new_Ordinal(BOOL, BOOL_TRUE);
+	else
+		return new_Ordinal(BOOL, BOOL_FALSE);
+}
+
+
 static inline Symbol *f_eq(t_cislo a, t_cislo b)
 {
-	return (a == b) ? new_Ordinal(CISLO, a) : new_Symbol(NIL, NULL); 
+	return (a == b) ? new_Ordinal(CISLO, a) : new_NIL(); 
 }
 
 
 static inline Symbol *f_gt(t_cislo a, t_cislo b)
 {
-	return (a > b) ? new_Ordinal(CISLO, b) : new_Symbol(NIL, NULL);
+	return (a > b) ? new_Ordinal(CISLO, b) : new_NIL();
 }
 
 
 Symbol *eq(List *parametry)
 {
-	Symbol *vysl = vnitrni_reduce(f_eq, ok_cisla, parametry);
-
-	if (vysl != NULL && vysl->typ != NIL)
-		return new_Ordinal(BOOL, BOOL_TRUE);
-	else
-		return new_Ordinal(BOOL, BOOL_FALSE);
+	return is_not_null(vnitrni_reduce(f_eq, ok_cisla, parametry));
 }
 
 
 Symbol *gt(List *parametry)
 {
-	Symbol *vysl = vnitrni_reduce(f_gt, ok_cisla, parametry);
-
-	if (vysl != NULL && vysl->typ != NIL)
-		return new_Ordinal(BOOL, BOOL_TRUE);
-	else
-		return new_Ordinal(BOOL, BOOL_FALSE);
+	return is_not_null(vnitrni_reduce(f_gt, ok_cisla, parametry));
 }
 
 

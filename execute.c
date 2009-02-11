@@ -48,17 +48,17 @@ List *doplnit_parametry(List *parametry, List *kam)
 }
 
 
-List *clone_List(List *l /*, int kolik */)
+List *clone_List(List *l)
 {
-	if (l == NULL /*|| kolik == 0*/) return NULL;
+	if (l == NULL) return NULL;
 
 	List *nl = new_List(l->symbol);
+	List *nll = nl;
 
-	while (l->dalsi != NULL /* && kolik > 0 */) {
+	while (l->dalsi != NULL) {
 		l = l->dalsi;
-		nl->dalsi = new_List(l->symbol);
-		nl = nl->dalsi;
-		/* kolik--; */
+		nll->dalsi = new_List(l->symbol);
+		nll = nll->dalsi;
 	}
 
 	return nl;
@@ -93,7 +93,7 @@ Symbol *result(Funkce *f, List *parametry)
 	List *l = parametry;
 
 	if (delka_listu(parametry) < f->pocet_parametru)
-		return new_Symbol(TANK, new_Tank(f, /*clone_List(*/ parametry /*)*/));
+		return new_Symbol(TANK, new_Tank(f, parametry));
 
 	if (f->built_in == BUILT_IN)
 		return f->telo.odkaz(parametry);

@@ -14,6 +14,7 @@ static int testy_slozenych_funkci();
 static int zkouska_erroru();
 static int logicke_vyrazy();
 static int testovani_if();
+static int listove_testy();
 #define NEXT printf("\n-- dalsi test:\n")
 #define SPRAVNE(a) printf("\t** SPRAVNE: "); printf(a); printf(" **\n");
 #define SPRAVNE_CISLO(a,b) printf("\t** SPRAVNE: "); printf(a,b); printf(" **\n");
@@ -21,12 +22,42 @@ static int testovani_if();
 int test()
 {
 	printf("-- Zacatek testovani:\n");
-//	listove_testy(); NEXT;
 //	funkcni_testy(); NEXT;
 //	testy_slozenych_funkci(); NEXT;
 //	zkouska_erroru(); NEXT;
 //	logicke_vyrazy(); NEXT;
-	testovani_if();
+//	testovani_if(); NEXT;
+	listove_testy(); NEXT;
+
+	return 0;
+}
+
+
+static int listove_testy()
+{
+	const int n = 10;
+	Symbol *s[n];
+	List *l;
+
+	s[0] = NULL;
+	for (int i=1; i<n; i++) {
+		s[i] = new_Ordinal(CISLO, i*100);
+	}
+
+	l = array_to_List(s, n);
+	vypis_List(l);
+
+	List *nl = new_List(new_Symbol(LIST, l));
+	nl->dalsi = new_List(new_Symbol(LIST, l));
+	Symbol *list = append(nl);
+
+	vypis_Symbol(list);
+
+	nl->symbol = new_NIL();
+	nl->dalsi->dalsi = new_List(new_Ordinal(ZNAK, 'A'));
+	nl->dalsi->dalsi->dalsi = new_List(new_Symbol_List(NULL));
+	list = append(nl);
+	vypis_Symbol(list);
 
 	return 0;
 }
@@ -52,12 +83,9 @@ static int testovani_if()
 	volani->dalsi->dalsi = new_List(new_Ordinal(CISLO, 3));
 
 	Symbol *vysl = resolve_Tank(call(volani));
-	printf("typ vysledku: %d\n", vysl->typ);
-	printf("vysledek: %d\n", (int)vysl->s.cislo);
-
 	vypis_Symbol(vysl);
+	SPRAVNE("Number = 3");
 
-	SPRAVNE_CISLO("typ %i", CISLO);
 	return 0;
 }
 
@@ -71,11 +99,8 @@ static int logicke_vyrazy()
 	telo->dalsi->dalsi = new_List(new_Ordinal(CISLO, 11));
 
 	Symbol *vysl = resolve_Tank(call(telo));
-
-	printf("typ vysledku: %d\n", vysl->typ);
-	printf("vysledek: %s\n", vysl->s.boolean ? "TRUE" : "FALSE");
-
-	SPRAVNE("typ 4, vysledek TRUE");
+	vypis_Symbol(vysl);
+	SPRAVNE("TRUE");
 
 	printf("\n");
 
@@ -84,10 +109,8 @@ static int logicke_vyrazy()
 	telo2->dalsi->dalsi = new_List(new_Ordinal(CISLO, 11));
 
 	vysl = resolve_Tank(call(telo2));
-
-	printf("typ vysledku: %d\n", vysl->typ);
-	printf("vysledek: %s\n", vysl->s.boolean ? "TRUE" : "FALSE");
-	SPRAVNE("typ 4, vysledek TRUE");
+	vypis_Symbol(vysl);
+	SPRAVNE("TRUE");
 
 	printf("\n");
 
@@ -97,9 +120,8 @@ static int logicke_vyrazy()
 	okif->dalsi->dalsi->dalsi = new_List(new_Ordinal(CISLO, 2));
 
 	vysl = resolve_Tank(call(okif));
-	printf("typ vysledku: %d\n", vysl->typ);
-	printf("vysledek: %d\n", (int)vysl->s.cislo);
-	SPRAVNE("typ 3, vysledek 2");
+	vypis_Symbol(vysl);
+	SPRAVNE("Number = 2");
 
 	return 0;
 }
@@ -117,7 +139,8 @@ static int zkouska_erroru()
 
 	List *do_tanku = new_List(new_Symbol(FUNKCE, f[0]));
 	do_tanku->dalsi = new_List(new_Ordinal(CISLO, 3));
-	do_tanku->dalsi->dalsi = new_List(new_Ordinal(CISLO, 5));
+//	do_tanku->dalsi->dalsi = new_List(new_Ordinal(CISLO, 5));
+	do_tanku->dalsi->dalsi = new_List(new_NIL());
 
 
 	List *volani = new_List(new_Ordinal(CISLO, 2));
@@ -126,8 +149,8 @@ static int zkouska_erroru()
 	Symbol *vysledek = resolve_Tank(result(a, volani));
 
 	printf("vysledek-error: %s\n", (vysledek == NULL) ? "JO" : "NE");
-	printf("vysledek-error-kolko: %d\n", (int) vysledek->s.cislo);
-	printf("vysledku-error2: %s\n", (resolve_Tank(call(do_tanku)) == NULL) ? "JO" : "NE");
+	vypis_Symbol(vysledek);
+	printf("vysledek-error2: %s\n", (resolve_Tank(call(do_tanku)) == NULL) ? "JO" : "NE");
 
 	return 0;
 }
@@ -145,11 +168,10 @@ static int testy_slozenych_funkci()
 	Funkce *a = new_Funkce(telo, 1);
 
 	Symbol *vysledek = resolve_Tank(result(a, new_List(new_Ordinal(CISLO, 8))));
-	printf("typ vysledku: %d ", vysledek->typ);
+	vypis_Symbol(vysledek);
 	printf("parametr: %d\n", (int)a->telo.struktura->dalsi->dalsi->symbol->s.znak);
-	printf("vysledek: %d\n", (int) vysledek->s.cislo);
 
-	SPRAVNE("typ 3, parametr 1, vysledek 11");
+	SPRAVNE("Number = 11, parametr 1");
 	return 0;
 }
 
@@ -169,30 +191,10 @@ static int funkcni_testy()
 
 //	Symbol *vysl = krat(l);
 	Symbol *vysl = result(f[0], l);
-	printf("vysledek: %d\n", (int) vysl->s.cislo);
+	vypis_Symbol(vysl);
 
-	SPRAVNE("25");
+	SPRAVNE("Number = 25");
 	return 0;
 }
 
 
-static int listove_testy()
-{
-	const int n = 10;
-	Symbol *s[n];
-	List *l;
-
-	for (int i=0; i<n; i++) {
-		s[i] = new_Ordinal(CISLO, i*100);
-	}
-
-	l = array_to_List(s, n);
-	vypis_List(l);
-
-/*	List *nl = new_List(new_Symbol(LIST, l));
-	nl->dalsi = new_List(new_Symbol(LIST, l));
-	Symbol *list = append(nl);
-	if (list != NULL && list->typ == LIST) vypis_List((List *)list->s.odkaz);
-*/
-	return 0;
-}
