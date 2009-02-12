@@ -3,12 +3,12 @@
 
 
 
-Funkce *new_Funkce(List *telo_funkce, int pocet_parametru)
+Function *new_Function(List *body_function, int number_of_params)
 {
-	Funkce *f = (Funkce *) malloc(sizeof(Funkce));
+	Function *f = (Function *) malloc(sizeof(Function));
 
-	f->telo.struktura = telo_funkce;
-	f->pocet_parametru = pocet_parametru;
+	f->body.structure = body_function;
+	f->number_of_params = number_of_params;
 	f->built_in = NOT_BUILT_IN;
 
 	return f;
@@ -20,7 +20,7 @@ List *new_List(Symbol *symbol)
 	List *l = (List *) malloc(sizeof(List));
 
 	l->symbol = symbol;
-	l->dalsi = NULL;
+	l->next = NULL;
 
 	return l;
 }
@@ -35,9 +35,9 @@ List *array_to_List(Symbol **seznam_symbolu, int pocet_symbolu)
 
 	for (int i=0; i<pocet_symbolu; i++) {
 		l->symbol = (Symbol *) seznam_symbolu[i];
-		l->dalsi = NULL;
+		l->next = NULL;
 		
-		if (i != 0) (l-1)->dalsi = l;
+		if (i != 0) (l-1)->next = l;
 		l++;
 	}
 
@@ -45,17 +45,17 @@ List *array_to_List(Symbol **seznam_symbolu, int pocet_symbolu)
 }
 
 
-Symbol *new_Ordinal(E_TYP typ, t_cislo co)
+Symbol *new_Ordinal(E_TYP typ, t_number co)
 {
 	Symbol *s = (Symbol *) malloc(sizeof(Symbol));
 
 	s->typ = typ;
 
 	switch (typ) {
-		case CISLO: s->s.cislo   =        co; break;
-		case  BOOL: s->s.boolean = (int)  co; break;
+		case NUMBER: s->s.number  =        co; break;
+		case   BOOL: s->s.boolean = (int)  co; break;
 		case PARAMETR:
-		case  ZNAK: s->s.znak    = (char) co; break;
+		case  CHAR: s->s.character    = (char) co; break;
 		default: break;
 	}
 
@@ -68,7 +68,7 @@ Symbol *new_Symbol(E_TYP typ, void *symbol)
 	Symbol *s = (Symbol *) malloc(sizeof(Symbol));
 
 	s->typ = typ;
-	s->s.odkaz = (void *)symbol;
+	s->s.link = (void *)symbol;
 
 	return s;
 }
@@ -77,12 +77,12 @@ Symbol *new_Symbol(E_TYP typ, void *symbol)
 Symbol *new_NIL() { return new_Symbol(NIL, NULL); }
 
 
-Tank *new_Tank(Funkce *fce, List *parametry)
+Tank *new_Tank(Function *fce, List *params)
 {
 	Tank *t = (Tank *) malloc(sizeof(Tank));
 
-	t->funkce = fce;
-	t->parametry = parametry;
+	t->function = fce;
+	t->params = params;
 
 	return t;
 }
@@ -94,13 +94,13 @@ Symbol *new_Symbol_List(Symbol *symbol)
 }
 
 
-Symbol *new_Symbol_Funkce(List *telo_funkce, int pocet_symbolu)
+Symbol *new_Symbol_Function(List *function_body, int pocet_symbolu)
 {
-	return new_Symbol(FUNKCE, new_Funkce(telo_funkce, pocet_symbolu));
+	return new_Symbol(FUNCTION, new_Function(function_body, pocet_symbolu));
 }
 
 
-Symbol *new_Symbol_Tank(Funkce *fce, List *parametry)
+Symbol *new_Symbol_Tank(Function *fce, List *params)
 {
-	return new_Symbol(TANK, new_Tank(fce, parametry));
+	return new_Symbol(THUNK, new_Tank(fce, params));
 }

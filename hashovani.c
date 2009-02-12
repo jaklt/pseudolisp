@@ -24,10 +24,10 @@ static unsigned long int hash_string(char *s)
 }
 
 
-static int vyprazdnit_hash(Hash *h)
+static int empty_hash(Hash *h)
 {
-	for (int i=0; i<(h->velikost); i++) {
-		h->pole[i].plny = PRAZDNY_HASH;
+	for (int i=0; i<(h->size); i++) {
+		h->pole[i].full = PRAZDNY_HASH;
 		h->pole[i].hash = 0;
 	}
 
@@ -42,10 +42,10 @@ Hash *new_Hash()
 	Hash *h = (Hash *) malloc(sizeof(Hash));
 
 	h->pole = (HashPrvek *) malloc(POC * sizeof(HashPrvek));
-	h->velikost = POC;
-	h->prvku = 0;
+	h->size = POC;
+	h->used = 0;
 
-	vyprazdnit_hash(h);
+	empty_hash(h);
 
 	return h;
 }
@@ -53,17 +53,17 @@ Hash *new_Hash()
 
 static unsigned int volne_misto(Hash *h, unsigned long int hash)
 {
-	unsigned int index = (unsigned int) hash % h->velikost;
+	unsigned int index = (unsigned int) hash % h->size;
 
-	while (h->pole[index].plny != PRAZDNY_HASH) {
+	while (h->pole[index].full != PRAZDNY_HASH) {
 
 		if (h->pole[index].hash == hash) {
-			h->prvku--;
+			h->used--;
 			return index;
 		}
 
 		index++;
-		if (index >= (h->velikost)) index = 0;
+		if (index >= (h->size)) index = 0;
 	}
 
 	return index;
@@ -74,23 +74,23 @@ static unsigned int volne_misto(Hash *h, unsigned long int hash)
 static int zvetsit_hash(Hash *h)
 {
 	HashPrvek *stare_pole = h->pole;
-	int stara_velikost = h->velikost;
+	int stara_size = h->size;
 
-	h->velikost *= 2;
-	h->pole = (HashPrvek *) malloc((h->velikost)*sizeof(HashPrvek));
+	h->size *= 2;
+	h->pole = (HashPrvek *) malloc((h->size)*sizeof(HashPrvek));
 	if (h->pole == NULL) return 1;
-	vyprazdnit_hash(h);
+	empty_hash(h);
 
 
-	for (int i=0; i<stara_velikost; i++) {
-		if (stare_pole[i].plny != PRAZDNY_HASH
+	for (int i=0; i<stara_size; i++) {
+		if (stare_pole[i].full != PRAZDNY_HASH
 			&& stare_pole[i].hash != 0)
 		{
 			unsigned int index = volne_misto(h, stare_pole[i].hash);
 			h->pole[index].hash = stare_pole[i].hash;
-			h->pole[index].jmeno = stare_pole[i].jmeno;
-			h->pole[index].plny = PLNY_HASH;
-			h->pole[index].funkce = stare_pole[i].funkce;
+			h->pole[index].name = stare_pole[i].name;
+			h->pole[index].full = PLNY_HASH;
+			h->pole[index].function = stare_pole[i].function;
 		}
 	}
 
@@ -99,48 +99,48 @@ static int zvetsit_hash(Hash *h)
 }
 
 
-int add_hash(Hash *h, char *s, Funkce *f)
+int add_hash(Hash *h, char *s, Function *f)
 {
-	h->prvku++;
+	h->used++;
 
-	if (h->prvku > (3 * (h->velikost)/4))
+	if (h->used > (3 * (h->size)/4))
 		if (zvetsit_hash(h)) return 1;
 
 	unsigned long int hash = hash_string(s);
 	unsigned int index = volne_misto(h, hash);
 
 	h->pole[index].hash = hash;
-	h->pole[index].jmeno = s;
-	h->pole[index].plny = PLNY_HASH;
-	h->pole[index].funkce = f;
+	h->pole[index].name = s;
+	h->pole[index].full = PLNY_HASH;
+	h->pole[index].function = f;
 
 	return 0;
 }
 
 
-Funkce *get_hash(Hash *h, char *s)
+Function *get_hash(Hash *h, char *s)
 {
 	unsigned long int hash = hash_string(s);
-	unsigned int i = hash % h->velikost;
+	unsigned int i = hash % h->size;
 
-	while (h->pole[i].plny == PLNY_HASH && h->pole[i].hash != hash)
+	while (h->pole[i].full == PLNY_HASH && h->pole[i].hash != hash)
 		i++;
 
 	if (h->pole[i].hash != hash) return NULL;
 
-	return h->pole[i].funkce;
+	return h->pole[i].function;
 }
 
 
-static HashPrvek *clone_HashPrvek(HashPrvek *puvodni, unsigned int velikost)
+static HashPrvek *clone_HashPrvek(HashPrvek *puvodni, unsigned int size)
 {
-	HashPrvek *hp = malloc(velikost * sizeof(HashPrvek));
+	HashPrvek *hp = malloc(size * sizeof(HashPrvek));
 
-	for (int i=0; i<velikost; i++) {
-		hp[i].jmeno = puvodni[i].jmeno;
-		hp[i].plny = puvodni[i].plny;
+	for (int i=0; i<size; i++) {
+		hp[i].name = puvodni[i].name;
+		hp[i].full = puvodni[i].full;
 		hp[i].hash = puvodni[i].hash;
-		hp[i].funkce = puvodni[i].funkce;
+		hp[i].function = puvodni[i].function;
 	}
 
 
@@ -152,9 +152,9 @@ Hash *clone_Hash(Hash *puvodni)
 {
 	Hash *h = (Hash *) malloc(sizeof(Hash));
 
-	h->pole = clone_HashPrvek(puvodni->pole, puvodni->velikost);
-	h->velikost = puvodni->velikost;
-	h->prvku = puvodni->prvku;
+	h->pole = clone_HashPrvek(puvodni->pole, puvodni->size);
+	h->size = puvodni->size;
+	h->used = puvodni->used;
 
 	return h;
 }
@@ -162,8 +162,8 @@ Hash *clone_Hash(Hash *puvodni)
 
 int delete_Hash(Hash *h)
 {
-//	for (int i=0; i<h->velikost; i++) {
-//		free(h->pole[i].jmeno);
+//	for (int i=0; i<h->size; i++) {
+//		free(h->pole[i].name);
 //	}
 	free(h->pole);
 	free(h);

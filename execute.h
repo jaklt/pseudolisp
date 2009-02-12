@@ -5,7 +5,7 @@
 
 
 Symbol *resolve_Tank(Symbol *s);
-Symbol *result(Funkce *f, List *parametry);
+Symbol *result(Function *f, List *params);
 Symbol *call(List *l);
 
 #endif

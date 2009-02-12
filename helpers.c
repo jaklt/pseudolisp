@@ -34,16 +34,16 @@ char *new_temp_name()
 }
 
 
-int vypis_Typ(E_TYP t)
+int print_Typ(E_TYP t)
 {
 	switch (t) {
-		case FUNKCE: printf("Type: Function\n"); break;
+		case FUNCTION: printf("Type: Function\n"); break;
 		case   LIST: printf("Type: List\n"); break;
-		case   TANK: printf("Type: Thunk\n"); break;
+		case  THUNK: printf("Type: Thunk\n"); break;
 		case    NIL: printf("Type: NIL\n"); break;
 		case   BOOL: printf("Type: Boolean\n"); break;
-		case   ZNAK: printf("Type: Char\n"); break;
-		case  CISLO: printf("Type: Number\n"); break;
+		case   CHAR: printf("Type: Char\n"); break;
+		case NUMBER: printf("Type: Number\n"); break;
 		case PARAMETR: printf("Type: Parametr\n"); break;
 		default:     printf("Wrong type"); return 1; 
 	}
@@ -52,7 +52,7 @@ int vypis_Typ(E_TYP t)
 }
 
 
-int vypis_Symbol(Symbol *s)
+int print_Symbol(Symbol *s)
 {
 	if (s == NULL) {
 		printf("Empty Symbol\n");
@@ -60,14 +60,14 @@ int vypis_Symbol(Symbol *s)
 	}
 
 	switch (s->typ) {
-		case FUNKCE: vypis_Funkce((Funkce *) s->s.odkaz); break;
-		case  LIST: vypis_List((List *) s->s.odkaz); break;
-		case  TANK: vypis_Tank((Tank *) s->s.odkaz); break;
+		case FUNCTION: print_Function((Function *) s->s.link); break;
+		case  LIST: print_List((List *) s->s.link); break;
+		case THUNK: print_Tank((Tank *) s->s.link); break;
 		case   NIL: printf("NIL\n"); break;
 		case  BOOL: printf("Bool: %s\n", (s->s.boolean == BOOL_TRUE) ? "TRUE" : "FALSE"); break;
-		case  ZNAK: printf("Char: %c\n", s->s.znak); break;
-		case CISLO: printf("Number: %f\n", (double) s->s.cislo); break;
-		case PARAMETR: printf("%d. parametr\n", (int) s->s.znak); break;
+		case  CHAR: printf("Char: %c\n", s->s.character); break;
+		case NUMBER: printf("Number: %f\n", (double) s->s.number); break;
+		case PARAMETR: printf("%d. parametr\n", (int) s->s.character); break;
 		default: printf("Wrong value!\n"); break;
 	}
 
@@ -75,7 +75,7 @@ int vypis_Symbol(Symbol *s)
 }
 
 
-int vypis_List(List *l)
+int print_List(List *l)
 {
 	printf("List:\n");
 	if (l == NULL) return 1;
@@ -83,9 +83,9 @@ int vypis_List(List *l)
 
 	while (l != NULL) {
 		odsadit();
-		vypis_Symbol(l->symbol);
+		print_Symbol(l->symbol);
 
-		l = l->dalsi;
+		l = l->next;
 	}
 
 	odsazeni--;
@@ -93,18 +93,18 @@ int vypis_List(List *l)
 }
 
 
-int vypis_Funkce(Funkce *f)
+int print_Function(Function *f)
 {
 	printf("Function:\n");
 	if (f == NULL) return 1;
 	odsazeni++;
 
-	odsadit(); printf("Number of parametrs: %d\n", f->pocet_parametru);
+	odsadit(); printf("Number of parametrs: %d\n", f->number_of_params);
 
 	if (f->built_in) {
 		odsadit(); printf("Build in\n");
 	} else {
-		odsadit(); printf("Function body - "); vypis_List(f->telo.struktura);
+		odsadit(); printf("Function body - "); print_List(f->body.structure);
 	}
 
 	odsazeni--;
@@ -112,14 +112,14 @@ int vypis_Funkce(Funkce *f)
 }
 
 
-int vypis_Tank(Tank *t)
+int print_Tank(Tank *t)
 {
 	printf("Thunk:\n");
 	if (t == NULL) return 1;
 	odsazeni++;
 
-	odsadit(); vypis_Funkce(t->funkce);
-	odsadit(); printf("Parametrs - "); vypis_List(t->parametry);
+	odsadit(); print_Function(t->function);
+	odsadit(); printf("Parametrs - "); print_List(t->params);
 
 	odsazeni--;
 	return 0;

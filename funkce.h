@@ -4,39 +4,39 @@
 #include "structs.h"
 
 
-Funkce **get_array_of_funtions();
+Function **get_array_of_funtions();
 List *f_append(List *a, List *b);
-int delka_listu(List *l);
+int list_len(List *l);
 
-Symbol *map   (Funkce *f, List *l);
-Symbol *reduce(Funkce *f, List *l);
-Symbol *filter(Funkce *f, List *l);
+Symbol *map   (List *l);
+Symbol *reduce(List *l);
+Symbol *filter(List *l);
 
 
-/** Funkce pro podporu fungovani programu */
-Symbol *def(List *parametry);
-Symbol *print(List *parametry);
+/** Function pro podporu fungovani programu */
+Symbol *def(List *params);
+Symbol *print(List *params);
 
-/** Funkce matematickych operaci */
-Symbol *plus  (List *parametry);
-Symbol *minus (List *parametry);
-Symbol *krat  (List *parametry);
-Symbol *deleno(List *parametry);
+/** Function matematickych operaci */
+Symbol *plus  (List *params);
+Symbol *minus (List *params);
+Symbol *krat  (List *params);
+Symbol *deleno(List *params);
 
-/** Funkce logickych operaci */
-Symbol *op_and(List *parametry);
-Symbol *op_or (List *parametry);
-Symbol *op_not(List *parametry);
+/** Function logickych operaci */
+Symbol *op_and(List *params);
+Symbol *op_or (List *params);
+Symbol *op_not(List *params);
 
-Symbol *op_if (List *parametry);
+Symbol *op_if (List *params);
 
-/** Funkce pro porovnavani */
-Symbol *eq(List *parametry);
-Symbol *gt(List *parametry);
+/** Function pro porovnavani */
+Symbol *eq(List *params);
+Symbol *gt(List *params);
 
-/** Funkce pro praci s Listy */
-Symbol *list(List *parametry);
-Symbol *append(List *parametry);
+/** Function pro praci s Listy */
+Symbol *list(List *params);
+Symbol *append(List *params);
 Symbol *head(List *l);
 Symbol *tail(List *l);
 Symbol *take(List *l); // pr: (take 20 list)

@@ -1,16 +1,16 @@
 #ifndef STRUCT_H
 #define STRUCT_H
 
-typedef double t_cislo;
+typedef double t_number;
 
 typedef enum {
-	FUNKCE,
+	FUNCTION,
 	LIST,
 	NIL,
-	CISLO,
+	NUMBER,
 	BOOL,
-	ZNAK,
-	TANK, // alias Thunk ;-)
+	CHAR,
+	THUNK,
 	PARAMETR,
 } E_TYP;
 
@@ -22,43 +22,42 @@ typedef enum {
 
 typedef struct {
 	E_TYP typ;
-	int immortal : 1;
 
 	union {
-		t_cislo cislo;
+		t_number number;
 		int boolean : 1;
-		char znak;
-		void *odkaz;
+		char character;
+		void *link;
 	} s;
 } Symbol;
 
 
 typedef struct SList {
 	Symbol *symbol;
-	struct SList *dalsi;
+	struct SList *next;
 } List;
 
 
-typedef struct SFunkce {
+typedef struct SFunction {
 	int built_in : 1;
-	int pocet_parametru;
+	int number_of_params;
 
 	union {
-		Symbol *(*odkaz)(List *);
-		List *struktura;
+		Symbol *(*link)(List *);
+		List *structure;
 
-	} telo;
-} Funkce;
+	} body;
+} Function;
 
 
 typedef struct STank {
-	Funkce *funkce;
-	List *parametry;
+	Function *function;
+	List *params;
 } Tank;
 
 
-Funkce *get_Funkce(char *jmeno);
-Funkce *new_Funkce(List *telo_funkce, int pocet_parametru);
+Function *get_Function(char *jmeno);
+Function *new_Function(List *body_function, int number_of_params);
 
 List *new_List(Symbol *symbol);
 List *array_to_List(Symbol **seznam_symbolu, int pocet_symbolu);
@@ -69,17 +68,17 @@ List *array_to_List(Symbol **seznam_symbolu, int pocet_symbolu);
 Symbol *new_Symbol(E_TYP typ, void *symbol);
 
 Symbol *new_Symbol_List(Symbol *symbol);
-Symbol *new_Symbol_Funkce(List *telo_funkce, int pocet_symbolu);
-Symbol *new_Symbol_Tank(Funkce *fce, List *parametry);
+Symbol *new_Symbol_Function(List *function_body, int pocet_symbolu);
+Symbol *new_Symbol_Tank(Function *fce, List *params);
 
 Symbol *new_Ordinal(E_TYP typ, double co);
 Symbol *new_NIL();
 
 /**
  * Vytvori novy Tank, ktery v pripade nutnosti znalosti hodnoty slouzi k
- * zavolani patricne funkce s danymi parametry
+ * zavolani patricne function s danymi params
  */
-Tank *new_Tank(Funkce *fce, List *parametry);
+Tank *new_Tank(Function *fce, List *params);
 
 
 int uvolnit(E_TYP, void *co); // ???
