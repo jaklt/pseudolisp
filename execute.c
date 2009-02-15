@@ -4,6 +4,7 @@
 #include "structs.h"
 #include "error.h"
 #include "execute.h"
+#include "helpers.h" // TODO smazat
 
 
 // TODO misto pro optimalizace prevedenim na pole
@@ -28,10 +29,10 @@ List *doplnit_params(List *params, List *kam)
 	Symbol *s;
 
 	while (l != NULL) {
-		if (l->symbol->typ == LIST) {
+		if (l->symbol->type == LIST) {
 			s = new_Symbol(LIST,
 				doplnit_params(params, (List *)l->symbol->s.link));
-		} else if (l->symbol->typ == PARAMETR) {
+		} else if (l->symbol->type == PARAMETR) {
 			s = get_parametr(params, l->symbol->s.character);
 		} else {
 			s = l->symbol;
@@ -72,17 +73,28 @@ Symbol *call(List *l)
 
 	Function *f;
 
-	if (l->symbol->typ == THUNK) {
-		f = ((Tank *)l->symbol->s.link)->function;
-		// potencionalni leak, protoze zmizi link na l
-		l = f_append( ((Tank *)l->next->symbol->s.link)->params, l);
-	} else if (l->symbol->typ == FUNCTION) {
+	if (l->symbol->type == THUNK) {
+		f = ((Thunk *)l->symbol->s.link)->function;
+	//	l = f_append( ((Thunk *)l->next->symbol->s.link)->params, l);
+		List *params = ((Thunk *)l->symbol->s.link)->params;
+
+		if (params == NULL)
+			l = l->next;
+		else if (l->next == NULL)
+			l = params;
+		else
+			l = f_append(params , l->next);
+	} else if (l->symbol->type == FUNCTION) {
 		f = (Function *)l->symbol->s.link;
 		l = l->next;
+	} else if (l->symbol->type == LIST) {
+		l->symbol = call((List *)l->symbol->s.link);
+		return call(l); // XXX asi se zacykli
 	} else
 		ERROR(VNITRNI_CHYBA);
+	
 
-	return new_Symbol_Tank(f, l);
+	return new_Symbol_Thunk(f, l);
 }
 
 
@@ -93,42 +105,37 @@ Symbol *result(Function *f, List *params)
 	List *l = params;
 
 	if (list_len(params) < f->number_of_params)
-		return new_Symbol(THUNK, new_Tank(f, params));
+		return new_Symbol(THUNK, new_Thunk(f, params));
 
-	if (f->built_in == BUILT_IN)
+	if (f->built_in == BOOL_TRUE)
 		return f->body.link(params);
-
 
 	// konvence je takova, ze prvni prvek listu vzdy odpovida bud:
 	// - funkci/tanku = jde o volani function
 	// - link na funkci list/NULL (nikoliv NIL) = jde o list
 	l = doplnit_params(params, f->body.structure);
 
-	if (l->symbol->typ == THUNK)
-		l->symbol = resolve_Tank(l->symbol);
+	if (l->symbol->type == THUNK)
+		l->symbol = resolve_Thunk(l->symbol);
 
 	return call(l);
-
-	// nejsou vyreseny vnorene struktury:
-	//
-	// (a b c d (e f g) h i j) = pro e Tank/Funkci
 }
 
 
-Symbol *resolve_Tank(Symbol *s)
+Symbol *resolve_Thunk(Symbol *s)
 {
 	if (s == NULL) return NULL;
-	if (s->typ == LIST) s = call((List *)s->s.link);
-	if (s == NULL || s->typ != THUNK) return s;
+	if (s->type == LIST) s = call((List *)s->s.link);
+	if (s == NULL || s->type != THUNK) return s; // TODO is_NIL
 
 
-	Tank *t = (Tank *)s->s.link;
+	Thunk *t = (Thunk *)s->s.link;
 
 	while (t != NULL
 		&& list_len(t->params) >= t->function->number_of_params)
 	{
 		s = result(t->function, t->params);
-		t = (s != NULL && s->typ == THUNK) ? (Tank *)s->s.link : NULL;
+		t = (s != NULL && s->type == THUNK) ? (Thunk *)s->s.link : NULL;
 	}
 
 	return s;

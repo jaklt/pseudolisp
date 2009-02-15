@@ -24,11 +24,12 @@ static unsigned long int hash_string(char *s)
 }
 
 
-static int empty_hash(Hash *h)
+static int empty_Hash(Hash *h)
 {
 	for (int i=0; i<(h->size); i++) {
-		h->pole[i].full = PRAZDNY_HASH;
-		h->pole[i].hash = 0;
+		h->hashes[i].full = EMPTY_HASH;
+		h->hashes[i].hash = 0;
+		h->hashes[i].link = NULL;
 	}
 
 	return 0;
@@ -41,11 +42,11 @@ Hash *new_Hash()
 
 	Hash *h = (Hash *) malloc(sizeof(Hash));
 
-	h->pole = (HashPrvek *) malloc(POC * sizeof(HashPrvek));
+	h->hashes = (HashPrvek *) malloc(POC * sizeof(HashPrvek));
 	h->size = POC;
 	h->used = 0;
 
-	empty_hash(h);
+	empty_Hash(h);
 
 	return h;
 }
@@ -55,9 +56,9 @@ static unsigned int volne_misto(Hash *h, unsigned long int hash)
 {
 	unsigned int index = (unsigned int) hash % h->size;
 
-	while (h->pole[index].full != PRAZDNY_HASH) {
+	while (h->hashes[index].full != EMPTY_HASH) {
 
-		if (h->pole[index].hash == hash) {
+		if (h->hashes[index].hash == hash) {
 			h->used--;
 			return index;
 		}
@@ -73,62 +74,62 @@ static unsigned int volne_misto(Hash *h, unsigned long int hash)
 //  memset (co, cim, kolikrat);
 static int zvetsit_hash(Hash *h)
 {
-	HashPrvek *stare_pole = h->pole;
+	HashPrvek *stare_hashes = h->hashes;
 	int stara_size = h->size;
 
 	h->size *= 2;
-	h->pole = (HashPrvek *) malloc((h->size)*sizeof(HashPrvek));
-	if (h->pole == NULL) return 1;
-	empty_hash(h);
+	h->hashes = (HashPrvek *) malloc((h->size)*sizeof(HashPrvek));
+	if (h->hashes == NULL) return 1;
+	empty_Hash(h);
 
 
 	for (int i=0; i<stara_size; i++) {
-		if (stare_pole[i].full != PRAZDNY_HASH
-			&& stare_pole[i].hash != 0)
+		if (stare_hashes[i].full != EMPTY_HASH
+			&& stare_hashes[i].hash != 0)
 		{
-			unsigned int index = volne_misto(h, stare_pole[i].hash);
-			h->pole[index].hash = stare_pole[i].hash;
-			h->pole[index].name = stare_pole[i].name;
-			h->pole[index].full = PLNY_HASH;
-			h->pole[index].function = stare_pole[i].function;
+			unsigned int index = volne_misto(h, stare_hashes[i].hash);
+			h->hashes[index].hash = stare_hashes[i].hash;
+			h->hashes[index].name = stare_hashes[i].name;
+			h->hashes[index].full = stare_hashes[i].full;
+			h->hashes[index].link = stare_hashes[i].link;
 		}
 	}
 
-	free(stare_pole);
+	free(stare_hashes);
 	return 0;
 }
 
 
-int add_hash(Hash *h, char *s, Function *f)
+HashPrvek *add_Hash(Hash *h, char *name, Symbol *s)
 {
 	h->used++;
 
 	if (h->used > (3 * (h->size)/4))
-		if (zvetsit_hash(h)) return 1;
+		if (zvetsit_hash(h)) return NULL;
 
-	unsigned long int hash = hash_string(s);
+	unsigned long int hash = hash_string(name);
 	unsigned int index = volne_misto(h, hash);
 
-	h->pole[index].hash = hash;
-	h->pole[index].name = s;
-	h->pole[index].full = PLNY_HASH;
-	h->pole[index].function = f;
+	h->hashes[index].hash = hash;
+	h->hashes[index].name = name;
+	h->hashes[index].full = FULL_HASH;
+	h->hashes[index].link = s;
 
-	return 0;
+	return &h->hashes[index];
 }
 
 
-Function *get_hash(Hash *h, char *s)
+HashPrvek *get_Hash(Hash *h, char *s)
 {
 	unsigned long int hash = hash_string(s);
 	unsigned int i = hash % h->size;
 
-	while (h->pole[i].full == PLNY_HASH && h->pole[i].hash != hash)
+	while (h->hashes[i].full != EMPTY_HASH && h->hashes[i].hash != hash)
 		i++;
 
-	if (h->pole[i].hash != hash) return NULL;
+	if (h->hashes[i].hash != hash) return NULL;
 
-	return h->pole[i].function;
+	return &h->hashes[i];
 }
 
 
@@ -140,7 +141,7 @@ static HashPrvek *clone_HashPrvek(HashPrvek *puvodni, unsigned int size)
 		hp[i].name = puvodni[i].name;
 		hp[i].full = puvodni[i].full;
 		hp[i].hash = puvodni[i].hash;
-		hp[i].function = puvodni[i].function;
+		hp[i].link = puvodni[i].link;
 	}
 
 
@@ -152,7 +153,7 @@ Hash *clone_Hash(Hash *puvodni)
 {
 	Hash *h = (Hash *) malloc(sizeof(Hash));
 
-	h->pole = clone_HashPrvek(puvodni->pole, puvodni->size);
+	h->hashes = clone_HashPrvek(puvodni->hashes, puvodni->size);
 	h->size = puvodni->size;
 	h->used = puvodni->used;
 
@@ -163,9 +164,9 @@ Hash *clone_Hash(Hash *puvodni)
 int delete_Hash(Hash *h)
 {
 //	for (int i=0; i<h->size; i++) {
-//		free(h->pole[i].name);
+//		free(h->hashes[i].name);
 //	}
-	free(h->pole);
+	free(h->hashes);
 	free(h);
 
 	return 0;

@@ -34,7 +34,7 @@ char *new_temp_name()
 }
 
 
-int print_Typ(E_TYP t)
+int print_Typ(E_TYPE t)
 {
 	switch (t) {
 		case FUNCTION: printf("Type: Function\n"); break;
@@ -59,10 +59,10 @@ int print_Symbol(Symbol *s)
 		return 1;
 	}
 
-	switch (s->typ) {
+	switch (s->type) {
 		case FUNCTION: print_Function((Function *) s->s.link); break;
 		case  LIST: print_List((List *) s->s.link); break;
-		case THUNK: print_Tank((Tank *) s->s.link); break;
+		case THUNK: print_Thunk((Thunk *) s->s.link); break;
 		case   NIL: printf("NIL\n"); break;
 		case  BOOL: printf("Bool: %s\n", (s->s.boolean == BOOL_TRUE) ? "TRUE" : "FALSE"); break;
 		case  CHAR: printf("Char: %c\n", s->s.character); break;
@@ -112,7 +112,7 @@ int print_Function(Function *f)
 }
 
 
-int print_Tank(Tank *t)
+int print_Thunk(Thunk *t)
 {
 	printf("Thunk:\n");
 	if (t == NULL) return 1;
@@ -122,5 +122,20 @@ int print_Tank(Tank *t)
 	odsadit(); printf("Parametrs - "); print_List(t->params);
 
 	odsazeni--;
+	return 0;
+}
+
+
+int print_Hash(Hash *h)
+{
+	printf("size: %d, used: %d\n", h->size, h->used);
+
+	for (int i=0; i<h->size; i++) {
+		if (h->hashes[i].full == EMPTY_HASH) continue;
+
+		printf("\"%s\" ", h->hashes[i].name);
+		print_Symbol((Symbol *)h->hashes[i].link);
+	}
+
 	return 0;
 }

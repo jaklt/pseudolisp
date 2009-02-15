@@ -3,29 +3,32 @@
 
 #include "structs.h"
 
-#define PRAZDNY_HASH 0
-#define PLNY_HASH   -1
+
+typedef enum {
+	EMPTY_HASH,
+	FULL_HASH,
+} HASH_TYPE;
 
 
 // pri zmene treba zmenit clone
 typedef struct SHashPrvek {
 	char *name;
-	int full:1;
+	HASH_TYPE full;
 	unsigned long int hash;
-	Function *function;
+	Symbol *link;
 } HashPrvek;
 
 
 typedef struct SHash {
-	HashPrvek *pole;
+	HashPrvek *hashes;
 	unsigned int size;
 	unsigned int used;
 } Hash;
 
 
 Hash *new_Hash();
-int add_hash(Hash *h, char *s, Function *f);
-Function *get_hash(Hash *h, char *s);
+HashPrvek *add_Hash(Hash *h, char *name, Symbol *s);
+HashPrvek *get_Hash(Hash *h, char *s);
 Hash *clone_Hash(Hash *h);
 int delete_Hash(Hash *h);
 

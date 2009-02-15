@@ -25,31 +25,31 @@ Function **get_array_of_funtions()
 		hotovson = 0;
 
 		array[0] = new_Function(NULL, 2);
-		array[0]->built_in = BUILT_IN;
+		array[0]->built_in = BOOL_TRUE;
 		array[0]->body.link = plus;
 
 		array[1] = new_Function(NULL, 2);
-		array[1]->built_in = BUILT_IN;
+		array[1]->built_in = BOOL_TRUE;
 		array[1]->body.link = minus;
 
 		array[2] = new_Function(NULL, 2);
-		array[2]->built_in = BUILT_IN;
+		array[2]->built_in = BOOL_TRUE;
 		array[2]->body.link = krat;
 
 		array[3] = new_Function(NULL, 2);
-		array[3]->built_in = BUILT_IN;
+		array[3]->built_in = BOOL_TRUE;
 		array[3]->body.link = deleno;
 
 		array[4] = new_Function(NULL, 3);
-		array[4]->built_in = BUILT_IN;
+		array[4]->built_in = BOOL_TRUE;
 		array[4]->body.link = op_if;
 
 		array[5] = new_Function(NULL, 2);
-		array[5]->built_in = BUILT_IN;
+		array[5]->built_in = BOOL_TRUE;
 		array[5]->body.link = eq;
 
 		array[6] = new_Function(NULL, 2);
-		array[6]->built_in = BUILT_IN;
+		array[6]->built_in = BOOL_TRUE;
 		array[6]->body.link = gt;
 	}
 
@@ -70,13 +70,13 @@ int list_len(List *l)
 
 static int is_NIL(Symbol *s)
 {
-	return (s == NULL || s->typ == NIL);
+	return (s == NULL || s->type == NIL);
 }
 
 
 static List *get_List(Symbol *s)
 {
-	if (is_NIL(s) || s->typ != LIST
+	if (is_NIL(s) || s->type != LIST
 			|| !is_NIL(((List *)s->s.link)->symbol))
 	{
 		return NULL;
@@ -94,20 +94,20 @@ static List *get_List(Symbol *s)
 
 Symbol *map(List *l)
 {
-	return NULL;
+	ERROR(NOT_IMPLEMENTED);
 }
 
 
 Symbol *reduce(List *l)
 {
 	// volani asi result(f, nl);
-	return NULL;
+	ERROR(NOT_IMPLEMENTED);
 }
 
 
 Symbol *filter(List *l)
 {
-	return NULL;
+	ERROR(NOT_IMPLEMENTED);
 }
 
 
@@ -163,17 +163,19 @@ List *f_append(List *a, List *b)
 		b = b->next;
 	}
 
-	return ret;
+	l = ret->next; free(ret);
+	return l;
 }
 
 
 static inline Symbol *f_append_operace(List *a, List *b)
 {
-	return new_Symbol(LIST, f_append(a, b));
+	return list(f_append(a, b));
 }
 
 
-Symbol *ok_listy(Symbol *(*operace)(List *, List *), Symbol *a, Symbol *b)
+// TODO mozna blbost neresolvovat
+Symbol *lists_ok(Symbol *(*operace)(List *, List *), Symbol *a, Symbol *b)
 {
 	if (a == NULL || b == NULL) ERROR(PRAZDNA_HODNOTA);
 
@@ -188,13 +190,13 @@ Symbol *ok_listy(Symbol *(*operace)(List *, List *), Symbol *a, Symbol *b)
 
 Symbol *append(List *params)
 {
-	return inner_reduce(f_append_operace, ok_listy, params);
+	return inner_reduce(f_append_operace, lists_ok, params);
 }
 
 
 Symbol *take(List *params)
 {
-	return NULL;
+	ERROR(NOT_IMPLEMENTED);
 }
 
 
@@ -220,8 +222,11 @@ Symbol *deleno(List *params) { return inner_reduce(f_deleno, nubers_ok, params);
 
 Symbol *nubers_ok(Symbol *(*operace)(t_number, t_number), Symbol *a, Symbol *b)
 {
+//	a = resolve_Thunk(a);
+//	b = resolve_Thunk(b);
+
 	if (a == NULL || b == NULL) ERROR(PRAZDNA_HODNOTA);
-	if (a->typ != NUMBER || b->typ != NUMBER) ERROR(OPERACE_NEMA_SMYSL);
+	if (a->type != NUMBER || b->type != NUMBER) ERROR(OPERACE_NEMA_SMYSL);
 
 	return operace(a->s.number, b->s.number);
 }
@@ -234,7 +239,7 @@ Symbol *nubers_ok(Symbol *(*operace)(t_number, t_number), Symbol *a, Symbol *b)
 
 static inline Symbol *is_not_null(Symbol *vysl)
 {
-	if (vysl != NULL && vysl->typ != NIL)
+	if (vysl != NULL && vysl->type != NIL)
 		return new_Ordinal(BOOL, BOOL_TRUE);
 	else
 		return new_Ordinal(BOOL, BOOL_FALSE);
@@ -267,9 +272,9 @@ Symbol *gt(List *params)
 
 Symbol *op_if(List *params)
 {
-	Symbol *s = resolve_Tank(params->symbol);
+	Symbol *s = resolve_Thunk(params->symbol);
 
-	if (s->typ != BOOL) ERROR(OPERACE_NEMA_SMYSL);
+	if (s->type != BOOL) ERROR(OPERACE_NEMA_SMYSL);
 
 	if (s->s.boolean)
 		return params->next->symbol;
@@ -280,19 +285,19 @@ Symbol *op_if(List *params)
 
 Symbol *op_and(List *params)
 {
-	return NULL;
+	ERROR(NOT_IMPLEMENTED);
 }
 
 
 Symbol *op_or (List *params)
 {
-	return NULL;
+	ERROR(NOT_IMPLEMENTED);
 }
 
 
 Symbol *op_not(List *params)
 {
-	return NULL;
+	ERROR(NOT_IMPLEMENTED);
 }
 
 
@@ -303,7 +308,13 @@ Symbol *op_not(List *params)
 
 Symbol *print(List *params)
 {
-	return NULL;
+	ERROR(NOT_IMPLEMENTED);
+}
+
+
+Symbol *undefined(List *params)
+{
+	ERROR(UNDEFINED);
 }
 
 
@@ -318,9 +329,9 @@ static Symbol *inner_reduce(
 	Symbol *s = l->symbol;
 	l = l->next;
 
-	while (l != NULL && s != NULL) {	
-		// TODO resolve_Tank zde je brzo ne?
-		s = overeni(operace, resolve_Tank(s), resolve_Tank(l->symbol));
+	while (l != NULL && s != NULL) { // TODO je treba to s != NULL?
+		// TODO resolve_Thunk zde je brzo ne?
+		s = overeni(operace, resolve_Thunk(s), resolve_Thunk(l->symbol));
 		l= l->next;
 	}
 

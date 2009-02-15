@@ -3,8 +3,9 @@
 min prasacky parametry
 
 Parsovani zdrojaku
+- procistit parser.c
 
-error signalizace
+Rozhodnout kdy/jak resolvovat
 
 stav sveta - jak na nej?
 porovnavani symbolu v konstatnim case

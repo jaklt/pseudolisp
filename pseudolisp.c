@@ -15,8 +15,8 @@ int init()
 int main(int argc, char *argv[])
 {
 	init();
-//	play();
-	test();
+	play();
+//	test();
 
 	return 0;
 }

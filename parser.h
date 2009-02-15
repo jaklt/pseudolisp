@@ -5,7 +5,7 @@
 #define CLOSE_TAG ']'
 
 
-int run_file(char *jmeno_souboru[]);
+int run_file(char *file_name);
 
 int parse(char *string[]);
 

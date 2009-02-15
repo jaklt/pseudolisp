@@ -14,8 +14,9 @@ Symbol *filter(List *l);
 
 
 /** Function pro podporu fungovani programu */
-Symbol *def(List *params);
+// Symbol *def(List *params);
 Symbol *print(List *params);
+Symbol *undefined(List *params);
 
 /** Function matematickych operaci */
 Symbol *plus  (List *params);

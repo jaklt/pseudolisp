@@ -2,14 +2,13 @@
 #include "structs.h"
 
 
-
 Function *new_Function(List *body_function, int number_of_params)
 {
 	Function *f = (Function *) malloc(sizeof(Function));
 
 	f->body.structure = body_function;
 	f->number_of_params = number_of_params;
-	f->built_in = NOT_BUILT_IN;
+	f->built_in = BOOL_FALSE;
 
 	return f;
 }
@@ -45,13 +44,13 @@ List *array_to_List(Symbol **seznam_symbolu, int pocet_symbolu)
 }
 
 
-Symbol *new_Ordinal(E_TYP typ, t_number co)
+Symbol *new_Ordinal(E_TYPE type, t_number co)
 {
 	Symbol *s = (Symbol *) malloc(sizeof(Symbol));
 
-	s->typ = typ;
+	s->type = type;
 
-	switch (typ) {
+	switch (type) {
 		case NUMBER: s->s.number  =        co; break;
 		case   BOOL: s->s.boolean = (int)  co; break;
 		case PARAMETR:
@@ -63,11 +62,11 @@ Symbol *new_Ordinal(E_TYP typ, t_number co)
 }
 
 
-Symbol *new_Symbol(E_TYP typ, void *symbol)
+Symbol *new_Symbol(E_TYPE type, void *symbol)
 {
 	Symbol *s = (Symbol *) malloc(sizeof(Symbol));
 
-	s->typ = typ;
+	s->type = type;
 	s->s.link = (void *)symbol;
 
 	return s;
@@ -77,9 +76,9 @@ Symbol *new_Symbol(E_TYP typ, void *symbol)
 Symbol *new_NIL() { return new_Symbol(NIL, NULL); }
 
 
-Tank *new_Tank(Function *fce, List *params)
+Thunk *new_Thunk(Function *fce, List *params)
 {
-	Tank *t = (Tank *) malloc(sizeof(Tank));
+	Thunk *t = (Thunk *) malloc(sizeof(Thunk));
 
 	t->function = fce;
 	t->params = params;
@@ -100,7 +99,7 @@ Symbol *new_Symbol_Function(List *function_body, int pocet_symbolu)
 }
 
 
-Symbol *new_Symbol_Tank(Function *fce, List *params)
+Symbol *new_Symbol_Thunk(Function *fce, List *params)
 {
-	return new_Symbol(THUNK, new_Tank(fce, params));
+	return new_Symbol(THUNK, new_Thunk(fce, params));
 }
