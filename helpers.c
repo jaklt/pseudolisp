@@ -55,7 +55,7 @@ int print_Typ(E_TYPE t)
 int print_Symbol(Symbol *s)
 {
 	if (s == NULL) {
-		printf("Empty Symbol\n");
+		printf("NIL - Empty\n");
 		return 1;
 	}
 

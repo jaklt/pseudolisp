@@ -22,12 +22,12 @@ static int listove_testy();
 int test()
 {
 	printf("-- Zacatek testovani:\n");
-//	funkcni_testy(); NEXT;
+	funkcni_testy(); NEXT;
 	testy_slozenych_funkci(); NEXT;
-//	zkouska_erroru(); NEXT;
-//	logicke_vyrazy(); NEXT;
-//	testovani_if(); NEXT;
-//	listove_testy(); NEXT;
+	zkouska_erroru(); NEXT;
+	logicke_vyrazy(); NEXT;
+	testovani_if(); NEXT;
+	listove_testy(); NEXT;
 
 	return 0;
 }

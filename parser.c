@@ -10,6 +10,9 @@
 #include "execute.h"
 
 
+List *parse_pipe(Hash *h);
+
+
 Hash *get_basic_hash()
 {
 	#define NUM_FUN sizeof(array_of_functions)/sizeof(struct function)
@@ -80,15 +83,54 @@ static inline int is_whitespace(char c)
 }
 
 
-int run_file(char *file_name)
+static int read_word(char *chars)
 {
-	char c;
-	while ((c = getchar()) != EOF);
-	return 0;
+	char *c = chars;
+
+	while (is_whitespace(*c = getchar()));
+
+	while (*c != OPEN_TAG && *c != CLOSE_TAG
+			&& !is_whitespace(*(++c) = getchar()));
+
+	if (*c == OPEN_TAG) throw_error(SYNTAX_ERROR);
+	if (*c == OPEN_TAG || *c == CLOSE_TAG) {
+		*c = '\0';
+		return 0;
+	}
+
+	*c = '\0';
+	return 1;
 }
 
 
-int def(Hash *h, char *name);
+Symbol *init_def(Hash *h, char *name)
+{
+	List *body;
+	Hash *new_h = clone_Hash(h);
+	Symbol *s;
+	char chars[101];
+	int param_counter = 0;
+
+	// nacitani parametru funkce
+	while (getchar() != OPEN_TAG);
+
+	while (read_word(chars))
+		add_Hash(new_h, chars, new_Ordinal(PARAMETR, ++param_counter));
+
+	if (chars[0] != '\0')
+		add_Hash(new_h, chars, new_Ordinal(PARAMETR, ++param_counter));
+
+	// vytvoreni tela funkce
+	body = parse_pipe(new_h);
+//	print_List(body);
+
+	// asociace funkce
+	s = new_Symbol(FUNCTION, new_Function(body, param_counter));
+	if (name != NULL) add_Hash(h, name, s); // TODO na prd podminka
+	delete_Hash(new_h);
+
+	return s;
+}
 
 
 Symbol *get_Undefined()
@@ -108,7 +150,7 @@ Symbol *get_Undefined()
 
 
 /**
- * Takhle to neni dobry, viz:
+ * TODO Takhle to neni dobry, viz:
  *   [def b [] [+ a 3]]
  *   [def a [] 3]
  */
@@ -153,13 +195,13 @@ List *parse_pipe(Hash *h)
 
 	while ((*c = getchar()) != EOF) {
 		if (is_whitespace(*c) || (is_close_tag = (*c == CLOSE_TAG))) {
-			if (whitespaces) continue;
+			if (whitespaces && !is_close_tag) continue;
 
-			*(c) = '\0';
+			*c = '\0';
 			whitespaces = 1;
 
 			if (strcmp(chars, "def") == 0 && first){
-				first = 0; is_def = 1;
+				first = 0; is_def = 1; c = chars;
 				continue;
 			}
 
@@ -178,7 +220,11 @@ List *parse_pipe(Hash *h)
 		whitespaces = 0;
 
 		if (is_def) {
-			throw_error(NOT_IMPLEMENTED);
+			// nacteni nazvu funkce
+			while (!is_whitespace(*(++c) = getchar()));
+			*c = '\0';
+
+			l->next = new_List(init_def(h, chars));
 			break;
 		}
 
@@ -204,16 +250,10 @@ int play()
 		if (c == OPEN_TAG) {
 			print_Symbol(resolve_Thunk(call(parse_pipe(h))));
 		//	print_List(parse_pipe(h));
+		//	printf("\nsize: %d, used: %d\n", h->size, h->used);
 			printf("\n---\n\n");
 		}
 	}
 
 	return 0;
 }
-
-/*
-TODO nejde:
-[+ 1
-2
-]
-*/

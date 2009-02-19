@@ -81,6 +81,4 @@ Thunk *new_Thunk(Function *fce, List *params);
 
 int uvolnit(E_TYPE, void *co); // ???
 
-void *clone(E_TYPE, void *co); // ???
-
 #endif

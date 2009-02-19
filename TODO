@@ -7,6 +7,8 @@ Parsovani zdrojaku
 
 Rozhodnout kdy/jak resolvovat
 
+nefunguje [def ahoj[n] n] <~ treba nahradit za ~> [def ahoj [n] [+ n 0]] 
+
 stav sveta - jak na nej?
 porovnavani symbolu v konstatnim case
 tecka-dvojice notace (pro datove struktury) = Dotted Pair Notation

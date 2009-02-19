@@ -190,6 +190,8 @@ Symbol *lists_ok(Symbol *(*operace)(List *, List *), Symbol *a, Symbol *b)
 
 Symbol *append(List *params)
 {
+	// TODO znova a lepe, netreba delat pres inner_reduce, protoze je to pomaly
+	//		pomocii clone_List (ale trochu upraveneho)
 	return inner_reduce(f_append_operace, lists_ok, params);
 }
 
@@ -279,6 +281,7 @@ Symbol *op_if(List *params)
 	if (s->s.boolean)
 		return params->next->symbol;
 	else
+		// TODO nemusi existova + snizit minimalni pocet parametru ifu
 		return params->next->next->symbol;
 }
 

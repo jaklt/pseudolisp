@@ -1,7 +1,8 @@
 #ifndef ERROR_H
 #define ERROR_H
 
-#define ERROR(n) {throw_full_error(n, __LINE__, __FILE__); return NULL; }
+// #define ERROR(n) {throw_full_error(n, __LINE__, __FILE__); return NULL; }
+#define ERROR(n) {throw_error(n); return NULL; }
 
 
 typedef enum {
@@ -11,6 +12,7 @@ typedef enum {
 	VNITRNI_CHYBA,
 	NOT_IMPLEMENTED,
 	UNDEFINED,
+	SYNTAX_ERROR,
 } E_ERROR;
 
 int throw_error(E_ERROR t);

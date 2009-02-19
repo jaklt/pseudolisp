@@ -4,7 +4,6 @@
 #include "structs.h"
 #include "error.h"
 #include "execute.h"
-#include "helpers.h" // TODO smazat
 
 
 // TODO misto pro optimalizace prevedenim na pole

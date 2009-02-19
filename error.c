@@ -30,6 +30,9 @@ int throw_full_error(E_ERROR t, int line, char file[])
 		case UNDEFINED:
 			printf("Undefined");
 			break;
+		case SYNTAX_ERROR:
+			printf("Syntax error");
+			break;
 		default:
 			printf("Unknown error\n");
 			break;
