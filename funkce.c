@@ -57,20 +57,24 @@ Function **get_array_of_funtions()
 }
 
 
-int list_len(List *l)
-{
-	int i = 0;
-	while (l != NULL) {
-		i++; l = l->next;
-	}
-
-	return i;
-}
-
-
 static int is_NIL(Symbol *s)
 {
 	return (s == NULL || s->type == NIL);
+}
+
+
+int is_TRUE(Symbol *s)
+{
+	return (s != NULL && s->type == BOOL && s->s.boolean);
+}
+
+
+int Symbol_to_bool(Symbol *symb)
+{
+	Symbol *s = resolve_Thunk(symb);
+	if (s != NULL && s->type != BOOL) iERROR(OPERACE_NEMA_SMYSL);
+
+	return is_TRUE(s);
 }
 
 
@@ -118,22 +122,19 @@ Symbol *filter(List *l)
 
 Symbol *head(List *l)
 {
-	if (l == NULL) return NULL;
+	List *hl = get_List(resolve_Thunk(l->symbol));
 
-	return l->symbol;
+	if (hl == NULL) ERROR(OPERACE_NEMA_SMYSL);
+	return hl->symbol;
 }
 
 
 Symbol *tail(List *l)
 {
-	if (l == NULL) return NULL;
-
-	List *ret = get_List(l->symbol);
+	List *ret = get_List(resolve_Thunk(l->symbol));
 	
-	if (ret == NULL)
-		return list(l->next);
-
-	return list(ret->next);
+	if (ret == NULL) ERROR(OPERACE_NEMA_SMYSL);
+	return ret->next ? list(ret->next) : NULL;
 }
 
 
@@ -146,53 +147,34 @@ Symbol *list(List *params)
 }
 
 
-List *f_append(List *a, List *b)
-{
-	List *ret = new_List(NULL);
-	List *l = ret;
-
-	while (a != NULL) {
-		l->next = new_List(a->symbol);
-		l = l->next;
-		a = a->next;
-	}
-
-	while (b != NULL) {
-		l->next = new_List(b->symbol);
-		l = l->next;
-		b = b->next;
-	}
-
-	l = ret->next; free(ret);
-	return l;
-}
-
-
-static inline Symbol *f_append_operace(List *a, List *b)
-{
-	return list(f_append(a, b));
-}
-
-
-// TODO mozna blbost neresolvovat
-Symbol *lists_ok(Symbol *(*operace)(List *, List *), Symbol *a, Symbol *b)
-{
-	if (a == NULL || b == NULL) ERROR(PRAZDNA_HODNOTA);
-
-	List *la, *lb;
-
-	if ((la = get_List(a)) == NULL) la = new_List(a);
-	if ((lb = get_List(b)) == NULL) lb = new_List(b);
-
-	return operace(la, lb);
-}
-
-
 Symbol *append(List *params)
 {
-	// TODO znova a lepe, netreba delat pres inner_reduce, protoze je to pomaly
-	//		pomocii clone_List (ale trochu upraveneho)
-	return inner_reduce(f_append_operace, lists_ok, params);
+	List *vysl = new_List(NULL);
+	List *l = vysl;
+	List *cp;
+	Symbol *s;
+
+	while (params != NULL) {
+		s = resolve_Thunk(params->symbol);
+		if (is_NIL(s)) { params = params->next; continue; };
+	
+		cp = get_List(s);
+		if (cp == NULL) {
+			l->next = new_List(s);
+			l = l->next;
+		}
+
+		// kopirovani cp
+		while (cp != NULL) {
+			l->next = new_List(cp->symbol);
+			l = l->next;
+			cp = cp->next;
+		}
+
+		params = params->next;
+	}
+
+	return new_Symbol(LIST, vysl);
 }
 
 
@@ -241,7 +223,7 @@ Symbol *nubers_ok(Symbol *(*operace)(t_number, t_number), Symbol *a, Symbol *b)
 
 static inline Symbol *is_not_null(Symbol *vysl)
 {
-	if (vysl != NULL && vysl->type != NIL)
+	if (!is_NIL(vysl))
 		return new_Ordinal(BOOL, BOOL_TRUE);
 	else
 		return new_Ordinal(BOOL, BOOL_FALSE);
@@ -281,26 +263,44 @@ Symbol *op_if(List *params)
 	if (s->s.boolean)
 		return params->next->symbol;
 	else
-		// TODO nemusi existova + snizit minimalni pocet parametru ifu
 		return params->next->next->symbol;
 }
 
 
 Symbol *op_and(List *params)
 {
-	ERROR(NOT_IMPLEMENTED);
+	int t = 1;
+
+	while (params != NULL && t) {
+		t = Symbol_to_bool(params->symbol);
+		params = params->next;
+	}
+
+	return new_Ordinal(BOOL, t);
 }
 
 
 Symbol *op_or (List *params)
 {
-	ERROR(NOT_IMPLEMENTED);
+	int t = 0;
+
+	while (params != NULL && !t) {
+		t = Symbol_to_bool(params->symbol);
+		params = params->next;
+	}
+
+	return new_Ordinal(BOOL, t);
 }
 
 
 Symbol *op_not(List *params)
 {
-	ERROR(NOT_IMPLEMENTED);
+	Symbol *s = resolve_Thunk(params->symbol);
+
+	if (s == NULL || s->type != BOOL)
+		ERROR(OPERACE_NEMA_SMYSL);
+
+	return new_Ordinal(BOOL, s->s.boolean ? BOOL_FALSE : BOOL_TRUE);
 }
 
 

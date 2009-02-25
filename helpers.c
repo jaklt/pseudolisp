@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "helpers.h"
+#include "execute.h"
 
 static int odsazeni = 0;
 
@@ -54,13 +55,15 @@ int print_Typ(E_TYPE t)
 
 int print_Symbol(Symbol *s)
 {
+	s = resolve_Thunk(s); // TODO nejaky podmineny preklad/parametr?
 	if (s == NULL) {
 		printf("NIL - Empty\n");
 		return 1;
 	}
 
 	switch (s->type) {
-		case FUNCTION: print_Function((Function *) s->s.link); break;
+		case FUNCTION: printf("Function: built in %d, %d parametrs\n", ((Function *)s->s.link)->built_in, ((Function *)s->s.link)->number_of_params);
+					   /* print_Function((Function *) s->s.link); */ break;
 		case  LIST: print_List((List *) s->s.link); break;
 		case THUNK: print_Thunk((Thunk *) s->s.link); break;
 		case   NIL: printf("NIL\n"); break;

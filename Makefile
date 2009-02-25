@@ -32,7 +32,7 @@ clean:
 
 dist: ${SRC} ${HEADERS}
 	@rm -f ${NAME}-${VERSION}.tar.bz2
-	tar cjf ${NAME}-${VERSION}.tar.bz2 * .git
+	tar cjf ${NAME}-${VERSION}.tar.bz2 * .git .gitignore
 
 znova: clean all
 

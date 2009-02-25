@@ -5,8 +5,6 @@
 
 
 Function **get_array_of_funtions();
-List *f_append(List *a, List *b);
-int list_len(List *l);
 
 Symbol *map   (List *l);
 Symbol *reduce(List *l);

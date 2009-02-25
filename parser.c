@@ -105,9 +105,11 @@ static int read_word(char *chars)
 
 Symbol *init_def(Hash *h, char *name)
 {
-	List *body;
+	Function *f = new_Function(NULL, 0);
+	Symbol *s = new_Symbol(FUNCTION, f);;
+	if (name != NULL) add_Hash(h, name, s); // TODO na prd podminka
+
 	Hash *new_h = clone_Hash(h);
-	Symbol *s;
 	char chars[101];
 	int param_counter = 0;
 
@@ -121,12 +123,11 @@ Symbol *init_def(Hash *h, char *name)
 		add_Hash(new_h, chars, new_Ordinal(PARAMETR, ++param_counter));
 
 	// vytvoreni tela funkce
-	body = parse_pipe(new_h);
-//	print_List(body);
+	f->body.structure = parse_pipe(new_h);
 
 	// asociace funkce
-	s = new_Symbol(FUNCTION, new_Function(body, param_counter));
-	if (name != NULL) add_Hash(h, name, s); // TODO na prd podminka
+	f->built_in = BOOL_FALSE;
+	f->number_of_params = param_counter;
 	delete_Hash(new_h);
 
 	return s;
@@ -224,7 +225,8 @@ List *parse_pipe(Hash *h)
 			while (!is_whitespace(*(++c) = getchar()));
 			*c = '\0';
 
-			l->next = new_List(init_def(h, chars));
+			init_def(h, chars);
+	//		l->next = new_List(NULL);
 			break;
 		}
 
@@ -244,13 +246,10 @@ int play()
 {
 	Hash *h = get_basic_hash();
 	char c;
-//	print_Hash(h);
 
 	while ((c = getchar()) != EOF) {
 		if (c == OPEN_TAG) {
 			print_Symbol(resolve_Thunk(call(parse_pipe(h))));
-		//	print_List(parse_pipe(h));
-		//	printf("\nsize: %d, used: %d\n", h->size, h->used);
 			printf("\n---\n\n");
 		}
 	}

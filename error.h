@@ -1,8 +1,11 @@
 #ifndef ERROR_H
 #define ERROR_H
 
-// #define ERROR(n) {throw_full_error(n, __LINE__, __FILE__); return NULL; }
-#define ERROR(n) {throw_error(n); return NULL; }
+// #define __MAKE_ERROR(n) {throw_full_error(n, __LINE__, __FILE__); }
+#define __MAKE_ERROR(n) {throw_error(n); }
+
+#define ERROR(n)  {__MAKE_ERROR(n); return NULL; }
+#define iERROR(n) {__MAKE_ERROR(n); return 0; }
 
 
 typedef enum {
@@ -17,6 +20,5 @@ typedef enum {
 
 int throw_error(E_ERROR t);
 int throw_full_error(E_ERROR t, int line, char file[]);
-// int throw_error(E_ERROR t, char *info);
 
 #endif

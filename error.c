@@ -13,7 +13,7 @@ int throw_full_error(E_ERROR t, int line, char file[])
 
 	switch (t) {
 		case PRAZDNA_HODNOTA:
-			printf("Hodnota je prazdna");
+			printf("Empty value");
 			break;
 		case OPERACE_NEMA_SMYSL:
 			printf("Operace nad neslucitelnymi typy");

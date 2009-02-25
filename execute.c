@@ -1,9 +1,41 @@
 #include <stdlib.h>
 
-#include "funkce.h"
 #include "structs.h"
 #include "error.h"
 #include "execute.h"
+
+
+static List *f_append(List *a, List *b)
+{
+	List *ret = new_List(NULL);
+	List *l = ret;
+
+	while (a != NULL) {
+		l->next = new_List(a->symbol);
+		l = l->next;
+		a = a->next;
+	}
+
+	while (b != NULL) {
+		l->next = new_List(b->symbol);
+		l = l->next;
+		b = b->next;
+	}
+
+	l = ret->next; free(ret);
+	return l;
+}
+
+
+static int list_len(List *l)
+{
+	int i = 0;
+	while (l != NULL) {
+		i++; l = l->next;
+	}
+
+	return i;
+}
 
 
 // TODO misto pro optimalizace prevedenim na pole
@@ -45,23 +77,6 @@ List *doplnit_params(List *params, List *kam)
 	l = vysledek->next;
 	free(vysledek);
 	return l; 
-}
-
-
-List *clone_List(List *l)
-{
-	if (l == NULL) return NULL;
-
-	List *nl = new_List(l->symbol);
-	List *nll = nl;
-
-	while (l->next != NULL) {
-		l = l->next;
-		nll->next = new_List(l->symbol);
-		nll = nll->next;
-	}
-
-	return nl;
 }
 
 
@@ -134,6 +149,7 @@ Symbol *resolve_Thunk(Symbol *s)
 		&& list_len(t->params) >= t->function->number_of_params)
 	{
 		s = result(t->function, t->params);
+		if (s != NULL && s->type == LIST) s = call((List *)s->s.link);
 		t = (s != NULL && s->type == THUNK) ? (Thunk *)s->s.link : NULL;
 	}
 

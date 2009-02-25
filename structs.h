@@ -43,7 +43,6 @@ typedef struct SFunction {
 	union {
 		Symbol *(*link)(List *);
 		List *structure;
-
 	} body;
 } Function;
 
