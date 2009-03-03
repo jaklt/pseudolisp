@@ -14,6 +14,7 @@ static int zkouska_erroru();
 static int logicke_vyrazy();
 static int testovani_if();
 static int listove_testy();
+static int nekonecne_testy();
 #define NEXT printf("\n-- next test:\n")
 #define SPRAVNE(a) printf("\t** SPRAVNE: "); printf(a); printf(" **\n");
 #define SPRAVNE_NUMBER(a,b) printf("\t** SPRAVNE: "); printf(a,b); printf(" **\n");
@@ -28,34 +29,55 @@ int test()
 	logicke_vyrazy(); NEXT;
 	testovani_if(); NEXT;
 	listove_testy(); NEXT;
+	nekonecne_testy(); NEXT;
 
 	return 0;
+}
+
+
+static int nekonecne_testy()
+{
+	Function *f = new_Function(NULL, 1);
+	Function **funkce = get_array_of_funtions();
+
+	// [def count [l] [tail [count NIL]]] [count NIL]
+	List *rec = new_List(new_Symbol(FUNCTION, f));
+	rec->next = new_List(new_NIL());
+
+	List *body = new_List(new_Symbol(FUNCTION, funkce[8]));
+	body->next = new_List(new_Symbol(LIST, rec));
+
+	f->body.structure = body;
+
+	List *calling = new_List(new_Symbol(FUNCTION, f));
+	calling->next = new_List(new_NIL());
+
+	print_Symbol(resolve_Thunk(call(calling)));
+
+	return 0; 
 }
 
 
 static int listove_testy()
 {
 	const int n = 10;
-	Symbol *s[n];
-	List *l;
+	List *l = new_List(NULL);
+	List *nl = l;
 
-	s[0] = NULL;
 	for (int i=1; i<n; i++) {
-		s[i] = new_Ordinal(NUMBER, i*100);
+		nl->next = new_List(new_Ordinal(NUMBER, i*100));
+		nl = nl->next;
 	}
 
-	l = array_to_List(s, n);
-	print_List(l);
-
-	List *nl = new_List(new_Symbol(LIST, l));
+	nl = new_List(new_Symbol(LIST, l));
 	nl->next = new_List(new_Symbol(LIST, l));
 	Symbol *list = append(nl);
 
-	print_Symbol(list);
+//	print_Symbol(list);
 
 	nl->symbol = new_NIL();
 	nl->next->next = new_List(new_Ordinal(CHAR, 'A'));
-	nl->next->next->next = new_List(new_Symbol_List(NULL));
+	nl->next->next->next = new_List(new_Symbol(LIST, new_List(NULL)));
 	list = append(nl);
 	print_Symbol(list);
 
@@ -76,7 +98,7 @@ static int testovani_if()
 	body->next->next = new_List(new_Ordinal(PARAMETR, 1));
 	body->next->next->next = new_List(new_Ordinal(PARAMETR, 2));
 
-	Symbol *fce = new_Symbol_Function(body, 2);
+	Symbol *fce = new_Symbol(FUNCTION, new_Function(body, 2));
 
 	List *volani = new_List(fce);
 	volani->next = new_List(new_Ordinal(NUMBER, 2));
@@ -179,8 +201,6 @@ static int testy_slozenych_funkci()
 	List *calling = new_List(new_Symbol(LIST, body));
 	calling->next = new_List(new_Ordinal(NUMBER, 3));
 
-	print_List(calling);
-	print_Symbol((call(calling)));
 	print_Symbol(resolve_Thunk(call(calling)));
 
 	SPRAVNE("Number = 6");
@@ -192,17 +212,18 @@ static int funkcni_testy()
 {
 	Function **f = get_array_of_funtions();
 	const int n = 5;
-	Symbol *s[n];
+	List *l = new_List(NULL);
+	List *nl = l;
 
 	for (int i=0; i<n; i++) {
-		s[i] = new_Ordinal(NUMBER, i+3);
+		nl->next = new_List(new_Ordinal(NUMBER, i+3));
+		nl = nl->next;
 	}
 
-	List *l = array_to_List(s, n);
-	print_List(l);
+	print_List(l->next);
 
 //	Symbol *vysl = krat(l);
-	Symbol *vysl = result(f[0], l);
+	Symbol *vysl = result(f[0], l->next);
 	print_Symbol(vysl);
 
 	SPRAVNE("Number = 25");

@@ -1,7 +1,5 @@
 #include <stdio.h>
 
-#include "structs.h"
-#include "funkce.h"
 #include "testy.h"
 #include "parser.h"
 

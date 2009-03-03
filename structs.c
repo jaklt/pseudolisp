@@ -25,25 +25,6 @@ List *new_List(Symbol *symbol)
 }
 
 
-List *array_to_List(Symbol **seznam_symbolu, int pocet_symbolu)
-{
-	if (pocet_symbolu <= 0) return NULL;
-
-	List *l = (List *) malloc(pocet_symbolu * sizeof(List));
-	List *ret = l;
-
-	for (int i=0; i<pocet_symbolu; i++) {
-		l->symbol = (Symbol *) seznam_symbolu[i];
-		l->next = NULL;
-		
-		if (i != 0) (l-1)->next = l;
-		l++;
-	}
-
-	return ret;
-}
-
-
 Symbol *new_Ordinal(E_TYPE type, t_number co)
 {
 	Symbol *s = (Symbol *) malloc(sizeof(Symbol));
@@ -84,22 +65,4 @@ Thunk *new_Thunk(Function *fce, List *params)
 	t->params = params;
 
 	return t;
-}
-
-
-Symbol *new_Symbol_List(Symbol *symbol)
-{
-	return new_Symbol(LIST, new_List(symbol));
-}
-
-
-Symbol *new_Symbol_Function(List *function_body, int pocet_symbolu)
-{
-	return new_Symbol(FUNCTION, new_Function(function_body, pocet_symbolu));
-}
-
-
-Symbol *new_Symbol_Thunk(Function *fce, List *params)
-{
-	return new_Symbol(THUNK, new_Thunk(fce, params));
 }

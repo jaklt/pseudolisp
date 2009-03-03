@@ -14,7 +14,7 @@ typedef enum {
 	PARAMETR,
 } E_TYPE;
 
-#define BOOL_TRUE -1
+#define BOOL_TRUE  1
 #define BOOL_FALSE 0
 
 
@@ -23,7 +23,7 @@ typedef struct {
 
 	union {
 		t_number number;
-		int boolean : 1;
+		unsigned int boolean : 1;
 		char character;
 		void *link;
 	} s;
@@ -37,7 +37,7 @@ typedef struct SList {
 
 
 typedef struct SFunction {
-	int built_in : 1;
+	unsigned int built_in : 1;
 	int number_of_params;
 
 	union {
@@ -57,16 +57,12 @@ Function *get_Function(char *name);
 Function *new_Function(List *body_function, int number_of_params);
 
 List *new_List(Symbol *symbol);
-List *array_to_List(Symbol **seznam_symbolu, int pocet_symbolu);
+
 
 /**
  * Konstruktor symbolu.
  */
 Symbol *new_Symbol(E_TYPE type, void *symbol);
-
-Symbol *new_Symbol_List(Symbol *symbol);
-Symbol *new_Symbol_Function(List *function_body, int pocet_symbolu);
-Symbol *new_Symbol_Thunk(Function *fce, List *params);
 
 Symbol *new_Ordinal(E_TYPE type, double co);
 Symbol *new_NIL();

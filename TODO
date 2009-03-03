@@ -3,11 +3,11 @@
 min prasacky parametry
 
 Parsovani zdrojaku
-- procistit parser.c
+- procistit parser.c, funkce.c
 
 Rozhodnout kdy/jak resolvovat
 
-nefunguje [def ahoj[n] n] <~ treba nahradit za ~> [def ahoj [n] [+ n 0]] 
+nefunguje [def ahoj[n] n] <~ treba nahradit za ~> [def ahoj [n] n] 
 
 Vnitrni funkce - napriklad:
 --------------
@@ -39,6 +39,7 @@ NEFUNGUJE:
 [def a [] 3]
 [a] ~> 3 OK
 [[a]] ~> 3 WTF??
+[[a] 2] ~> 3 WTF??
 
 ----------------------------------------------
 

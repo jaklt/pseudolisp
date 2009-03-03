@@ -16,12 +16,7 @@ static List *f_append(List *a, List *b)
 		a = a->next;
 	}
 
-	while (b != NULL) {
-		l->next = new_List(b->symbol);
-		l = l->next;
-		b = b->next;
-	}
-
+	l->next = b;
 	l = ret->next; free(ret);
 	return l;
 }
@@ -104,11 +99,12 @@ Symbol *call(List *l)
 	} else if (l->symbol->type == LIST) {
 		l->symbol = call((List *)l->symbol->s.link);
 		return call(l); // XXX asi se zacykli
-	} else
+	} else {
+		if (l->next == NULL) return l->symbol;
 		ERROR(VNITRNI_CHYBA);
-	
+	}
 
-	return new_Symbol_Thunk(f, l);
+	return new_Symbol(THUNK, new_Thunk(f, l));
 }
 
 

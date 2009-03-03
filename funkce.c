@@ -17,7 +17,7 @@ Function **get_array_of_funtions()
 {
 	// - vytvoreni instanci vsech built-in funkci
 
-	#define n 7
+	#define n 10
 	static Function *array[n];
 	static int hotovson = 1;
 	
@@ -51,6 +51,18 @@ Function **get_array_of_funtions()
 		array[6] = new_Function(NULL, 2);
 		array[6]->built_in = BOOL_TRUE;
 		array[6]->body.link = gt;
+
+		array[7] = new_Function(NULL, 2);
+		array[7]->built_in = BOOL_TRUE;
+		array[7]->body.link = append;
+
+		array[8] = new_Function(NULL, 1);
+		array[8]->built_in = BOOL_TRUE;
+		array[8]->body.link = tail;
+
+		array[9] = new_Function(NULL, 1);
+		array[9]->built_in = BOOL_TRUE;
+		array[9]->body.link = head;
 	}
 
 	return array;
@@ -85,8 +97,7 @@ static List *get_List(Symbol *s)
 	{
 		return NULL;
 	} else {
-		List *l = ((List *)s->s.link)->next;
-		return l == NULL ? new_List(new_NIL()) : l;
+		return ((List *)s->s.link)->next;
 	}
 }
 
@@ -301,6 +312,12 @@ Symbol *op_not(List *params)
 		ERROR(OPERACE_NEMA_SMYSL);
 
 	return new_Ordinal(BOOL, s->s.boolean ? BOOL_FALSE : BOOL_TRUE);
+}
+
+
+Symbol *op_nil(List *params)
+{
+	return new_Ordinal(BOOL, is_NIL(resolve_Thunk(params->symbol)));
 }
 
 

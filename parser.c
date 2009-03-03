@@ -34,6 +34,7 @@ Hash *get_basic_hash()
 		{"and",		op_and,	2},
 		{"or",		op_or,	2},
 		{"not",		op_not,	1},
+		{"nil?",	op_nil,	1},
 
 		{"=",		eq,		2},
 		{">",		gt,		2},
@@ -162,7 +163,7 @@ Symbol *create_token(Hash *h, char *string)
 	if (('0' <= string[0] && string[0] <='9')
 			|| (string[0] == '-' && '0' <= string[1] && string[1] <='9'))
 	{
-		s = new_Ordinal(NUMBER, atof(string));
+		s = new_Ordinal(NUMBER, (t_number) atof(string));
 	}
 
 	if (string[0] == '\'' || string[0] == '"')
@@ -201,7 +202,7 @@ List *parse_pipe(Hash *h)
 			*c = '\0';
 			whitespaces = 1;
 
-			if (strcmp(chars, "def") == 0 && first){
+			if (strcmp(chars, "def") == 0 && first) {
 				first = 0; is_def = 1; c = chars;
 				continue;
 			}
@@ -226,7 +227,6 @@ List *parse_pipe(Hash *h)
 			*c = '\0';
 
 			init_def(h, chars);
-	//		l->next = new_List(NULL);
 			break;
 		}
 
