@@ -1,6 +1,5 @@
 #include <stdlib.h>
 
-#include "structs.h"
 #include "error.h"
 #include "execute.h"
 
@@ -33,33 +32,26 @@ static int list_len(List *l)
 }
 
 
-// TODO misto pro optimalizace prevedenim na pole
-Symbol *get_parametr(List *params, int kolikaty)
-{
-	if (kolikaty < 1) return NULL;
-
-	while (kolikaty > 1) {
-		params = params->next;
-		kolikaty--;
-	}
-
-	return params->symbol;
-}
-
-
 List *doplnit_params(List *params, List *kam)
 {
 	List *volani = new_List(NULL);
 	List *vysledek = volani;
 	List *l = kam;
 	Symbol *s;
+	Symbol **exp_params = (Symbol **) malloc(list_len(params) * sizeof(Symbol *));
+
+	for (int i=0; ; i++) {
+		if (params == NULL) break;
+		exp_params[i] = params->symbol;
+		params = params->next;
+	}
 
 	while (l != NULL) {
 		if (l->symbol->type == LIST) {
 			s = new_Symbol(LIST,
 				doplnit_params(params, (List *)l->symbol->s.link));
 		} else if (l->symbol->type == PARAMETR) {
-			s = get_parametr(params, l->symbol->s.character);
+			s = exp_params[(int)l->symbol->s.character - 1];
 		} else {
 			s = l->symbol;
 		}
@@ -71,6 +63,7 @@ List *doplnit_params(List *params, List *kam)
 
 	l = vysledek->next;
 	free(vysledek);
+	free(exp_params);
 	return l; 
 }
 

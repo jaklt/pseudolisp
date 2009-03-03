@@ -8,6 +8,7 @@
 #include "hashovani.h"
 
 
+static Function **get_array_of_funtions();
 static int funkcni_testy();
 static int testy_slozenych_funkci();
 static int zkouska_erroru();
@@ -231,3 +232,57 @@ static int funkcni_testy()
 }
 
 
+static Function **get_array_of_funtions()
+{
+	// - vytvoreni instanci vsech built-in funkci
+
+	#define n 10
+	static Function *array[n];
+	static int hotovson = 1;
+	
+	if (hotovson) {
+		hotovson = 0;
+
+		array[0] = new_Function(NULL, 2);
+		array[0]->built_in = BOOL_TRUE;
+		array[0]->body.link = plus;
+
+		array[1] = new_Function(NULL, 2);
+		array[1]->built_in = BOOL_TRUE;
+		array[1]->body.link = minus;
+
+		array[2] = new_Function(NULL, 2);
+		array[2]->built_in = BOOL_TRUE;
+		array[2]->body.link = krat;
+
+		array[3] = new_Function(NULL, 2);
+		array[3]->built_in = BOOL_TRUE;
+		array[3]->body.link = deleno;
+
+		array[4] = new_Function(NULL, 3);
+		array[4]->built_in = BOOL_TRUE;
+		array[4]->body.link = op_if;
+
+		array[5] = new_Function(NULL, 2);
+		array[5]->built_in = BOOL_TRUE;
+		array[5]->body.link = eq;
+
+		array[6] = new_Function(NULL, 2);
+		array[6]->built_in = BOOL_TRUE;
+		array[6]->body.link = gt;
+
+		array[7] = new_Function(NULL, 2);
+		array[7]->built_in = BOOL_TRUE;
+		array[7]->body.link = append;
+
+		array[8] = new_Function(NULL, 1);
+		array[8]->built_in = BOOL_TRUE;
+		array[8]->body.link = tail;
+
+		array[9] = new_Function(NULL, 1);
+		array[9]->built_in = BOOL_TRUE;
+		array[9]->body.link = head;
+	}
+
+	return array;
+}

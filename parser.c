@@ -43,12 +43,7 @@ Hash *get_basic_hash()
 		{"tail",	tail,	1},
 		{"take",	take,	2},
 
-//		{"def",		def,	3},
 		{"list",	list,	1},
-
-		{"map",		map,	2},
-		{"reduce",	reduce,	2},
-		{"filter",	filter,	2},
 
 		{"append",	append,	2},
 		{"print",	print,	2},

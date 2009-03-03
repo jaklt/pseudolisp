@@ -4,15 +4,7 @@
 #include "structs.h"
 
 
-Function **get_array_of_funtions();
-
-Symbol *map   (List *l);
-Symbol *reduce(List *l);
-Symbol *filter(List *l);
-
-
 /** Function pro podporu fungovani programu */
-// Symbol *def(List *params);
 Symbol *print(List *params);
 Symbol *undefined(List *params);
 
@@ -40,6 +32,5 @@ Symbol *append(List *params);
 Symbol *head(List *l);
 Symbol *tail(List *l);
 Symbol *take(List *l); // pr: (take 20 list)
-// Symbol *list_intersection(List *l); // prunik
-// Symbol *list_union(List *l); // sjednoceni
+
 #endif
