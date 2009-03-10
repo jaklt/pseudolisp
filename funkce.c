@@ -108,12 +108,6 @@ Symbol *append(List *params)
 }
 
 
-Symbol *take(List *params)
-{
-	ERROR(NOT_IMPLEMENTED);
-}
-
-
 /**
  * Aritmeticke operace s cisly
  * ---------------------------

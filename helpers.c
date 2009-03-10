@@ -26,7 +26,7 @@ int print_Typ(E_TYPE t)
 		case   CHAR: printf("Type: Char\n"); break;
 		case NUMBER: printf("Type: Number\n"); break;
 		case PARAMETR: printf("Type: Parametr\n"); break;
-		default:     printf("Wrong type"); return 1; 
+		default:     printf("Wrong type (%i)\n", (int) t); return 1; 
 	}
 
 	return 0;
@@ -42,8 +42,10 @@ int print_Symbol(Symbol *s)
 	}
 
 	switch (s->type) {
-		case FUNCTION: printf("Function: built in %d, %d parametrs\n", ((Function *)s->s.link)->built_in, ((Function *)s->s.link)->number_of_params);
-					   /* print_Function((Function *) s->s.link); */ break;
+		case FUNCTION:
+			printf("Function: built in %d, %d parametrs\n", ((Function *)s->s.link)->built_in, ((Function *)s->s.link)->number_of_params);
+			// print_Function((Function *) s->s.link);
+			break;
 		case  LIST: print_List((List *) s->s.link); break;
 		case THUNK: print_Thunk((Thunk *) s->s.link); break;
 		case   NIL: printf("NIL\n"); break;

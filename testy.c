@@ -26,11 +26,11 @@ int test()
 	printf("-- Zacatek testovani:\n");
 	funkcni_testy(); NEXT;
 	testy_slozenych_funkci(); NEXT;
-	zkouska_erroru(); NEXT;
 	logicke_vyrazy(); NEXT;
 	testovani_if(); NEXT;
 	listove_testy(); NEXT;
 	nekonecne_testy(); NEXT;
+	zkouska_erroru(); NEXT;
 
 	return 0;
 }
@@ -188,7 +188,6 @@ static int testy_slozenych_funkci()
 	body->next = new_List(new_Ordinal(NUMBER, 3));
 	body->next->next = new_List(new_Ordinal(PARAMETR, 1));
 
-	//*
 	Function *a = new_Function(body, 1);
 
 	Symbol *vysledek = resolve_Thunk(result(a, new_List(new_Ordinal(NUMBER, 8))));
@@ -196,7 +195,7 @@ static int testy_slozenych_funkci()
 	printf("parametr: %d\n", (int)a->body.structure->next->next->symbol->s.character);
 
 	SPRAVNE("Number = 11, parametr 1");
-	printf("\n"); // */
+	printf("\n"); 
 
 	body->next->next = NULL;
 	List *calling = new_List(new_Symbol(LIST, body));

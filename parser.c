@@ -41,7 +41,6 @@ Hash *get_basic_hash()
 
 		{"head",	head,	1},
 		{"tail",	tail,	1},
-		{"take",	take,	2},
 
 		{"list",	list,	1},
 

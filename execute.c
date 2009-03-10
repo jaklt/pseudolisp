@@ -32,39 +32,48 @@ static int list_len(List *l)
 }
 
 
-List *doplnit_params(List *params, List *kam)
+static List *insert_params_run(Symbol **exp_params, List *kam);
+static Symbol *insert_params_solve(Symbol **exp_params, Symbol *s)
 {
-	List *volani = new_List(NULL);
-	List *vysledek = volani;
-	List *l = kam;
-	Symbol *s;
-	Symbol **exp_params = (Symbol **) malloc(list_len(params) * sizeof(Symbol *));
+	if (s->type == LIST)
+		return new_Symbol(LIST, insert_params_run(exp_params, (List *) s->s.link));
+	else if (s->type == PARAMETR)
+		return exp_params[s->s.character - 1];
 
-	for (int i=0; ; i++) {
-		if (params == NULL) break;
+	return s;
+}
+
+
+static List *insert_params_run(Symbol **exp_params, List *l)
+{
+	if (l == NULL) return NULL;
+	List *ret = new_List(insert_params_solve(exp_params, l->symbol));
+	List *ret_tmp = ret;
+
+	while (l->next != NULL) {
+		l = l->next;
+		ret->next = new_List(insert_params_solve(exp_params, l->symbol));
+		ret = ret->next;
+	}
+
+	return ret_tmp;
+}
+
+
+List *insert_params(List *params, List *kam)
+{
+	Symbol **exp_params = (Symbol **) malloc(list_len(params) * sizeof(Symbol *));
+	List *l;
+
+	for (int i=0; params != NULL; i++) {
 		exp_params[i] = params->symbol;
 		params = params->next;
 	}
 
-	while (l != NULL) {
-		if (l->symbol->type == LIST) {
-			s = new_Symbol(LIST,
-				doplnit_params(params, (List *)l->symbol->s.link));
-		} else if (l->symbol->type == PARAMETR) {
-			s = exp_params[(int)l->symbol->s.character - 1];
-		} else {
-			s = l->symbol;
-		}
+	l = insert_params_run(exp_params, kam);
 
-		volani->next = new_List(s);
-		volani = volani->next;
-		l = l->next;
-	}
-
-	l = vysledek->next;
-	free(vysledek);
 	free(exp_params);
-	return l; 
+	return l;
 }
 
 
@@ -116,7 +125,7 @@ Symbol *result(Function *f, List *params)
 	// konvence je takova, ze prvni prvek listu vzdy odpovida bud:
 	// - funkci/tanku = jde o volani function
 	// - link na funkci list/NULL (nikoliv NIL) = jde o list
-	l = doplnit_params(params, f->body.structure);
+	l = insert_params(params, f->body.structure);
 
 	if (l->symbol->type == THUNK)
 		l->symbol = resolve_Thunk(l->symbol);

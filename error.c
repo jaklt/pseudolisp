@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "error.h"
 
 #define ERR_START " !!! Error: "
@@ -9,42 +10,42 @@ int throw_full_error(E_ERROR t, int line, char file[])
 {
 	if (line) printf(ERR_START "on %i. line in %s file:\n", line, file);
 
-	printf(ERR_START);
+	fprintf(stderr, ERR_START);
 
 	switch (t) {
 		case PRAZDNA_HODNOTA:
-			printf("Empty value");
+			fprintf(stderr, "Empty value");
 			break;
 		case OPERACE_NEMA_SMYSL:
-			printf("Operace nad neslucitelnymi typy");
+			fprintf(stderr, "Operace nad neslucitelnymi typy");
 			break;
 		case MOC_HLUBOKA_REKURZE:
-			printf("Prekonan maximalni hloubka rekurze (&cislo)");
+			fprintf(stderr, "Prekonan maximalni hloubka rekurze (&cislo)");
 			break;
 		case VNITRNI_CHYBA:
-			printf("Bad Function body");
+			fprintf(stderr, "Bad Function body");
 			break;
 		case NOT_IMPLEMENTED:
-			printf("Not implemented yet");
+			fprintf(stderr, "Not implemented yet");
 			break;
 		case UNDEFINED:
-			printf("Undefined");
+			fprintf(stderr, "Undefined");
 			break;
 		case SYNTAX_ERROR:
-			printf("Syntax error");
+			fprintf(stderr, "Syntax error");
 			break;
 		default:
-			printf("Unknown error\n");
+			fprintf(stderr, "Unknown error");
 			break;
 	}
 
-	printf(ERR_END);
-	return 0;
+	fprintf(stderr, ERR_END);
+	exit(1);
+	return 1;
 }
 
 
 int throw_error(E_ERROR t)
 {
-	throw_full_error(t, 0, NULL);
-	return 0;
+	return throw_full_error(t, 0, NULL);
 }

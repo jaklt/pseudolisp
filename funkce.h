@@ -31,6 +31,5 @@ Symbol *list(List *params);
 Symbol *append(List *params);
 Symbol *head(List *l);
 Symbol *tail(List *l);
-Symbol *take(List *l); // pr: (take 20 list)
 
 #endif
