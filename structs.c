@@ -2,12 +2,12 @@
 #include "structs.h"
 
 
-Function *new_Function(List *body_function, int number_of_params)
+Function *new_Function(List *body_function, int params_count)
 {
 	Function *f = (Function *) malloc(sizeof(Function));
 
 	f->body.structure = body_function;
-	f->number_of_params = number_of_params;
+	f->params_count = params_count;
 	f->built_in = BOOL_FALSE;
 
 	return f;
@@ -34,7 +34,7 @@ Symbol *new_Ordinal(E_TYPE type, t_number co)
 	switch (type) {
 		case NUMBER: s->s.number  =        co; break;
 		case   BOOL: s->s.boolean = (int)  co; break;
-		case PARAMETR:
+		case PARAMETER:
 		case  CHAR: s->s.character    = (char) co; break;
 		default: break;
 	}
@@ -55,6 +55,12 @@ Symbol *new_Symbol(E_TYPE type, void *symbol)
 
 
 Symbol *new_NIL() { return new_Symbol(NIL, NULL); }
+
+
+int is_NIL(Symbol *s)
+{
+	return (s == NULL || s->type == NIL);
+}
 
 
 Thunk *new_Thunk(Function *fce, List *params)

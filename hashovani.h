@@ -11,24 +11,24 @@ typedef enum {
 
 
 // pri zmene treba zmenit clone
-typedef struct SHashPrvek {
+typedef struct SHashMember {
 	char *name;
 	HASH_TYPE full;
 	unsigned long int hash;
 	Symbol *link;
-} HashPrvek;
+} HashMember;
 
 
 typedef struct SHash {
-	HashPrvek *hashes;
+	HashMember *hashes;
 	unsigned int size;
 	unsigned int used;
 } Hash;
 
 
 Hash *new_Hash();
-HashPrvek *add_Hash(Hash *h, char *name, Symbol *s);
-HashPrvek *get_Hash(Hash *h, char *s);
+HashMember *add_Hash(Hash *h, char *name, Symbol *s);
+HashMember *get_Hash(Hash *h, char *s);
 Hash *clone_Hash(Hash *h);
 int delete_Hash(Hash *h);
 

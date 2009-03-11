@@ -6,6 +6,7 @@
 
 static List *f_append(List *a, List *b)
 {
+	if (a == NULL) return b;
 	List *ret = new_List(NULL);
 	List *l = ret;
 
@@ -37,7 +38,7 @@ static Symbol *insert_params_solve(Symbol **exp_params, Symbol *s)
 {
 	if (s->type == LIST)
 		return new_Symbol(LIST, insert_params_run(exp_params, (List *) s->s.link));
-	else if (s->type == PARAMETR)
+	else if (s->type == PARAMETER)
 		return exp_params[s->s.character - 1];
 
 	return s;
@@ -85,22 +86,16 @@ Symbol *call(List *l)
 	Function *f;
 
 	if (l->symbol->type == THUNK) {
-		f = ((Thunk *)l->symbol->s.link)->function;
-	//	l = f_append( ((Thunk *)l->next->symbol->s.link)->params, l);
-		List *params = ((Thunk *)l->symbol->s.link)->params;
+		if (l->next == NULL) return l->symbol;
 
-		if (params == NULL)
-			l = l->next;
-		else if (l->next == NULL)
-			l = params;
-		else
-			l = f_append(params , l->next);
+		f = ((Thunk *)l->symbol->s.link)->function;
+		l = f_append( ((Thunk *)l->symbol->s.link)->params, l->next);
 	} else if (l->symbol->type == FUNCTION) {
 		f = (Function *)l->symbol->s.link;
 		l = l->next;
 	} else if (l->symbol->type == LIST) {
 		l->symbol = call((List *)l->symbol->s.link);
-		return call(l); // XXX asi se zacykli
+		return call(l);
 	} else {
 		if (l->next == NULL) return l->symbol;
 		ERROR(VNITRNI_CHYBA);
@@ -116,7 +111,7 @@ Symbol *result(Function *f, List *params)
 
 	List *l = params;
 
-	if (list_len(params) < f->number_of_params)
+	if (list_len(params) < f->params_count)
 		return new_Symbol(THUNK, new_Thunk(f, params));
 
 	if (f->built_in == BOOL_TRUE)
@@ -138,13 +133,12 @@ Symbol *resolve_Thunk(Symbol *s)
 {
 	if (s == NULL) return NULL;
 	if (s->type == LIST) s = call((List *)s->s.link);
-	if (s == NULL || s->type != THUNK) return s; // TODO is_NIL
-
+	if (is_NIL(s) || s->type != THUNK) return s;
 
 	Thunk *t = (Thunk *)s->s.link;
 
 	while (t != NULL
-		&& list_len(t->params) >= t->function->number_of_params)
+		&& list_len(t->params) >= t->function->params_count)
 	{
 		s = result(t->function, t->params);
 		if (s != NULL && s->type == LIST) s = call((List *)s->s.link);

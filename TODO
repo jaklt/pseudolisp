@@ -30,17 +30,24 @@ NEFUNGUJE:
 [b] ma byt 3
 [a 1] ma byt 2, vrati funkci s jednim dopnenym parametrem a to jedickou
 
-[[+ 1 2] 3] ~> 6, ma byt Error, protoze [1] je taky Error
+[[+ 1 2] 3] ~> 6, ma byt Error, protoze [1] by mel bejt taky Error
 ^^^^ asi stejna chyba
+
+-------------
 
 [def main [] ]
 [main] -> segfault
+
+-------------
 
 [def a [] 3]
 [a] ~> 3 OK
 [[a]] ~> 3 WTF??
 [[a] 2] ~> 3 WTF??
 
+[def a [] [def c [b] b] c]
+[[a] 3] ~> Thunk bez jedinyho parametru
+^^^^ asi stejna chyba
 ----------------------------------------------
 
 stav sveta - jak na nej?

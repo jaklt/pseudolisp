@@ -11,7 +11,7 @@ typedef enum {
 	BOOL,
 	CHAR,
 	THUNK,
-	PARAMETR,
+	PARAMETER,
 } E_TYPE;
 
 #define BOOL_TRUE  1
@@ -38,7 +38,7 @@ typedef struct SList {
 
 typedef struct SFunction {
 	unsigned int built_in : 1;
-	int number_of_params;
+	int params_count;
 
 	union {
 		Symbol *(*link)(List *);
@@ -54,7 +54,7 @@ typedef struct SThunk {
 
 
 Function *get_Function(char *name);
-Function *new_Function(List *body_function, int number_of_params);
+Function *new_Function(List *body_function, int params_count);
 
 List *new_List(Symbol *symbol);
 
@@ -66,6 +66,7 @@ Symbol *new_Symbol(E_TYPE type, void *symbol);
 
 Symbol *new_Ordinal(E_TYPE type, double co);
 Symbol *new_NIL();
+int is_NIL(Symbol *s);
 
 /**
  * Vytvori novy Thunk, ktery v pripade nutnosti znalosti hodnoty slouzi k
@@ -73,7 +74,5 @@ Symbol *new_NIL();
  */
 Thunk *new_Thunk(Function *fce, List *params);
 
-
-int uvolnit(E_TYPE, void *co); // ???
 
 #endif

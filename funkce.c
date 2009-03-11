@@ -12,12 +12,6 @@ static Symbol *inner_reduce(
 	);
 
 
-static int is_NIL(Symbol *s)
-{
-	return (s == NULL || s->type == NIL);
-}
-
-
 int is_TRUE(Symbol *s)
 {
 	return (s != NULL && s->type == BOOL && s->s.boolean);

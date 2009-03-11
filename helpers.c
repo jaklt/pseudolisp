@@ -25,7 +25,7 @@ int print_Typ(E_TYPE t)
 		case   BOOL: printf("Type: Boolean\n"); break;
 		case   CHAR: printf("Type: Char\n"); break;
 		case NUMBER: printf("Type: Number\n"); break;
-		case PARAMETR: printf("Type: Parametr\n"); break;
+		case PARAMETER: printf("Type: Parametr\n"); break;
 		default:     printf("Wrong type (%i)\n", (int) t); return 1; 
 	}
 
@@ -35,7 +35,7 @@ int print_Typ(E_TYPE t)
 
 int print_Symbol(Symbol *s)
 {
-	s = resolve_Thunk(s); // TODO nejaky podmineny preklad/parametr?
+	s = resolve_Thunk(s); // TODO nejaky podmineny preklad/parameter?
 	if (s == NULL) {
 		printf("NIL - Empty\n");
 		return 1;
@@ -43,7 +43,7 @@ int print_Symbol(Symbol *s)
 
 	switch (s->type) {
 		case FUNCTION:
-			printf("Function: built in %d, %d parametrs\n", ((Function *)s->s.link)->built_in, ((Function *)s->s.link)->number_of_params);
+			printf("Function: built in %d, %d parameters\n", ((Function *)s->s.link)->built_in, ((Function *)s->s.link)->params_count);
 			// print_Function((Function *) s->s.link);
 			break;
 		case  LIST: print_List((List *) s->s.link); break;
@@ -52,8 +52,8 @@ int print_Symbol(Symbol *s)
 		case  BOOL: printf("Bool: %s\n", (s->s.boolean == BOOL_TRUE) ? "TRUE" : "FALSE"); break;
 		case  CHAR: printf("Char: %c\n", s->s.character); break;
 		case NUMBER: printf("Number: %f\n", (double) s->s.number); break;
-		case PARAMETR: printf("%d. parametr\n", (int) s->s.character); break;
-		default: printf("Wrong value!\n"); break;
+		case PARAMETER: printf("%d. parameter\n", (int) s->s.character); break;
+		default: printf("Wrong value! (%u)\n", (unsigned int) s->type); break;
 	}
 
 	return 0;
@@ -84,7 +84,7 @@ int print_Function(Function *f)
 	if (f == NULL) return 1;
 	odsazeni++;
 
-	odsadit(); printf("Number of parametrs: %d\n", f->number_of_params);
+	odsadit(); printf("Number of parameters: %d\n", f->params_count);
 
 	if (f->built_in) {
 		odsadit(); printf("Build in\n");

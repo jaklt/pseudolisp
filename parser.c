@@ -23,7 +23,7 @@ Hash *get_basic_hash()
 	struct function {
 		char *name;
 		Symbol *(*link)(List *);
-		int number_of_params;
+		int params_count;
 	} array_of_functions[] = {
 		{"+",		plus,	2},
 		{"-",		minus,	2},
@@ -49,7 +49,7 @@ Hash *get_basic_hash()
 	};
 
 	for (int i=0; i<NUM_FUN; i++) {
-		f = new_Function(NULL, array_of_functions[i].number_of_params);
+		f = new_Function(NULL, array_of_functions[i].params_count);
 		f->built_in = BOOL_TRUE;
 		f->body.link = array_of_functions[i].link;
 
@@ -102,7 +102,7 @@ Symbol *init_def(Hash *h, char *name)
 {
 	Function *f = new_Function(NULL, 0);
 	Symbol *s = new_Symbol(FUNCTION, f);;
-	if (name != NULL) add_Hash(h, name, s); // TODO na prd podminka
+	if (name != NULL) add_Hash(h, name, s);
 
 	Hash *new_h = clone_Hash(h);
 	char chars[101];
@@ -111,18 +111,20 @@ Symbol *init_def(Hash *h, char *name)
 	// nacitani parametru funkce
 	while (getchar() != OPEN_TAG);
 
-	while (read_word(chars))
-		add_Hash(new_h, chars, new_Ordinal(PARAMETR, ++param_counter));
+	while (read_word(chars)) {
+		add_Hash(new_h, chars, new_Ordinal(PARAMETER, ++param_counter));
+		printf("%s readed, continue\n", chars);
+	}
 
 	if (chars[0] != '\0')
-		add_Hash(new_h, chars, new_Ordinal(PARAMETR, ++param_counter));
+		add_Hash(new_h, chars, new_Ordinal(PARAMETER, ++param_counter));
 
 	// vytvoreni tela funkce
 	f->body.structure = parse_pipe(new_h);
 
 	// asociace funkce
 	f->built_in = BOOL_FALSE;
-	f->number_of_params = param_counter;
+	f->params_count = param_counter;
 	delete_Hash(new_h);
 
 	return s;
@@ -164,7 +166,7 @@ Symbol *create_token(Hash *h, char *string)
 		ERROR(NOT_IMPLEMENTED);
 
 	if (s == NULL) {
-		HashPrvek *hp = get_Hash(h, string);
+		HashMember *hp = get_Hash(h, string);
 
 		if (hp == NULL) {
 			hp = add_Hash(h, string, get_Undefined());
@@ -183,7 +185,7 @@ List *parse_pipe(Hash *h)
 	char *c = chars;
 	int whitespaces = 1;
 	int first = 1;
-	int is_def = 0;
+	int is_def = 0; // 0 - not def, 1 - def, 2 - lambda
 	int is_close_tag = 0;
 	List *all = new_List(NULL);
 	List *l = all;
@@ -196,8 +198,11 @@ List *parse_pipe(Hash *h)
 			*c = '\0';
 			whitespaces = 1;
 
-			if (strcmp(chars, "def") == 0 && first) {
-				first = 0; is_def = 1; c = chars;
+			if (first && (strcmp(chars, "def") == 0
+					|| (is_def = (strcmp(chars, "lambda") == 0))))
+			{
+				is_def++;
+				first = 0; c = chars;
 				continue;
 			}
 
@@ -216,6 +221,8 @@ List *parse_pipe(Hash *h)
 		whitespaces = 0;
 
 		if (is_def) {
+			if (is_def == 2) init_def(h, NULL);
+
 			// nacteni nazvu funkce
 			while (!is_whitespace(*(++c) = getchar()));
 			*c = '\0';
@@ -225,8 +232,12 @@ List *parse_pipe(Hash *h)
 		}
 
 		if (*c == OPEN_TAG) {
-			l->next = new_List(new_Symbol(LIST, parse_pipe(h)));
-			l = l->next;
+			l->next = parse_pipe(h);
+
+			if (l->next != NULL) {
+				l->next = new_List(new_Symbol(LIST, l->next));
+				l = l->next;
+			}
 		} else
 			c++;
 	}

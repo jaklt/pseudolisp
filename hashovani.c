@@ -42,7 +42,7 @@ Hash *new_Hash()
 
 	Hash *h = (Hash *) malloc(sizeof(Hash));
 
-	h->hashes = (HashPrvek *) malloc(POC * sizeof(HashPrvek));
+	h->hashes = (HashMember *) malloc(POC * sizeof(HashMember));
 	h->size = POC;
 	h->used = 0;
 
@@ -71,14 +71,13 @@ static unsigned int volne_misto(Hash *h, unsigned long int hash)
 }
 
 
-//  memset (co, cim, kolikrat);
 static int zvetsit_hash(Hash *h)
 {
-	HashPrvek *stare_hashes = h->hashes;
+	HashMember *stare_hashes = h->hashes;
 	int stara_size = h->size;
 
 	h->size *= 2;
-	h->hashes = (HashPrvek *) malloc((h->size)*sizeof(HashPrvek));
+	h->hashes = (HashMember *) malloc((h->size)*sizeof(HashMember));
 	if (h->hashes == NULL) return 1;
 	empty_Hash(h);
 
@@ -100,7 +99,7 @@ static int zvetsit_hash(Hash *h)
 }
 
 
-HashPrvek *add_Hash(Hash *h, char *name, Symbol *s)
+HashMember *add_Hash(Hash *h, char *name, Symbol *s)
 {
 	h->used++;
 
@@ -119,7 +118,7 @@ HashPrvek *add_Hash(Hash *h, char *name, Symbol *s)
 }
 
 
-HashPrvek *get_Hash(Hash *h, char *s)
+HashMember *get_Hash(Hash *h, char *s)
 {
 	unsigned long int hash = hash_string(s);
 	unsigned int i = hash % h->size;
@@ -133,9 +132,9 @@ HashPrvek *get_Hash(Hash *h, char *s)
 }
 
 
-static HashPrvek *clone_HashPrvek(HashPrvek *puvodni, unsigned int size)
+static HashMember *clone_HashMember(HashMember *puvodni, unsigned int size)
 {
-	HashPrvek *hp = malloc(size * sizeof(HashPrvek));
+	HashMember *hp = malloc(size * sizeof(HashMember));
 
 	for (int i=0; i<size; i++) {
 		hp[i].name = puvodni[i].name;
@@ -153,7 +152,7 @@ Hash *clone_Hash(Hash *puvodni)
 {
 	Hash *h = (Hash *) malloc(sizeof(Hash));
 
-	h->hashes = clone_HashPrvek(puvodni->hashes, puvodni->size);
+	h->hashes = clone_HashMember(puvodni->hashes, puvodni->size);
 	h->size = puvodni->size;
 	h->used = puvodni->used;
 

@@ -1,5 +1,5 @@
-#ifndef TESTY
-#define TESTY
+#ifndef TESTS
+#define TESTS
 
 int test();
 

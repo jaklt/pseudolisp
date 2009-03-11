@@ -29,8 +29,8 @@ int test()
 	logicke_vyrazy(); NEXT;
 	testovani_if(); NEXT;
 	listove_testy(); NEXT;
-	nekonecne_testy(); NEXT;
 	zkouska_erroru(); NEXT;
+	nekonecne_testy(); NEXT;
 
 	return 0;
 }
@@ -82,6 +82,7 @@ static int listove_testy()
 	list = append(nl);
 	print_Symbol(list);
 
+	SPRAVNE("[NIL, 100, ..., 900, 'A', [NIL]]");
 	return 0;
 }
 
@@ -91,13 +92,13 @@ static int testovani_if()
 	Function **f = get_array_of_funtions();
 
 	List *porovnani = new_List(new_Symbol(FUNCTION, f[6]));
-	porovnani->next = new_List(new_Ordinal(PARAMETR, 1));
-	porovnani->next->next = new_List(new_Ordinal(PARAMETR, 2));
+	porovnani->next = new_List(new_Ordinal(PARAMETER, 1));
+	porovnani->next->next = new_List(new_Ordinal(PARAMETER, 2));
 
 	List *body = new_List(new_Symbol(FUNCTION, f[4]));
 	body->next = new_List(new_Symbol(LIST, porovnani));
-	body->next->next = new_List(new_Ordinal(PARAMETR, 1));
-	body->next->next->next = new_List(new_Ordinal(PARAMETR, 2));
+	body->next->next = new_List(new_Ordinal(PARAMETER, 1));
+	body->next->next->next = new_List(new_Ordinal(PARAMETER, 2));
 
 	Symbol *fce = new_Symbol(FUNCTION, new_Function(body, 2));
 
@@ -152,11 +153,12 @@ static int logicke_vyrazy()
 
 static int zkouska_erroru()
 {
+	SPRAVNE("\"Error: Operace nad neslucitelnymi typy\"");
 	Function **f = get_array_of_funtions();
 
 	List *body = new_List(new_Symbol(FUNCTION, f[0]));
-	body->next = new_List(new_Ordinal(PARAMETR, 1));
-	body->next->next = new_List(new_Ordinal(PARAMETR, 2));
+	body->next = new_List(new_Ordinal(PARAMETER, 1));
+	body->next->next = new_List(new_Ordinal(PARAMETER, 2));
 
 	Function *a = new_Function(body, 2);
 
@@ -186,15 +188,15 @@ static int testy_slozenych_funkci()
 
 	List *body = new_List(new_Symbol(FUNCTION, f[0]));
 	body->next = new_List(new_Ordinal(NUMBER, 3));
-	body->next->next = new_List(new_Ordinal(PARAMETR, 1));
+	body->next->next = new_List(new_Ordinal(PARAMETER, 1));
 
 	Function *a = new_Function(body, 1);
 
 	Symbol *vysledek = resolve_Thunk(result(a, new_List(new_Ordinal(NUMBER, 8))));
 	print_Symbol(vysledek);
-	printf("parametr: %d\n", (int)a->body.structure->next->next->symbol->s.character);
+	printf("parameter: %d\n", (int)a->body.structure->next->next->symbol->s.character);
 
-	SPRAVNE("Number = 11, parametr 1");
+	SPRAVNE("Number = 11, parameter 1");
 	printf("\n"); 
 
 	body->next->next = NULL;
