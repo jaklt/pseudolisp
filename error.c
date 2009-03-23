@@ -8,7 +8,7 @@
 
 int throw_full_error(E_ERROR t, int line, char file[])
 {
-	if (line) printf(ERR_START "on %i. line in %s file:\n", line, file);
+	if (line) fprintf(stderr, ERR_START "on %i. line in %s file:\n", line, file);
 
 	fprintf(stderr, ERR_START);
 

@@ -1,5 +1,5 @@
 
-VERSION = 0.0.3
+VERSION = 0.0.4
 NAME = pseudolisp
 
 SRC = ${NAME}.c structs.c funkce.c helpers.c testy.c error.c hashovani.c execute.c parser.c
@@ -13,6 +13,9 @@ PARAMS = -std=c99 -g -Wall -pedantic
 
 # optimalizace kompilace podle vysledku profielru
 # http://www.abclinuxu.cz/blog/kazdy_den_jinak/2007/5/gcc-a-optimalizace-s-profilerem
+
+# strip pseudolisp -> oreze nepotrebne veci
+
 
 all: ${NAME}
 

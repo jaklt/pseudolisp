@@ -25,7 +25,7 @@ int print_Typ(E_TYPE t)
 		case   BOOL: printf("Type: Boolean\n"); break;
 		case   CHAR: printf("Type: Char\n"); break;
 		case NUMBER: printf("Type: Number\n"); break;
-		case PARAMETER: printf("Type: Parametr\n"); break;
+		case PARAMETER: printf("Type: Parameter\n"); break;
 		default:     printf("Wrong type (%i)\n", (int) t); return 1; 
 	}
 
@@ -104,7 +104,7 @@ int print_Thunk(Thunk *t)
 	odsazeni++;
 
 	odsadit(); print_Function(t->function);
-	odsadit(); printf("Parametrs - "); print_List(t->params);
+	odsadit(); printf("Parameters - "); print_List(t->params);
 
 	odsazeni--;
 	return 0;

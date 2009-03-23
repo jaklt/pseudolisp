@@ -14,14 +14,14 @@ static Symbol *inner_reduce(
 
 int is_TRUE(Symbol *s)
 {
-	return (s != NULL && s->type == BOOL && s->s.boolean);
+	return (!is_NIL(s) && s->type == BOOL && s->s.boolean);
 }
 
 
 int Symbol_to_bool(Symbol *symb)
 {
 	Symbol *s = resolve_Thunk(symb);
-	if (s != NULL && s->type != BOOL) iERROR(OPERACE_NEMA_SMYSL);
+	if (!is_NIL(s) && s->type != BOOL) iERROR(OPERACE_NEMA_SMYSL);
 
 	return is_TRUE(s);
 }
@@ -71,6 +71,19 @@ Symbol *list(List *params)
 }
 
 
+static int is_Empty(Symbol *s)
+{
+	if (is_NIL(s)) return 1;
+
+	if (s->type == LIST) {
+		List *l = (List *)s->s.link;
+		return (is_NIL(l->symbol) && l->next == NULL);
+	}
+
+	return 0;
+}
+
+
 Symbol *append(List *params)
 {
 	List *vysl = new_List(NULL);
@@ -80,15 +93,17 @@ Symbol *append(List *params)
 
 	while (params != NULL) {
 		s = resolve_Thunk(params->symbol);
-		if (is_NIL(s)) { params = params->next; continue; };
+		if (is_Empty(s)) { params = params->next; continue; };
 	
 		cp = get_List(s);
+
+		// nejde o list -> pripojit jak to je
 		if (cp == NULL) {
 			l->next = new_List(s);
 			l = l->next;
 		}
 
-		// kopirovani cp
+		// kopirovani cp pokud se jedna o List
 		while (cp != NULL) {
 			l->next = new_List(cp->symbol);
 			l = l->next;
@@ -215,7 +230,7 @@ Symbol *op_not(List *params)
 {
 	Symbol *s = resolve_Thunk(params->symbol);
 
-	if (s == NULL || s->type != BOOL)
+	if (is_NIL(s) || s->type != BOOL)
 		ERROR(OPERACE_NEMA_SMYSL);
 
 	return new_Ordinal(BOOL, s->s.boolean ? BOOL_FALSE : BOOL_TRUE);
@@ -256,7 +271,8 @@ static Symbol *inner_reduce(
 	Symbol *s = l->symbol;
 	l = l->next;
 
-	while (l != NULL && s != NULL) { // TODO je treba to s != NULL?
+	while (l != NULL && s != NULL) {
+		// TODO ma byt kontrola na NULL nebo NIL?
 		// TODO resolve_Thunk zde je brzo ne?
 		s = overeni(operace, resolve_Thunk(s), resolve_Thunk(l->symbol));
 		l= l->next;

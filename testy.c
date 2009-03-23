@@ -16,6 +16,7 @@ static int logicke_vyrazy();
 static int testovani_if();
 static int listove_testy();
 static int nekonecne_testy();
+static int thunk_s_dalsimy_parametry();
 #define NEXT printf("\n-- next test:\n")
 #define SPRAVNE(a) printf("\t** SPRAVNE: "); printf(a); printf(" **\n");
 #define SPRAVNE_NUMBER(a,b) printf("\t** SPRAVNE: "); printf(a,b); printf(" **\n");
@@ -29,8 +30,28 @@ int test()
 	logicke_vyrazy(); NEXT;
 	testovani_if(); NEXT;
 	listove_testy(); NEXT;
+	thunk_s_dalsimy_parametry(); NEXT;
 	zkouska_erroru(); NEXT;
 	nekonecne_testy(); NEXT;
+
+	return 0;
+}
+
+
+static int thunk_s_dalsimy_parametry()
+{
+	Function **f = get_array_of_funtions();
+
+	List *a_body = new_List(new_Symbol(FUNCTION, f[0]));
+	a_body->next = new_List(new_Ordinal(NUMBER, 3));
+	Function *a = new_Function(a_body, 0);
+
+	List *b_body = new_List(new_Symbol(LIST, new_List(new_Symbol(FUNCTION, a))));
+	b_body->next = new_List(new_Ordinal(NUMBER, 2));
+//	Function *b = new_Function(b_body, 0);
+
+	print_Symbol(resolve_Thunk(call(b_body)));
+
 
 	return 0;
 }

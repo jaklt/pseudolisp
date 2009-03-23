@@ -6,7 +6,7 @@
 
 int init()
 {
-
+//	test(); exit(0);
 	return 0;
 }
 
@@ -18,7 +18,7 @@ int runargs(char *arg)
 			test();
 			break;
 		case 'v':
-			printf("PseudoLISP 0.0.3, made by JackeLee.\n");
+			printf("PseudoLISP 0.0.4, made by JackeLee.\n");
 			break;
 		case 'c':
 			play();

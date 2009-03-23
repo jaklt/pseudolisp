@@ -64,7 +64,7 @@ List *new_List(Symbol *symbol);
  */
 Symbol *new_Symbol(E_TYPE type, void *symbol);
 
-Symbol *new_Ordinal(E_TYPE type, double co);
+Symbol *new_Ordinal(E_TYPE type, t_number co);
 Symbol *new_NIL();
 int is_NIL(Symbol *s);
 

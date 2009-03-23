@@ -113,7 +113,7 @@ Symbol *init_def(Hash *h, char *name)
 
 	while (read_word(chars)) {
 		add_Hash(new_h, chars, new_Ordinal(PARAMETER, ++param_counter));
-		printf("%s readed, continue\n", chars);
+//		printf("%s readed, continue\n", chars); // TODO smazat
 	}
 
 	if (chars[0] != '\0')
@@ -121,6 +121,7 @@ Symbol *init_def(Hash *h, char *name)
 
 	// vytvoreni tela funkce
 	f->body.structure = parse_pipe(new_h);
+	if (f->body.structure == NULL) ERROR(SYNTAX_ERROR);
 
 	// asociace funkce
 	f->built_in = BOOL_FALSE;
@@ -250,11 +251,15 @@ List *parse_pipe(Hash *h)
 int play()
 {
 	Hash *h = get_basic_hash();
+	List *parsed;
 	char c;
 
 	while ((c = getchar()) != EOF) {
 		if (c == OPEN_TAG) {
-			print_Symbol(resolve_Thunk(call(parse_pipe(h))));
+			parsed = parse_pipe(h);
+			if (parsed != NULL) {
+				print_Symbol(resolve_Thunk(call(parsed)));
+			}
 			printf("\n---\n\n");
 		}
 	}

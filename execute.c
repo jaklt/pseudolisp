@@ -2,6 +2,7 @@
 
 #include "error.h"
 #include "execute.h"
+#include "helpers.h" // TODO smazat
 
 
 static List *f_append(List *a, List *b)
@@ -36,6 +37,7 @@ static int list_len(List *l)
 static List *insert_params_run(Symbol **exp_params, List *kam);
 static Symbol *insert_params_solve(Symbol **exp_params, Symbol *s)
 {
+	if (is_NIL(s)) return NULL;
 	if (s->type == LIST)
 		return new_Symbol(LIST, insert_params_run(exp_params, (List *) s->s.link));
 	else if (s->type == PARAMETER)
@@ -78,71 +80,96 @@ List *insert_params(List *params, List *kam)
 }
 
 
-Symbol *call(List *l)
+inline Symbol *call(List *l)
 {
-	if (l == NULL) return NULL;
-	if (l->symbol == NULL) return new_Symbol(LIST, l);
+	return new_Symbol(LIST, l);
+}
 
-	Function *f;
 
-	if (l->symbol->type == THUNK) {
-		if (l->next == NULL) return l->symbol;
-
-		f = ((Thunk *)l->symbol->s.link)->function;
-		l = f_append( ((Thunk *)l->symbol->s.link)->params, l->next);
-	} else if (l->symbol->type == FUNCTION) {
-		f = (Function *)l->symbol->s.link;
-		l = l->next;
-	} else if (l->symbol->type == LIST) {
-		l->symbol = call((List *)l->symbol->s.link);
-		return call(l);
-	} else {
-		if (l->next == NULL) return l->symbol;
-		ERROR(VNITRNI_CHYBA);
+static Symbol *extend_Thunk(Symbol *s, List *l)
+{
+	if (is_NIL(s)) ERROR(VNITRNI_CHYBA);
+	if (s->type != THUNK) {
+		List *nl = new_List(s);
+		nl->next = l;
+		return new_Symbol(LIST, nl);
 	}
 
-	return new_Symbol(THUNK, new_Thunk(f, l));
+	return new_Symbol(THUNK,
+			new_Thunk(((Thunk *)s->s.link)->function,
+				f_append(((Thunk *)s->s.link)->params, l)));
 }
 
 
 Symbol *result(Function *f, List *params)
 {
 	if (f == NULL) return NULL;
+	if (f->built_in == BOOL_TRUE) return f->body.link(params);
+	List *l = insert_params(params, f->body.structure);
 
-	List *l = params;
-
-	if (list_len(params) < f->params_count)
-		return new_Symbol(THUNK, new_Thunk(f, params));
-
-	if (f->built_in == BOOL_TRUE)
-		return f->body.link(params);
-
-	// konvence je takova, ze prvni prvek listu vzdy odpovida bud:
-	// - funkci/tanku = jde o volani function
-	// - link na funkci list/NULL (nikoliv NIL) = jde o list
-	l = insert_params(params, f->body.structure);
-
-	if (l->symbol->type == THUNK)
-		l->symbol = resolve_Thunk(l->symbol);
-
-	return call(l);
+	if (l == NULL || l->symbol == NULL) return new_Symbol(LIST, l);
+	return resolve_Thunk(new_Symbol(LIST, l));
 }
 
 
 Symbol *resolve_Thunk(Symbol *s)
 {
-	if (s == NULL) return NULL;
-	if (s->type == LIST) s = call((List *)s->s.link);
+	if (is_NIL(s)) return NULL;
+	Thunk *t;
+
+	if (s->type == LIST) {
+		List *l = (List *)s->s.link;
+		l->symbol = resolve_Thunk(l->symbol);
+
+		if (is_NIL(l->symbol)) return new_Symbol(LIST, l);
+
+		switch (l->symbol->type) {
+			case THUNK:
+				if (l->next == NULL) return resolve_Thunk(l->symbol);
+				t = (Thunk *)l->symbol->s.link;
+
+				// TODO zmenit na longer_or_append...
+				if (list_len(t->params) >= t->function->params_count) {
+					l->symbol = resolve_Thunk(l->symbol);
+					return resolve_Thunk(s);
+				}
+				else {
+					s = extend_Thunk(l->symbol, l->next);
+					break;
+				}
+			case FUNCTION:
+				s = new_Symbol(THUNK, new_Thunk((Function *)l->symbol->s.link, l->next));
+				break;
+			case LIST:
+				l->symbol = resolve_Thunk(l->symbol);
+				if (is_NIL(l->symbol)) {
+					if  (l->next != NULL) ERROR(VNITRNI_CHYBA);
+					return NULL;
+				} else if (l->symbol->type == LIST) {
+					if (l->next == NULL) {
+						if (is_NIL(((List *)l->symbol->s.link)->symbol)) {
+							// XXX projde vzdycky, ale co z toho?
+							// return NULL;
+						} 
+						return l->symbol;
+					}
+					ERROR(VNITRNI_CHYBA);
+				}
+				return resolve_Thunk(s);
+			default:
+				if (l->next != NULL) ERROR(VNITRNI_CHYBA);
+				return l->symbol;
+		}
+	}
+
 	if (is_NIL(s) || s->type != THUNK) return s;
+	t = (Thunk *)s->s.link;
 
-	Thunk *t = (Thunk *)s->s.link;
-
-	while (t != NULL
-		&& list_len(t->params) >= t->function->params_count)
+	while (t != NULL && list_len(t->params) >= t->function->params_count)
 	{
 		s = result(t->function, t->params);
-		if (s != NULL && s->type == LIST) s = call((List *)s->s.link);
-		t = (s != NULL && s->type == THUNK) ? (Thunk *)s->s.link : NULL;
+		if (!is_NIL(s) && s->type == LIST) s = resolve_Thunk(s);
+		t = (!is_NIL(s) && s->type == THUNK) ? (Thunk *)s->s.link : NULL;
 	}
 
 	return s;

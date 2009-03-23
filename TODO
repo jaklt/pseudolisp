@@ -5,7 +5,7 @@ min prasacky parametry
 Parsovani zdrojaku
 - procistit parser.c, funkce.c
 
-Rozhodnout kdy/jak resolvovat
+Prehodnotit pouziti nekterych is_NIL
 
 nefunguje [def ahoj[n] n] <~ treba nahradit za ~> [def ahoj [n] n] 
 
@@ -24,15 +24,6 @@ By se melo prelozit jako
 
 - Nemelo by zaviset na poradi definice funkce!
 
-NEFUNGUJE:
-[def a [] [+ 1]]
-[def b [] [a 2]] // zde mozna radsi [[a] 2], ale stejne to nejde
-[b] ma byt 3
-[a 1] ma byt 2, vrati funkci s jednim dopnenym parametrem a to jedickou
-
-[[+ 1 2] 3] ~> 6, ma byt Error, protoze [1] by mel bejt taky Error
-^^^^ asi stejna chyba
-
 -------------
 
 [def main [] ]
@@ -42,12 +33,14 @@ NEFUNGUJE:
 
 [def a [] 3]
 [a] ~> 3 OK
-[[a]] ~> 3 WTF??
+[[a]] ~> 3
 [[a] 2] ~> 3 WTF??
 
 [def a [] [def c [b] b] c]
 [[a] 3] ~> Thunk bez jedinyho parametru
 ^^^^ asi stejna chyba
+
+[[[+ 3] 3] 3] ~> 9, asi zas stejna chyba
 ----------------------------------------------
 
 stav sveta - jak na nej?
