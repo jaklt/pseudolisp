@@ -5,8 +5,6 @@ min prasacky parametry
 Parsovani zdrojaku
 - procistit parser.c, funkce.c
 
-Prehodnotit pouziti nekterych is_NIL
-
 nefunguje [def ahoj[n] n] <~ treba nahradit za ~> [def ahoj [n] n] 
 
 Vnitrni funkce - napriklad:
@@ -22,25 +20,8 @@ By se melo prelozit jako
 	[c b]
 ]
 
-- Nemelo by zaviset na poradi definice funkce!
+- Nemelo by zaviset na poradi definic funkci!
 
--------------
-
-[def main [] ]
-[main] -> segfault
-
--------------
-
-[def a [] 3]
-[a] ~> 3 OK
-[[a]] ~> 3
-[[a] 2] ~> 3 WTF??
-
-[def a [] [def c [b] b] c]
-[[a] 3] ~> Thunk bez jedinyho parametru
-^^^^ asi stejna chyba
-
-[[[+ 3] 3] 3] ~> 9, asi zas stejna chyba
 ----------------------------------------------
 
 stav sveta - jak na nej?

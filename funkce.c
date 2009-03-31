@@ -248,12 +248,6 @@ Symbol *op_nil(List *params)
  * --------------------
  */
 
-Symbol *print(List *params)
-{
-	ERROR(NOT_IMPLEMENTED);
-}
-
-
 Symbol *undefined(List *params)
 {
 	ERROR(UNDEFINED);

@@ -7,6 +7,7 @@
 
 int parse(char *string[]);
 
+int set_prompt(int set);
 int play();
 
 #endif

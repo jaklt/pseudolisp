@@ -2,7 +2,6 @@
 
 #include "error.h"
 #include "execute.h"
-#include "helpers.h" // TODO smazat
 
 
 static List *f_append(List *a, List *b)
@@ -146,13 +145,7 @@ Symbol *resolve_Thunk(Symbol *s)
 					if  (l->next != NULL) ERROR(VNITRNI_CHYBA);
 					return NULL;
 				} else if (l->symbol->type == LIST) {
-					if (l->next == NULL) {
-						if (is_NIL(((List *)l->symbol->s.link)->symbol)) {
-							// XXX projde vzdycky, ale co z toho?
-							// return NULL;
-						} 
-						return l->symbol;
-					}
+					if (l->next == NULL) return l->symbol;
 					ERROR(VNITRNI_CHYBA);
 				}
 				return resolve_Thunk(s);

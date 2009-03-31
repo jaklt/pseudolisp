@@ -51,7 +51,7 @@ int print_Symbol(Symbol *s)
 		case   NIL: printf("NIL\n"); break;
 		case  BOOL: printf("Bool: %s\n", (s->s.boolean == BOOL_TRUE) ? "TRUE" : "FALSE"); break;
 		case  CHAR: printf("Char: %c\n", s->s.character); break;
-		case NUMBER: printf("Number: %f\n", (double) s->s.number); break;
+		case NUMBER: printf("Number: %lli\n", s->s.number); break;
 		case PARAMETER: printf("%d. parameter\n", (int) s->s.character); break;
 		default: printf("Wrong value! (%u)\n", (unsigned int) s->type); break;
 	}
@@ -65,6 +65,13 @@ int print_List(List *l)
 	printf("List:\n");
 	if (l == NULL) return 1;
 	odsazeni++;
+
+	if (!is_NIL(l->symbol)) {
+		odsadit();
+		printf("Not just List -> ");
+		print_Symbol(l->symbol);
+	}
+	l = l->next;
 
 	while (l != NULL) {
 		odsadit();
@@ -123,4 +130,16 @@ int print_Hash(Hash *h)
 	}
 
 	return 0;
+}
+
+
+Symbol *print(List *params)
+{
+	List *l = params;
+	while (l != NULL) {
+		print_Symbol(l->symbol);
+		l = l->next;
+	}
+
+	return params != NULL ? params->symbol : NULL;
 }

@@ -16,18 +16,22 @@ int runargs(char *arg)
 	switch (arg[0]) {
 		case 't':
 			test();
-			break;
+			exit(0);
 		case 'v':
 			printf("PseudoLISP 0.0.4, made by JackeLee.\n");
 			break;
 		case 'c':
 			play();
 			break;
+		case 'p':
+			set_prompt(0);
+			break;
 		case 'h': printf(
 					"Usage: pseudolisp [options] [filename]\nOptions:\n"
 					"  -v\tprint version\n"
 					"  -t\trun tests\n"
 					"  -c\trun console\n"
+					"  -p\tdisable prompt\n"
 					"  -h\tprint this help\n\n");
 			break;
 		default:
@@ -52,6 +56,8 @@ int main(int argc, char *argv[])
 		if (word[0] == '-') runargs(++word);
 		else {
 			fprintf(stderr, "Not implemented yet.\n");
+			set_prompt(0);
+			// stdin -> FILE
 			exit(1);
 		}
 	}

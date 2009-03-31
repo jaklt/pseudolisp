@@ -1,7 +1,7 @@
 #ifndef STRUCT_H
 #define STRUCT_H
 
-typedef double t_number;
+typedef long long int t_number;
 
 typedef enum {
 	NIL,

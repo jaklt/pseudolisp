@@ -13,6 +13,15 @@
 List *parse_pipe(Hash *h);
 
 
+static int prompt = 1;
+
+int set_prompt(int set)
+{
+	prompt = set;
+	return 0;
+}
+
+
 Hash *get_basic_hash()
 {
 	#define NUM_FUN sizeof(array_of_functions)/sizeof(struct function)
@@ -45,7 +54,7 @@ Hash *get_basic_hash()
 		{"list",	list,	1},
 
 		{"append",	append,	2},
-		{"print",	print,	2},
+		{"print",	print,	1},
 	};
 
 	for (int i=0; i<NUM_FUN; i++) {
@@ -78,17 +87,25 @@ static inline int is_whitespace(char c)
 }
 
 
+char read_char()
+{
+	char c = getc(stdin);
+	if (c == '\n' && prompt) printf("~~> ");
+	return c;
+}
+
+
 static int read_word(char *chars)
 {
 	char *c = chars;
 
-	while (is_whitespace(*c = getchar()));
+	while (is_whitespace(*c = read_char()));
 
 	while (*c != OPEN_TAG && *c != CLOSE_TAG
-			&& !is_whitespace(*(++c) = getchar()));
+			&& !is_whitespace(*(++c) = read_char()));
 
 	if (*c == OPEN_TAG) throw_error(SYNTAX_ERROR);
-	if (*c == OPEN_TAG || *c == CLOSE_TAG) {
+	if (*c == CLOSE_TAG) {
 		*c = '\0';
 		return 0;
 	}
@@ -101,7 +118,7 @@ static int read_word(char *chars)
 Symbol *init_def(Hash *h, char *name)
 {
 	Function *f = new_Function(NULL, 0);
-	Symbol *s = new_Symbol(FUNCTION, f);;
+	Symbol *s = new_Symbol(FUNCTION, f);
 	if (name != NULL) add_Hash(h, name, s);
 
 	Hash *new_h = clone_Hash(h);
@@ -109,11 +126,11 @@ Symbol *init_def(Hash *h, char *name)
 	int param_counter = 0;
 
 	// nacitani parametru funkce
-	while (getchar() != OPEN_TAG);
+	while (is_whitespace(chars[0] = read_char()));
+	if (chars[0] != OPEN_TAG) throw_error(SYNTAX_ERROR);
 
 	while (read_word(chars)) {
 		add_Hash(new_h, chars, new_Ordinal(PARAMETER, ++param_counter));
-//		printf("%s readed, continue\n", chars); // TODO smazat
 	}
 
 	if (chars[0] != '\0')
@@ -186,25 +203,31 @@ List *parse_pipe(Hash *h)
 	char *c = chars;
 	int whitespaces = 1;
 	int first = 1;
-	int is_def = 0; // 0 - not def, 1 - def, 2 - lambda
+	int is_def = 0;
 	int is_close_tag = 0;
 	List *all = new_List(NULL);
 	List *l = all;
 
 
-	while ((*c = getchar()) != EOF) {
+	while ((*c = read_char()) != EOF) {
 		if (is_whitespace(*c) || (is_close_tag = (*c == CLOSE_TAG))) {
 			if (whitespaces && !is_close_tag) continue;
 
 			*c = '\0';
 			whitespaces = 1;
 
-			if (first && (strcmp(chars, "def") == 0
-					|| (is_def = (strcmp(chars, "lambda") == 0))))
+			if (first && ((is_def = (strcmp(chars, "def") == 0))
+						|| (strcmp(chars, "lambda") == 0)))
 			{
-				is_def++;
-				first = 0; c = chars;
-				continue;
+				if (is_close_tag) throw_error(SYNTAX_ERROR);
+				if (is_def) {
+					if (!read_word(chars)) throw_error(SYNTAX_ERROR);
+					init_def(h, chars);
+				} else
+					l->next = new_List(init_def(h, NULL));
+					l = l->next;
+
+				break;
 			}
 
 			if (c != chars) {
@@ -221,16 +244,6 @@ List *parse_pipe(Hash *h)
 
 		whitespaces = 0;
 
-		if (is_def) {
-			if (is_def == 2) init_def(h, NULL);
-
-			// nacteni nazvu funkce
-			while (!is_whitespace(*(++c) = getchar()));
-			*c = '\0';
-
-			init_def(h, chars);
-			break;
-		}
 
 		if (*c == OPEN_TAG) {
 			l->next = parse_pipe(h);
@@ -254,13 +267,14 @@ int play()
 	List *parsed;
 	char c;
 
-	while ((c = getchar()) != EOF) {
+	if (prompt) printf("~~> ");
+	while ((c = read_char()) != EOF) {
 		if (c == OPEN_TAG) {
 			parsed = parse_pipe(h);
 			if (parsed != NULL) {
 				print_Symbol(resolve_Thunk(call(parsed)));
-			}
-			printf("\n---\n\n");
+			} else if (prompt)
+				printf("OK.\n");
 		}
 	}
 
