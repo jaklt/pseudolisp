@@ -11,6 +11,6 @@ int print_List(List *l);
 int print_Function(Function *f);
 int print_Thunk(Thunk *t);
 int print_Hash(Hash *h);
-Symbol *print(List *params);
+Symbol *f_print(List *params);
 
 #endif

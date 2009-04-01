@@ -243,6 +243,13 @@ Symbol *op_nil(List *params)
 }
 
 
+Symbol *op_list(List *params)
+{
+	return new_Ordinal(BOOL,
+			get_List(resolve_Thunk(params->symbol)) != NULL ? BOOL_TRUE : BOOL_FALSE);
+}
+
+
 /**
  * next pomocne funkce
  * --------------------

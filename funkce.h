@@ -21,6 +21,7 @@ Symbol *op_not(List *params);
 
 Symbol *op_if (List *params);
 Symbol *op_nil(List *params);
+Symbol *op_list(List *params);
 
 /** Function pro porovnavani */
 Symbol *eq(List *params);

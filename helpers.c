@@ -62,16 +62,15 @@ int print_Symbol(Symbol *s)
 
 int print_List(List *l)
 {
-	printf("List:\n");
-	if (l == NULL) return 1;
+	if (l == NULL) { printf("Empty List\n"); return 1; }
 	odsazeni++;
 
-	if (!is_NIL(l->symbol)) {
-		odsadit();
-		printf("Not just List -> ");
-		print_Symbol(l->symbol);
+	if (is_NIL(l->symbol)) {
+		printf("List:\n");
+		l = l->next;
 	}
-	l = l->next;
+	else
+		printf("Not just List:\n");
 
 	while (l != NULL) {
 		odsadit();
@@ -96,7 +95,8 @@ int print_Function(Function *f)
 	if (f->built_in) {
 		odsadit(); printf("Build in\n");
 	} else {
-		odsadit(); printf("Function body - "); print_List(f->body.structure);
+		odsadit(); printf("Not built in\n");
+	//	odsadit(); printf("Function body - "); print_List(f->body.structure);
 	}
 
 	odsazeni--;
@@ -133,7 +133,7 @@ int print_Hash(Hash *h)
 }
 
 
-Symbol *print(List *params)
+Symbol *f_print(List *params)
 {
 	List *l = params;
 	while (l != NULL) {

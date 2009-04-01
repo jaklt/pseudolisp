@@ -10,7 +10,7 @@
 #include "execute.h"
 
 
-List *parse_pipe(Hash *h);
+List *parse_pipe(Hash *h, int level);
 
 
 static int prompt = 1;
@@ -44,6 +44,7 @@ Hash *get_basic_hash()
 		{"or",		op_or,	2},
 		{"not",		op_not,	1},
 		{"nil?",	op_nil,	1},
+		{"list?",	op_list,1},
 
 		{"=",		eq,		2},
 		{">",		gt,		2},
@@ -54,7 +55,7 @@ Hash *get_basic_hash()
 		{"list",	list,	1},
 
 		{"append",	append,	2},
-		{"print",	print,	1},
+		{"print",	f_print,1},
 	};
 
 	for (int i=0; i<NUM_FUN; i++) {
@@ -115,7 +116,7 @@ static int read_word(char *chars)
 }
 
 
-Symbol *init_def(Hash *h, char *name)
+Symbol *init_def(Hash *h, char *name, int level)
 {
 	Function *f = new_Function(NULL, 0);
 	Symbol *s = new_Symbol(FUNCTION, f);
@@ -127,7 +128,7 @@ Symbol *init_def(Hash *h, char *name)
 
 	// nacitani parametru funkce
 	while (is_whitespace(chars[0] = read_char()));
-	if (chars[0] != OPEN_TAG) throw_error(SYNTAX_ERROR);
+	if (chars[0] != OPEN_TAG) ERROR(SYNTAX_ERROR);
 
 	while (read_word(chars)) {
 		add_Hash(new_h, chars, new_Ordinal(PARAMETER, ++param_counter));
@@ -137,7 +138,7 @@ Symbol *init_def(Hash *h, char *name)
 		add_Hash(new_h, chars, new_Ordinal(PARAMETER, ++param_counter));
 
 	// vytvoreni tela funkce
-	f->body.structure = parse_pipe(new_h);
+	f->body.structure = parse_pipe(new_h, level+param_counter);
 	if (f->body.structure == NULL) ERROR(SYNTAX_ERROR);
 
 	// asociace funkce
@@ -197,7 +198,7 @@ Symbol *create_token(Hash *h, char *string)
 }
 
 
-List *parse_pipe(Hash *h)
+List *parse_pipe(Hash *h, int level)
 {
 	char chars[101];
 	char *c = chars;
@@ -219,12 +220,12 @@ List *parse_pipe(Hash *h)
 			if (first && ((is_def = (strcmp(chars, "def") == 0))
 						|| (strcmp(chars, "lambda") == 0)))
 			{
-				if (is_close_tag) throw_error(SYNTAX_ERROR);
+				if (is_close_tag) ERROR(SYNTAX_ERROR);
 				if (is_def) {
-					if (!read_word(chars)) throw_error(SYNTAX_ERROR);
-					init_def(h, chars);
+					if (!read_word(chars)) ERROR(SYNTAX_ERROR);
+					init_def(h, chars, level);
 				} else
-					l->next = new_List(init_def(h, NULL));
+					l->next = new_List(init_def(h, NULL, level));
 					l = l->next;
 
 				break;
@@ -246,7 +247,7 @@ List *parse_pipe(Hash *h)
 
 
 		if (*c == OPEN_TAG) {
-			l->next = parse_pipe(h);
+			l->next = parse_pipe(h, level);
 
 			if (l->next != NULL) {
 				l->next = new_List(new_Symbol(LIST, l->next));
@@ -270,7 +271,7 @@ int play()
 	if (prompt) printf("~~> ");
 	while ((c = read_char()) != EOF) {
 		if (c == OPEN_TAG) {
-			parsed = parse_pipe(h);
+			parsed = parse_pipe(h, 0);
 			if (parsed != NULL) {
 				print_Symbol(resolve_Thunk(call(parsed)));
 			} else if (prompt)
