@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include "structs.h"
+#include "gc.h"
 
 
 Function *new_Function(List *body_function, int params_count)
@@ -10,6 +11,7 @@ Function *new_Function(List *body_function, int params_count)
 	f->params_count = params_count;
 	f->built_in = BOOL_FALSE;
 
+	collect(FUNCTION, f);
 	return f;
 }
 
@@ -21,6 +23,7 @@ List *new_List(Symbol *symbol)
 	l->symbol = symbol;
 	l->next = NULL;
 
+	collect(LIST, l);
 	return l;
 }
 
@@ -39,6 +42,7 @@ Symbol *new_Ordinal(E_TYPE type, t_number co)
 		default: break;
 	}
 
+	collect(NIL, s);
 	return s;
 }
 
@@ -50,11 +54,17 @@ Symbol *new_Symbol(E_TYPE type, void *symbol)
 	s->type = type;
 	s->s.link = (void *)symbol;
 
+	collect(NIL, s);
 	return s;
 }
 
 
-Symbol *new_NIL() { return new_Symbol(NIL, NULL); }
+Symbol *new_NIL()
+{
+	Symbol *s = new_Symbol(NIL, NULL);
+	collect(NIL, s);
+	return s;
+}
 
 
 int is_NIL(Symbol *s)
@@ -70,5 +80,6 @@ Thunk *new_Thunk(Function *fce, List *params)
 	t->function = fce;
 	t->params = params;
 
+	collect(THUNK, t);
 	return t;
 }

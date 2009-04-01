@@ -8,6 +8,7 @@
 #include "helpers.h"
 #include "error.h"
 #include "execute.h"
+#include "gc.h"
 
 
 List *parse_pipe(Hash *h, int level);
@@ -22,7 +23,7 @@ int set_prompt(int set)
 }
 
 
-Hash *get_basic_hash()
+static Hash *get_basic_hash()
 {
 	#define NUM_FUN sizeof(array_of_functions)/sizeof(struct function)
 
@@ -273,11 +274,13 @@ int play()
 		if (c == OPEN_TAG) {
 			parsed = parse_pipe(h, 0);
 			if (parsed != NULL) {
-				print_Symbol(resolve_Thunk(call(parsed)));
+				print_Symbol(resolve_Thunk(new_Symbol(LIST, parsed)));
 			} else if (prompt)
 				printf("OK.\n");
+		//	gc();
 		}
 	}
 
+	printf("\n"); gc();
 	return 0;
 }

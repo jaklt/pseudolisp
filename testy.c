@@ -50,7 +50,7 @@ static int thunk_s_dalsimy_parametry()
 	b_body->next = new_List(new_Ordinal(NUMBER, 2));
 //	Function *b = new_Function(b_body, 0);
 
-	print_Symbol(resolve_Thunk(call(b_body)));
+	print_Symbol(resolve_Thunk(new_Symbol(LIST, b_body)));
 
 
 	return 0;
@@ -74,7 +74,7 @@ static int nekonecne_testy()
 	List *calling = new_List(new_Symbol(FUNCTION, f));
 	calling->next = new_List(new_NIL());
 
-	print_Symbol(resolve_Thunk(call(calling)));
+	print_Symbol(resolve_Thunk(new_Symbol(LIST, calling)));
 
 	return 0; 
 }
@@ -103,7 +103,7 @@ static int listove_testy()
 	list = append(nl);
 	print_Symbol(list);
 
-	SPRAVNE("[NIL, 100, ..., 900, 'A', [NIL]]");
+	SPRAVNE("[100, ..., 900, 'A']");
 	return 0;
 }
 
@@ -127,7 +127,7 @@ static int testovani_if()
 	volani->next = new_List(new_Ordinal(NUMBER, 2));
 	volani->next->next = new_List(new_Ordinal(NUMBER, 3));
 
-	Symbol *vysl = resolve_Thunk(call(volani));
+	Symbol *vysl = resolve_Thunk(new_Symbol(LIST, volani));
 	print_Symbol(vysl);
 	SPRAVNE("Number = 3");
 
@@ -143,7 +143,7 @@ static int logicke_vyrazy()
 	body->next = new_List(new_Ordinal(NUMBER, 12));
 	body->next->next = new_List(new_Ordinal(NUMBER, 11));
 
-	Symbol *vysl = resolve_Thunk(call(body));
+	Symbol *vysl = resolve_Thunk(new_Symbol(LIST, body));
 	print_Symbol(vysl);
 	SPRAVNE("TRUE");
 
@@ -153,7 +153,7 @@ static int logicke_vyrazy()
 	body2->next = new_List(new_Ordinal(NUMBER, 11));
 	body2->next->next = new_List(new_Ordinal(NUMBER, 11));
 
-	vysl = resolve_Thunk(call(body2));
+	vysl = resolve_Thunk(new_Symbol(LIST, body2));
 	print_Symbol(vysl);
 	SPRAVNE("TRUE");
 
@@ -164,7 +164,7 @@ static int logicke_vyrazy()
 	okif->next->next = new_List(new_Ordinal(NUMBER, 1));
 	okif->next->next->next = new_List(new_Ordinal(NUMBER, 2));
 
-	vysl = resolve_Thunk(call(okif));
+	vysl = resolve_Thunk(new_Symbol(LIST, okif));
 	print_Symbol(vysl);
 	SPRAVNE("Number = 2");
 
@@ -196,7 +196,7 @@ static int zkouska_erroru()
 
 	printf("vysledek-error: %s\n", (vysledek == NULL) ? "JO" : "NE");
 	print_Symbol(vysledek);
-	printf("vysledek-error2: %s\n", (resolve_Thunk(call(do_tanku)) == NULL) ? "JO" : "NE");
+	printf("vysledek-error2: %s\n", (resolve_Thunk(new_Symbol(LIST, do_tanku)) == NULL) ? "JO" : "NE");
 
 	return 0;
 }
@@ -224,7 +224,7 @@ static int testy_slozenych_funkci()
 	List *calling = new_List(new_Symbol(LIST, body));
 	calling->next = new_List(new_Ordinal(NUMBER, 3));
 
-	print_Symbol(resolve_Thunk(call(calling)));
+	print_Symbol(resolve_Thunk(new_Symbol(LIST, calling)));
 
 	SPRAVNE("Number = 6");
 	return 0;

@@ -50,7 +50,7 @@ int print_Symbol(Symbol *s)
 		case THUNK: print_Thunk((Thunk *) s->s.link); break;
 		case   NIL: printf("NIL\n"); break;
 		case  BOOL: printf("Bool: %s\n", (s->s.boolean == BOOL_TRUE) ? "TRUE" : "FALSE"); break;
-		case  CHAR: printf("Char: %c\n", s->s.character); break;
+		case  CHAR: printf("Char: '%c'\n", s->s.character); break;
 		case NUMBER: printf("Number: %lli\n", s->s.number); break;
 		case PARAMETER: printf("%d. parameter\n", (int) s->s.character); break;
 		default: printf("Wrong value! (%u)\n", (unsigned int) s->type); break;

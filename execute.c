@@ -79,9 +79,18 @@ List *insert_params(List *params, List *kam)
 }
 
 
-inline Symbol *call(List *l)
+static int replace_Symbol(Symbol *s, Symbol *with)
 {
-	return new_Symbol(LIST, l);
+	if (s == NULL) return 1;
+
+	if (is_NIL(with)) {
+		s->type = NIL;
+		return 0;
+	}
+
+	s->type = with->type;
+	s->s = with->s;
+	return 0;
 }
 
 
@@ -114,12 +123,14 @@ Symbol *result(Function *f, List *params)
 Symbol *resolve_Thunk(Symbol *s)
 {
 	if (is_NIL(s)) return NULL;
+	Symbol *sp = s;
 	Thunk *t;
 
 	if (s->type == LIST) {
 		List *l = (List *)s->s.link;
 		l->symbol = resolve_Thunk(l->symbol);
 
+		// TODO nemel by to bejt pred predchozim resolve_Thunk?
 		if (is_NIL(l->symbol)) return new_Symbol(LIST, l);
 
 		switch (l->symbol->type) {
@@ -165,5 +176,6 @@ Symbol *resolve_Thunk(Symbol *s)
 		t = (!is_NIL(s) && s->type == THUNK) ? (Thunk *)s->s.link : NULL;
 	}
 
+	replace_Symbol(sp, s);
 	return s;
 }

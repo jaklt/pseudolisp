@@ -6,6 +6,5 @@
 
 Symbol *resolve_Thunk(Symbol *s);
 Symbol *result(Function *f, List *params);
-Symbol *call(List *l);
 
 #endif

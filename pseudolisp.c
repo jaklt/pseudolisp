@@ -6,6 +6,8 @@
 
 int init()
 {
+	set_prompt(1);
+//	set_show_collected(0);
 //	test(); exit(0);
 	return 0;
 }
