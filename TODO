@@ -23,6 +23,23 @@ By se melo prelozit jako
 - Nemelo by zaviset na poradi definic funkci!
 
 ----------------------------------------------
+BUGREPORT:
+---------
+
+Neni to vic nez driv?
+~~> [def fib [n]
+~~> 	[if [> n 1]
+~~> 		[+ [fib [- n 2]] [fib [- n  1]]]
+~~> 		1
+~~> 	]
+~~> ]
+OK.
+~~> [fib 15]
+Number: 987
+~~> 
+82949 collected
+
+----------------------------------------------
 
 stav sveta - jak na nej?
 porovnavani symbolu v konstatnim case

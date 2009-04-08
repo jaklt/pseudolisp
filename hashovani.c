@@ -24,12 +24,18 @@ static unsigned long int hash_string(char *s)
 }
 
 
+#define set_Hash(hp, NAME, INFO, FULL, HASH, LINK) {\
+	hp.name = NAME; \
+	hp.info = INFO; \
+	hp.full = FULL; \
+	hp.hash = HASH; \
+	hp.link = LINK; }
+
+
 static int empty_Hash(Hash *h)
 {
 	for (int i=0; i<(h->size); i++) {
-		h->hashes[i].full = EMPTY_HASH;
-		h->hashes[i].hash = 0;
-		h->hashes[i].link = NULL;
+		set_Hash(h->hashes[i], NULL, 0, EMPTY_HASH, 0, NULL);
 	}
 
 	return 0;
@@ -87,10 +93,13 @@ static int zvetsit_hash(Hash *h)
 			&& stare_hashes[i].hash != 0)
 		{
 			unsigned int index = volne_misto(h, stare_hashes[i].hash);
-			h->hashes[index].hash = stare_hashes[i].hash;
-			h->hashes[index].name = stare_hashes[i].name;
-			h->hashes[index].full = stare_hashes[i].full;
-			h->hashes[index].link = stare_hashes[i].link;
+			set_Hash(h->hashes[index],
+				stare_hashes[i].name,
+				stare_hashes[i].info,
+				stare_hashes[i].full, 
+				stare_hashes[i].hash,
+				stare_hashes[i].link
+			);
 		}
 	}
 
@@ -109,10 +118,7 @@ HashMember *add_Hash(Hash *h, char *name, Symbol *s)
 	unsigned long int hash = hash_string(name);
 	unsigned int index = volne_misto(h, hash);
 
-	h->hashes[index].hash = hash;
-	h->hashes[index].name = name;
-	h->hashes[index].full = FULL_HASH;
-	h->hashes[index].link = s;
+	set_Hash(h->hashes[index], name, 0, FULL_HASH, hash, s);
 
 	return &h->hashes[index];
 }
@@ -137,10 +143,13 @@ static HashMember *clone_HashMember(HashMember *puvodni, unsigned int size)
 	HashMember *hp = malloc(size * sizeof(HashMember));
 
 	for (int i=0; i<size; i++) {
-		hp[i].name = puvodni[i].name;
-		hp[i].full = puvodni[i].full;
-		hp[i].hash = puvodni[i].hash;
-		hp[i].link = puvodni[i].link;
+		set_Hash(hp[i],
+			puvodni[i].name,
+			puvodni[i].info,
+			puvodni[i].full,
+			puvodni[i].hash, 
+			puvodni[i].link
+		);
 	}
 
 

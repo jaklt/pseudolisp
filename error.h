@@ -4,8 +4,7 @@
 // #define __MAKE_ERROR(n) {throw_full_error(n, __LINE__, __FILE__); }
 #define __MAKE_ERROR(n) {throw_error(n); }
 
-#define ERROR(n)  {__MAKE_ERROR(n); return NULL; }
-#define iERROR(n) {__MAKE_ERROR(n); return 0; }
+#define ERROR(n)  {__MAKE_ERROR(n); return 0; }
 
 
 typedef enum {

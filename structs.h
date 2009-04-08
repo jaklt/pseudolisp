@@ -38,6 +38,7 @@ typedef struct SList {
 
 typedef struct SFunction {
 	unsigned int built_in : 1;
+	unsigned int more_params : 1;
 	int params_count;
 
 	union {

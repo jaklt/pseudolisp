@@ -18,10 +18,14 @@ Symbol *deleno(List *params);
 Symbol *op_and(List *params);
 Symbol *op_or (List *params);
 Symbol *op_not(List *params);
+Symbol *op_if  (List *params);
 
-Symbol *op_if (List *params);
-Symbol *op_nil(List *params);
+Symbol *op_nil (List *params);
 Symbol *op_list(List *params);
+Symbol *op_num (List *params);
+Symbol *op_char(List *params);
+Symbol *op_bool(List *params);
+Symbol *op_func(List *params);
 
 /** Function pro porovnavani */
 Symbol *eq(List *params);

@@ -40,7 +40,7 @@ static Symbol *insert_params_solve(Symbol **exp_params, Symbol *s)
 	if (s->type == LIST)
 		return new_Symbol(LIST, insert_params_run(exp_params, (List *) s->s.link));
 	else if (s->type == PARAMETER)
-		return exp_params[s->s.character - 1];
+		return exp_params[s->s.number - 1];
 
 	return s;
 }
@@ -62,17 +62,25 @@ static List *insert_params_run(Symbol **exp_params, List *l)
 }
 
 
-List *insert_params(List *params, List *kam)
+List *insert_params(List *params, Function *kam)
 {
-	Symbol **exp_params = (Symbol **) malloc(list_len(params) * sizeof(Symbol *));
+	int count = (kam->params_count + (kam->more_params ? 1 : 0));
+	Symbol **exp_params = (Symbol **) malloc(count * sizeof(Symbol *));
 	List *l;
 
-	for (int i=0; params != NULL; i++) {
+	for (int i=0; i<kam->params_count; i++) {
 		exp_params[i] = params->symbol;
 		params = params->next;
 	}
 
-	l = insert_params_run(exp_params, kam);
+	// doplneni posledniho parametru pro neomezeny pocet parametru
+	if (kam->more_params) {
+		l = new_List(NULL);
+		l->next = params;
+		exp_params[count-1] = new_Symbol(LIST, l);
+	}
+
+	l = insert_params_run(exp_params, kam->body.structure);
 
 	free(exp_params);
 	return l;
@@ -113,7 +121,7 @@ Symbol *result(Function *f, List *params)
 {
 	if (f == NULL) return NULL;
 	if (f->built_in == BOOL_TRUE) return f->body.link(params);
-	List *l = insert_params(params, f->body.structure);
+	List *l = insert_params(params, f);
 
 	if (l == NULL || l->symbol == NULL) return new_Symbol(LIST, l);
 	return resolve_Thunk(new_Symbol(LIST, l));
@@ -128,6 +136,7 @@ Symbol *resolve_Thunk(Symbol *s)
 
 	if (s->type == LIST) {
 		List *l = (List *)s->s.link;
+		// TODO nekolikrat se opakuje zbytecne
 		l->symbol = resolve_Thunk(l->symbol);
 
 		// TODO nemel by to bejt pred predchozim resolve_Thunk?

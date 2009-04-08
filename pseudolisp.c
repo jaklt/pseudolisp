@@ -4,11 +4,12 @@
 #include "testy.h"
 #include "parser.h"
 
+
 int init()
 {
 	set_prompt(1);
+	set_input(stdin);
 //	set_show_collected(0);
-//	test(); exit(0);
 	return 0;
 }
 
@@ -20,16 +21,18 @@ int runargs(char *arg)
 			test();
 			exit(0);
 		case 'v':
-			printf("PseudoLISP 0.0.4, made by JackeLee.\n");
+			printf("PseudoLISP 0.0.5, made by Jakl Tomas.\n");
 			break;
 		case 'c':
+			init();
 			play();
 			break;
 		case 'p':
 			set_prompt(0);
 			break;
 		case 'h': printf(
-					"Usage: pseudolisp [options] [filename]\nOptions:\n"
+					"Usage: pseudolisp [options] [filenames]\n"
+					"Options:\n"
 					"  -v\tprint version\n"
 					"  -t\trun tests\n"
 					"  -c\trun console\n"
@@ -57,10 +60,10 @@ int main(int argc, char *argv[])
 		word = argv[i];
 		if (word[0] == '-') runargs(++word);
 		else {
-			fprintf(stderr, "Not implemented yet.\n");
-			set_prompt(0);
-			// stdin -> FILE
-			exit(1);
+			FILE *f = fopen(word, "r");
+			set_prompt(0); set_input(f);
+			play();
+			fclose(f);
 		}
 	}
 

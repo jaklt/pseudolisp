@@ -51,6 +51,7 @@ static int thunk_s_dalsimy_parametry()
 //	Function *b = new_Function(b_body, 0);
 
 	print_Symbol(resolve_Thunk(new_Symbol(LIST, b_body)));
+	SPRAVNE("Number = 5");
 
 
 	return 0;

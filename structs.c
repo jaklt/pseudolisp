@@ -8,8 +8,9 @@ Function *new_Function(List *body_function, int params_count)
 	Function *f = (Function *) malloc(sizeof(Function));
 
 	f->body.structure = body_function;
-	f->params_count = params_count;
-	f->built_in = BOOL_FALSE;
+	f->params_count   = params_count;
+	f->built_in       = BOOL_FALSE;
+	f->more_params    = BOOL_FALSE;
 
 	collect(FUNCTION, f);
 	return f;
@@ -35,10 +36,10 @@ Symbol *new_Ordinal(E_TYPE type, t_number co)
 	s->type = type;
 
 	switch (type) {
-		case NUMBER: s->s.number  =        co; break;
-		case   BOOL: s->s.boolean = (int)  co; break;
 		case PARAMETER:
-		case  CHAR: s->s.character    = (char) co; break;
+		case NUMBER: s->s.number   =        co; break;
+		case   BOOL: s->s.boolean  = (int)  co; break;
+		case  CHAR: s->s.character = (char) co; break;
 		default: break;
 	}
 
@@ -69,7 +70,15 @@ Symbol *new_NIL()
 
 int is_NIL(Symbol *s)
 {
-	return (s == NULL || s->type == NIL);
+	if (s == NULL || s->type == NIL) return 1;
+
+	// empty List
+	if (s->type == LIST) {
+		List *l = (List *)s->s.link;
+		return (is_NIL(l->symbol) && l->next == NULL);
+	}
+
+	return 0;
 }
 
 

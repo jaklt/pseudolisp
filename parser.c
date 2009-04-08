@@ -10,6 +10,7 @@
 #include "execute.h"
 #include "gc.h"
 
+#define REMAIN_PARAMS_TAG '&'
 
 List *parse_pipe(Hash *h, int level);
 
@@ -19,6 +20,15 @@ static int prompt = 1;
 int set_prompt(int set)
 {
 	prompt = set;
+	return 0;
+}
+
+
+static FILE *input = NULL;
+
+int set_input(FILE *inp)
+{
+	input = inp;
 	return 0;
 }
 
@@ -35,6 +45,7 @@ static Hash *get_basic_hash()
 		Symbol *(*link)(List *);
 		int params_count;
 	} array_of_functions[] = {
+	//	name	function	params
 		{"+",		plus,	2},
 		{"-",		minus,	2},
 		{"*",		krat,	2},
@@ -44,8 +55,13 @@ static Hash *get_basic_hash()
 		{"and",		op_and,	2},
 		{"or",		op_or,	2},
 		{"not",		op_not,	1},
+
 		{"nil?",	op_nil,	1},
 		{"list?",	op_list,1},
+		{"number?",	op_num,	1},
+		{"char?",	op_char,1},
+		{"bool?",	op_bool,1},
+		{"func?",	op_func,1},
 
 		{"=",		eq,		2},
 		{">",		gt,		2},
@@ -91,13 +107,14 @@ static inline int is_whitespace(char c)
 
 char read_char()
 {
-	char c = getc(stdin);
+	if (input == NULL) ERROR(VNITRNI_CHYBA);
+	char c = getc(input);
 	if (c == '\n' && prompt) printf("~~> ");
 	return c;
 }
 
 
-static int read_word(char *chars)
+static int read_word(char *chars, int if_remain)
 {
 	char *c = chars;
 
@@ -113,6 +130,14 @@ static int read_word(char *chars)
 	}
 
 	*c = '\0';
+
+	if (if_remain && chars[0] == REMAIN_PARAMS_TAG) {
+		while ((*c = read_char()) != CLOSE_TAG)
+			if (!is_whitespace(*c)) ERROR(SYNTAX_ERROR);
+
+		return 0;
+	}
+
 	return 1;
 }
 
@@ -125,21 +150,28 @@ Symbol *init_def(Hash *h, char *name, int level)
 
 	Hash *new_h = clone_Hash(h);
 	char chars[101];
-	int param_counter = 0;
+	int param_counter = level;
 
-	// nacitani parametru funkce
+	// nacteni parametru funkce
 	while (is_whitespace(chars[0] = read_char()));
 	if (chars[0] != OPEN_TAG) ERROR(SYNTAX_ERROR);
 
-	while (read_word(chars)) {
+	while (read_word(chars, BOOL_TRUE)) {
 		add_Hash(new_h, chars, new_Ordinal(PARAMETER, ++param_counter));
 	}
 
-	if (chars[0] != '\0')
+	if (chars[0] != '\0') {
 		add_Hash(new_h, chars, new_Ordinal(PARAMETER, ++param_counter));
 
+		// nastaveni parametru se zbytkem z volani
+		if (chars[0] == REMAIN_PARAMS_TAG) {
+			f->more_params = BOOL_TRUE;
+			param_counter--;
+		}
+	}
+
 	// vytvoreni tela funkce
-	f->body.structure = parse_pipe(new_h, level+param_counter);
+	f->body.structure = parse_pipe(new_h, param_counter+f->more_params);
 	if (f->body.structure == NULL) ERROR(SYNTAX_ERROR);
 
 	// asociace funkce
@@ -182,8 +214,25 @@ Symbol *create_token(Hash *h, char *string)
 		s = new_Ordinal(NUMBER, (t_number) atof(string));
 	}
 
-	if (string[0] == '\'' || string[0] == '"')
-		ERROR(NOT_IMPLEMENTED);
+	if (string[0] == '\'') {
+		// is ok?
+		if (string[1] == '\0' || string[2] != '\'' || string[3] != '\0')
+			ERROR(SYNTAX_ERROR);
+
+		s = new_Ordinal(CHAR, string[1]);
+	} else if (string[0] == '"') {
+		List *l = new_List(NULL);
+		s = new_Symbol(LIST, l);
+		int i = 1;
+
+		for (; string[i] != '"' && string[i] != '\0'; i++) {
+			l->next = new_List(new_Ordinal(CHAR, string[i]));
+			l = l->next;
+		}
+
+		if (string[i] != '"' || string[i+1] != '\0')
+			ERROR(SYNTAX_ERROR);
+	}
 
 	if (s == NULL) {
 		HashMember *hp = get_Hash(h, string);
@@ -223,7 +272,7 @@ List *parse_pipe(Hash *h, int level)
 			{
 				if (is_close_tag) ERROR(SYNTAX_ERROR);
 				if (is_def) {
-					if (!read_word(chars)) ERROR(SYNTAX_ERROR);
+					if (!read_word(chars, BOOL_FALSE)) ERROR(SYNTAX_ERROR);
 					init_def(h, chars, level);
 				} else
 					l->next = new_List(init_def(h, NULL, level));
@@ -281,6 +330,6 @@ int play()
 		}
 	}
 
-	printf("\n"); gc();
+	printf("\n\n"); gc();
 	return 0;
 }

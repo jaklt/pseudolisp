@@ -21,7 +21,7 @@ int is_TRUE(Symbol *s)
 int Symbol_to_bool(Symbol *symb)
 {
 	Symbol *s = resolve_Thunk(symb);
-	if (!is_NIL(s) && s->type != BOOL) iERROR(OPERACE_NEMA_SMYSL);
+	if (!is_NIL(s) && s->type != BOOL) ERROR(OPERACE_NEMA_SMYSL);
 
 	return is_TRUE(s);
 }
@@ -71,19 +71,6 @@ Symbol *list(List *params)
 }
 
 
-static int is_Empty(Symbol *s)
-{
-	if (is_NIL(s)) return 1;
-
-	if (s->type == LIST) {
-		List *l = (List *)s->s.link;
-		return (is_NIL(l->symbol) && l->next == NULL);
-	}
-
-	return 0;
-}
-
-
 Symbol *append(List *params)
 {
 	List *vysl = new_List(NULL);
@@ -93,7 +80,7 @@ Symbol *append(List *params)
 
 	while (params != NULL) {
 		s = resolve_Thunk(params->symbol);
-		if (is_Empty(s)) { params = params->next; continue; };
+		if (is_NIL(s)) { params = params->next; continue; };
 	
 		cp = get_List(s);
 
@@ -139,10 +126,7 @@ Symbol *deleno(List *params) { return inner_reduce(f_deleno, nubers_ok, params);
 
 Symbol *nubers_ok(Symbol *(*operace)(t_number, t_number), Symbol *a, Symbol *b)
 {
-//	a = resolve_Thunk(a);
-//	b = resolve_Thunk(b);
-
-	if (a == NULL || b == NULL) ERROR(PRAZDNA_HODNOTA);
+	if (is_NIL(a)|| is_NIL(b)) ERROR(PRAZDNA_HODNOTA);
 	if (a->type != NUMBER || b->type != NUMBER) ERROR(OPERACE_NEMA_SMYSL);
 
 	return operace(a->s.number, b->s.number);
@@ -248,6 +232,20 @@ Symbol *op_list(List *params)
 	return new_Ordinal(BOOL,
 			get_List(resolve_Thunk(params->symbol)) != NULL ? BOOL_TRUE : BOOL_FALSE);
 }
+
+
+static Symbol *op_ok(Symbol *s, E_TYPE t)
+{
+	s = resolve_Thunk(s);
+	return new_Ordinal(BOOL,
+			!is_NIL(s) && s->type == t? BOOL_TRUE : BOOL_FALSE);
+}
+
+
+Symbol *op_num(List *params)  { return op_ok(params->symbol, NUMBER); }
+Symbol *op_char(List *params) { return op_ok(params->symbol, CHAR); }
+Symbol *op_bool(List *params) { return op_ok(params->symbol, BOOL); }
+Symbol *op_func(List *params) { return op_ok(params->symbol, THUNK); }
 
 
 /**
