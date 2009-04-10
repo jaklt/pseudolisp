@@ -75,5 +75,4 @@ int is_NIL(Symbol *s);
  */
 Thunk *new_Thunk(Function *fce, List *params);
 
-
 #endif

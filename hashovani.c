@@ -108,7 +108,7 @@ static int zvetsit_hash(Hash *h)
 }
 
 
-HashMember *add_Hash(Hash *h, char *name, Symbol *s)
+HashMember *add_Hash(Hash *h, char *name, void *p)
 {
 	h->used++;
 
@@ -118,7 +118,7 @@ HashMember *add_Hash(Hash *h, char *name, Symbol *s)
 	unsigned long int hash = hash_string(name);
 	unsigned int index = volne_misto(h, hash);
 
-	set_Hash(h->hashes[index], name, 0, FULL_HASH, hash, s);
+	set_Hash(h->hashes[index], name, 0, FULL_HASH, hash, p);
 
 	return &h->hashes[index];
 }

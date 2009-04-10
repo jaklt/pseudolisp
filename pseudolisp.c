@@ -5,9 +5,11 @@
 #include "parser.h"
 
 
+static int prompt = 1;
+
 int init()
 {
-	set_prompt(1);
+	set_prompt(prompt);
 	set_input(stdin);
 //	set_show_collected(0);
 	return 0;
@@ -28,7 +30,7 @@ int runargs(char *arg)
 			play();
 			break;
 		case 'p':
-			set_prompt(0);
+			prompt = 0;
 			break;
 		case 'h': printf(
 					"Usage: pseudolisp [options] [filenames]\n"

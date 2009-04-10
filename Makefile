@@ -10,6 +10,7 @@ OBJ = ${SRC:.c=.o}
 PARAMS = -std=c99 -g -Wall -pedantic
 # -pg je pro gprof
 # -g je pro gdb/valgrind
+# -D<nazev> odpovida "#define"
 
 # optimalizace kompilace podle vysledku profielru
 # http://www.abclinuxu.cz/blog/kazdy_den_jinak/2007/5/gcc-a-optimalizace-s-profilerem

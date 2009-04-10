@@ -3,9 +3,8 @@
 
 #define OPEN_TAG  '['
 #define CLOSE_TAG ']'
+#define REMAIN_PARAMS_TAG '&'
 
-
-int parse(char *string[]);
 
 int set_prompt(int set);
 int set_input(FILE *inp);

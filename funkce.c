@@ -245,7 +245,16 @@ static Symbol *op_ok(Symbol *s, E_TYPE t)
 Symbol *op_num(List *params)  { return op_ok(params->symbol, NUMBER); }
 Symbol *op_char(List *params) { return op_ok(params->symbol, CHAR); }
 Symbol *op_bool(List *params) { return op_ok(params->symbol, BOOL); }
-Symbol *op_func(List *params) { return op_ok(params->symbol, THUNK); }
+
+Symbol *op_func(List *params)
+{
+	Symbol *s = resolve_Thunk(params->symbol);
+
+	if (!is_NIL(s) && (s->type == FUNCTION || s->type == THUNK))
+		return new_Ordinal(BOOL, BOOL_TRUE);
+	else
+		return new_Ordinal(BOOL, BOOL_FALSE);
+}
 
 
 /**

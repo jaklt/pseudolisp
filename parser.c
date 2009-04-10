@@ -10,7 +10,6 @@
 #include "execute.h"
 #include "gc.h"
 
-#define REMAIN_PARAMS_TAG '&'
 
 List *parse_pipe(Hash *h, int level);
 
@@ -37,7 +36,10 @@ static Hash *get_basic_hash()
 {
 	#define NUM_FUN sizeof(array_of_functions)/sizeof(struct function)
 
-	Hash *h = new_Hash();
+	static Hash *h = NULL;
+	if (h != NULL) return h;
+
+	h = new_Hash();
 	Function *f;
 
 	struct function {
@@ -146,7 +148,11 @@ Symbol *init_def(Hash *h, char *name, int level)
 {
 	Function *f = new_Function(NULL, 0);
 	Symbol *s = new_Symbol(FUNCTION, f);
-	if (name != NULL) add_Hash(h, name, s);
+	HashMember *hm = NULL;
+	if (name != NULL) {
+		hm = add_Hash(h, name, s);
+		hm->info = level;
+	}
 
 	Hash *new_h = clone_Hash(h);
 	char chars[101];
@@ -170,13 +176,13 @@ Symbol *init_def(Hash *h, char *name, int level)
 		}
 	}
 
-	// vytvoreni tela funkce
-	f->body.structure = parse_pipe(new_h, param_counter+f->more_params);
-	if (f->body.structure == NULL) ERROR(SYNTAX_ERROR);
-
 	// asociace funkce
 	f->built_in = BOOL_FALSE;
 	f->params_count = param_counter;
+
+	// vytvoreni tela funkce
+	f->body.structure = parse_pipe(new_h, param_counter+f->more_params);
+	if (f->body.structure == NULL) ERROR(SYNTAX_ERROR);
 	delete_Hash(new_h);
 
 	return s;
@@ -199,12 +205,28 @@ Symbol *get_Undefined()
 }
 
 
+static Symbol *kontext_params(Symbol *function, int level)
+{
+	if (level <= 0) return function;
+
+	List *l = new_List(function);
+	function = new_Symbol(LIST, l);
+
+	for (int i=1; i<=level; i++) {
+		l->next = new_List(new_Ordinal(PARAMETER, i));
+		l = l->next;
+	}
+
+	return function;
+}
+
+
 /**
  * TODO Takhle to neni dobry, viz:
  *   [def b [] [+ a 3]]
  *   [def a [] 3]
  */
-Symbol *create_token(Hash *h, char *string)
+Symbol *create_token(Hash *h, char *string, int level)
 {
 	Symbol *s = NULL;
 	
@@ -214,13 +236,14 @@ Symbol *create_token(Hash *h, char *string)
 		s = new_Ordinal(NUMBER, (t_number) atof(string));
 	}
 
-	if (string[0] == '\'') {
+	if (string[0] == '\'') { // char
 		// is ok?
 		if (string[1] == '\0' || string[2] != '\'' || string[3] != '\0')
 			ERROR(SYNTAX_ERROR);
 
 		s = new_Ordinal(CHAR, string[1]);
-	} else if (string[0] == '"') {
+
+	} else if (string[0] == '"') { // string
 		List *l = new_List(NULL);
 		s = new_Symbol(LIST, l);
 		int i = 1;
@@ -242,6 +265,10 @@ Symbol *create_token(Hash *h, char *string)
 		}
 
 		s = hp->link;
+
+		// doplneni kontextu do volani funkce
+		if (s->type == FUNCTION)
+			s = kontext_params(s, min(hp->info, level));
 	}
 
 	return s;
@@ -272,17 +299,21 @@ List *parse_pipe(Hash *h, int level)
 			{
 				if (is_close_tag) ERROR(SYNTAX_ERROR);
 				if (is_def) {
+					// is def
 					if (!read_word(chars, BOOL_FALSE)) ERROR(SYNTAX_ERROR);
 					init_def(h, chars, level);
-				} else
-					l->next = new_List(init_def(h, NULL, level));
+				} else {
+					// is lambda
+			//		l->next = new_List(init_def(h, NULL, level));
+					l->next = new_List(kontext_params(init_def(h, NULL, level), level));
 					l = l->next;
+				}
 
 				break;
 			}
 
 			if (c != chars) {
-				l->next = new_List(create_token(h, chars));
+				l->next = new_List(create_token(h, chars, level));
 				l = l->next;
 			}
 
