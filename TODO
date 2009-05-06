@@ -1,26 +1,17 @@
 1000 do rekurze by mohlo stacit?
 
-min prasacky parametry
-
 Parsovani zdrojaku
 - procistit parser.c, funkce.c
 
 nefunguje [def ahoj[n] n] <~ treba nahradit za ~> [def ahoj [n] n] 
 
-Vnitrni funkce - napriklad:
---------------
-[def a [b]
-	[def c [n] [+ b n]]
-	[c b]
-]
-
-By se melo prelozit jako
-[def a [b]
-	[def c [b] [lambda [n] [+ b n]]]
-	[c b]
-]
-
 - Nemelo by zaviset na poradi definic funkci!
+
+----------------------------------------------
+TODO
+----
+Formatovany vystup:
+	(format t "~%Predali jste ~s" a)
 
 ----------------------------------------------
 BUGREPORT:
@@ -38,6 +29,15 @@ OK.
 Number: 987
 ~~> 
 82949 collected
+
+
+[def a [] [append 1 [a]]]
+[head [a]] ~> diverguje!!
+=> Bud opravit APPEND, nebo to prepsat podle MJova hintu :-/
+
+----------------------------------------------
+Potencionalni leaky:
+	pri pamatovani jmen vseho, z hashe se nemazou
 
 ----------------------------------------------
 
@@ -60,6 +60,10 @@ kouknout se na isatty - vstup z terminalu/standartni
 Bonus
 defm = definice memorizovane funkce u ktere se pamatuji vysledky
 
+Nejak takto:?
+	[defm fib [1] 1]
+	[defm fib [2] 1]
+	[defm fib [n] [+ [fib [- n 1]] [fib [- n 2]]]]
 
 Funkce apply!
 (define a '(1 2 3 4))
@@ -70,14 +74,6 @@ Funkce apply!
 
 Co tohle?
 
-Viceparametrove:
-[def call [funkce &parametry]
-	[funkce parametry]
-]
-
-(define ((add a) b) (+ a b))
-(define (add a) (lambda (b) (+ a b)))
-
 List comprehension
 	http://en.wikipedia.org/wiki/List_comprehension
 
@@ -86,20 +82,20 @@ Clojure
 
 nil - means false or empty list
 
-True/false funkce s otaznikem? (null? (list ))
 ----------------------------------------------
-
-TODO pocitat s tim, ze v Tanky je treba resit (s vyjimkou volani funkce)
-	az v teto nejnizsi urovni. Je treba to napsat vic obecne, aby se mohlo
-	pracovat i s mnozinama, cislama a podobnejma vecma jednotne.
-	(Pri reseni tanku)
 
 Vrstvy:
 	- zavolani funkce s danymi parametry
 	- sestaveni tela funkce a doplneni parametru kde je to nutne
 	- zjisteni zda neni funkce tank, pokud jo, hazet do nej parametry
 	  a volat jej dokud neni funkce nebo blbost -> error
-	  (pokud se jedna o tank tak vyreseni zda je to vubec funkce)
 	- vraceni tanku s volanim ziskane funkce a zbyvajicimi parametry
 
 Tohle cele provadet tak dlouho dokud se nevrati neco co neni tank
+
+
+----------------------------------------------
+
+Nejake odkazy
+	http://itblob.havrlant.net/lisp-iii
+	http://www.ceng.metu.edu.tr/~ucoluk/research/lisp/lispman/lispman.html

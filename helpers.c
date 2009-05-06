@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "helpers.h"
 #include "execute.h"
+#include "error.h"
 
 static int odsazeni = 0;
 
@@ -115,31 +116,4 @@ int print_Thunk(Thunk *t)
 
 	odsazeni--;
 	return 0;
-}
-
-
-int print_Hash(Hash *h)
-{
-	printf("size: %d, used: %d\n", h->size, h->used);
-
-	for (int i=0; i<h->size; i++) {
-		if (h->hashes[i].full == EMPTY_HASH) continue;
-
-		printf("\"%s\" ", h->hashes[i].name);
-		print_Symbol((Symbol *)h->hashes[i].link);
-	}
-
-	return 0;
-}
-
-
-Symbol *f_print(List *params)
-{
-	List *l = params;
-	while (l != NULL) {
-		print_Symbol(l->symbol);
-		l = l->next;
-	}
-
-	return params != NULL ? params->symbol : NULL;
 }

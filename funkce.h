@@ -5,8 +5,8 @@
 
 
 /** Function pro podporu fungovani programu */
-Symbol *print(List *params);
 Symbol *undefined(List *params);
+Symbol *apply(List *params);
 
 /** Function matematickych operaci */
 Symbol *plus  (List *params);
@@ -36,5 +36,10 @@ Symbol *list(List *params);
 Symbol *append(List *params);
 Symbol *head(List *l);
 Symbol *tail(List *l);
+
+/** Sideefectove funkce */
+Symbol *env(List *params);
+Symbol *f_print(List *params);
+Symbol *f_print_string(List *params);
 
 #endif

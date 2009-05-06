@@ -3,7 +3,6 @@
 #include <stdlib.h>
 
 #include "funkce.h"
-#include "hashovani.h"
 #include "parser.h"
 #include "helpers.h"
 #include "error.h"
@@ -32,7 +31,7 @@ int set_input(FILE *inp)
 }
 
 
-static Hash *get_basic_hash()
+Hash *get_basic_hash()
 {
 	#define NUM_FUN sizeof(array_of_functions)/sizeof(struct function)
 
@@ -70,11 +69,13 @@ static Hash *get_basic_hash()
 
 		{"head",	head,	1},
 		{"tail",	tail,	1},
+		{"append",	append,	2},
 
 		{"list",	list,	1},
-
-		{"append",	append,	2},
 		{"print",	f_print,1},
+		{"print-string",	f_print_string,1},
+		{"env",		env,	0},
+		{"apply",	apply,	2},
 	};
 
 	for (int i=0; i<NUM_FUN; i++) {
@@ -109,8 +110,30 @@ static inline int is_whitespace(char c)
 
 char read_char()
 {
+	static int is_prev = 0;
+	static char prev;
+	char c;
 	if (input == NULL) ERROR(VNITRNI_CHYBA);
-	char c = getc(input);
+
+	if (is_prev) {
+		c = prev;
+		is_prev = 0;
+	} else {
+		c = getc(input);
+
+		if (c == '-') {
+			c = getc(input);
+
+			if (c == '-') {
+				while ((c = getc(input)) != '\n' && c != '\0');
+			} else {
+				prev = c;
+				is_prev = 1;
+				c = '-';
+			}
+		}
+	}
+
 	if (c == '\n' && prompt) printf("~~> ");
 	return c;
 }
@@ -304,7 +327,6 @@ List *parse_pipe(Hash *h, int level)
 					init_def(h, chars, level);
 				} else {
 					// is lambda
-			//		l->next = new_List(init_def(h, NULL, level));
 					l->next = new_List(kontext_params(init_def(h, NULL, level), level));
 					l = l->next;
 				}
@@ -325,7 +347,6 @@ List *parse_pipe(Hash *h, int level)
 		}
 
 		whitespaces = 0;
-
 
 		if (*c == OPEN_TAG) {
 			l->next = parse_pipe(h, level);
@@ -356,7 +377,7 @@ int play()
 			if (parsed != NULL) {
 				print_Symbol(resolve_Thunk(new_Symbol(LIST, parsed)));
 			} else if (prompt)
-				printf("OK.\n");
+				printf("OK\n");
 		//	gc();
 		}
 	}

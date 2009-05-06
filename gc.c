@@ -1,4 +1,5 @@
-#include <stdio.h> // TODO smazat
+#include <stdio.h>
+// #include "parser.h" // kvuli get_basic_hash, pokud nebude -> smazat
 #include "gc.h"
 #include "hashovani.h"
 

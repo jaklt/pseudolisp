@@ -111,6 +111,10 @@ static int zvetsit_hash(Hash *h)
 HashMember *add_Hash(Hash *h, char *name, void *p)
 {
 	h->used++;
+	
+	// copy name
+	char *name_c = (char *) malloc(strlen(name) * sizeof(char));
+	strcpy(name_c, name);
 
 	if (h->used > (3 * (h->size)/4))
 		if (zvetsit_hash(h)) return NULL;
@@ -118,7 +122,7 @@ HashMember *add_Hash(Hash *h, char *name, void *p)
 	unsigned long int hash = hash_string(name);
 	unsigned int index = volne_misto(h, hash);
 
-	set_Hash(h->hashes[index], name, 0, FULL_HASH, hash, p);
+	set_Hash(h->hashes[index], name_c, 0, FULL_HASH, hash, p);
 
 	return &h->hashes[index];
 }
@@ -169,11 +173,14 @@ Hash *clone_Hash(Hash *puvodni)
 }
 
 
+#include <stdio.h>
 int delete_Hash(Hash *h)
 {
 //	for (int i=0; i<h->size; i++) {
+//		if (h->hashes[i].name == NULL) continue;
 //		free(h->hashes[i].name);
 //	}
+
 	free(h->hashes);
 	free(h);
 

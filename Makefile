@@ -2,7 +2,7 @@
 VERSION = 0.0.5
 NAME = pseudolisp
 
-SRC = ${NAME}.c structs.c funkce.c helpers.c testy.c error.c hashovani.c execute.c parser.c gc.c
+SRC = ${NAME}.c structs.c funkce.c helpers.c testy.c error.c hashovani.c execute.c parser.c gc.c funkce-sideef.c
 HEADERS = structs.h funkce.h helpers.h error.h hashovani.h execute.h parser.h gc.h
 
 OBJ = ${SRC:.c=.o}
@@ -32,7 +32,7 @@ ${NAME}: ${OBJ} ${HEADERS}
 
 clean:
 	@echo Cleaning
-	@rm -f ${OBJ} ${NAME}
+	@rm -f ${OBJ}
 
 dist: ${SRC} ${HEADERS}
 	@rm -f ${NAME}-${VERSION}.tar.bz2

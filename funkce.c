@@ -90,11 +90,16 @@ Symbol *append(List *params)
 			l = l->next;
 		}
 
-		// kopirovani cp pokud se jedna o List
-		while (cp != NULL) {
-			l->next = new_List(cp->symbol);
-			l = l->next;
-			cp = cp->next;
+		if (params->next != NULL) {
+			// kopirovani cp pokud se jedna o List
+			while (cp != NULL) {
+				l->next = new_List(cp->symbol);
+				l = l->next;
+				cp = cp->next;
+			}
+		} else if (cp != NULL) {
+			// TODO nestaci
+			l->next = cp;
 		}
 
 		params = params->next;
@@ -265,6 +270,20 @@ Symbol *op_func(List *params)
 Symbol *undefined(List *params)
 {
 	ERROR(UNDEFINED);
+}
+
+
+// TODO zfunkcnit
+Symbol *apply(List *params)
+{
+	params->next->symbol = resolve_Thunk(params->next->symbol);
+	if (params->next->symbol->type != LIST)
+		ERROR(OPERACE_NEMA_SMYSL);
+
+	List *l = new_List(params->symbol);
+	l->next = (List *)params->next->symbol->s.link;
+
+	return new_Symbol(LIST, l);
 }
 
 
