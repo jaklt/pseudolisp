@@ -14,6 +14,7 @@ List *parse_pipe(Hash *h, int level);
 
 
 static int prompt = 1;
+#define PROMPT "~~> "
 
 int set_prompt(int set)
 {
@@ -40,6 +41,7 @@ Hash *get_basic_hash()
 
 	h = new_Hash();
 	Function *f;
+	Symbol *s;
 
 	struct function {
 		char *name;
@@ -82,13 +84,15 @@ Hash *get_basic_hash()
 		f = new_Function(NULL, array_of_functions[i].params_count);
 		f->built_in = BOOL_TRUE;
 		f->body.link = array_of_functions[i].link;
+		s = new_Symbol(FUNCTION, f);
 
-		add_Hash(h, array_of_functions[i].name, new_Symbol(FUNCTION, f));
+		add_string_Hash(h, array_of_functions[i].name, s);
+		gc_inc_immortal(NIL, s);
 	}
 
-	add_Hash(h, "NIL", new_NIL());
-	add_Hash(h, "TRUE",  new_Ordinal(BOOL, BOOL_TRUE));
-	add_Hash(h, "FALSE", new_Ordinal(BOOL, BOOL_FALSE));
+	add_string_Hash(h, "NIL", new_NIL());
+	add_string_Hash(h, "TRUE",  new_Ordinal(BOOL, BOOL_TRUE));
+	add_string_Hash(h, "FALSE", new_Ordinal(BOOL, BOOL_FALSE));
 
 	return h;
 }
@@ -134,7 +138,7 @@ char read_char()
 		}
 	}
 
-	if (c == '\n' && prompt) printf("~~> ");
+	if (c == '\n' && prompt) printf(PROMPT);
 	return c;
 }
 
@@ -173,7 +177,7 @@ Symbol *init_def(Hash *h, char *name, int level)
 	Symbol *s = new_Symbol(FUNCTION, f);
 	HashMember *hm = NULL;
 	if (name != NULL) {
-		hm = add_Hash(h, name, s);
+		hm = add_string_Hash(h, name, s);
 		hm->info = level;
 	}
 
@@ -186,11 +190,11 @@ Symbol *init_def(Hash *h, char *name, int level)
 	if (chars[0] != OPEN_TAG) ERROR(SYNTAX_ERROR);
 
 	while (read_word(chars, BOOL_TRUE)) {
-		add_Hash(new_h, chars, new_Ordinal(PARAMETER, ++param_counter));
+		add_string_Hash(new_h, chars, new_Ordinal(PARAMETER, ++param_counter));
 	}
 
 	if (chars[0] != '\0') {
-		add_Hash(new_h, chars, new_Ordinal(PARAMETER, ++param_counter));
+		add_string_Hash(new_h, chars, new_Ordinal(PARAMETER, ++param_counter));
 
 		// nastaveni parametru se zbytkem z volani
 		if (chars[0] == REMAIN_PARAMS_TAG) {
@@ -206,7 +210,7 @@ Symbol *init_def(Hash *h, char *name, int level)
 	// vytvoreni tela funkce
 	f->body.structure = parse_pipe(new_h, param_counter+f->more_params);
 	if (f->body.structure == NULL) ERROR(SYNTAX_ERROR);
-	delete_Hash(new_h);
+	free_Hash(new_h);
 
 	return s;
 }
@@ -281,10 +285,10 @@ Symbol *create_token(Hash *h, char *string, int level)
 	}
 
 	if (s == NULL) {
-		HashMember *hp = get_Hash(h, string);
+		HashMember *hp = get_string_Hash(h, string);
 
 		if (hp == NULL) {
-			hp = add_Hash(h, string, get_Undefined());
+			hp = add_string_Hash(h, string, get_Undefined());
 		}
 
 		s = hp->link;
@@ -366,11 +370,12 @@ List *parse_pipe(Hash *h, int level)
 
 int play()
 {
+	gc_init();
 	Hash *h = get_basic_hash();
 	List *parsed;
 	char c;
 
-	if (prompt) printf("~~> ");
+	if (prompt) printf(PROMPT);
 	while ((c = read_char()) != EOF) {
 		if (c == OPEN_TAG) {
 			parsed = parse_pipe(h, 0);
@@ -378,10 +383,10 @@ int play()
 				print_Symbol(resolve_Thunk(new_Symbol(LIST, parsed)));
 			} else if (prompt)
 				printf("OK\n");
-		//	gc();
+			gc();
 		}
 	}
 
-	printf("\n\n"); gc();
+	printf("\n\n"); gc_score();
 	return 0;
 }

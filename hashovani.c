@@ -58,14 +58,15 @@ Hash *new_Hash()
 }
 
 
-static unsigned int volne_misto(Hash *h, unsigned long int hash)
+static unsigned int free_space(Hash *h, unsigned long int hash)
 {
 	unsigned int index = (unsigned int) hash % h->size;
 
 	while (h->hashes[index].full != EMPTY_HASH) {
 
-		if (h->hashes[index].hash == hash) {
-			h->used--;
+		if (h->hashes[index].hash == hash
+			|| h->hashes[index].full == DELETED_HASH)
+		{
 			return index;
 		}
 
@@ -77,9 +78,9 @@ static unsigned int volne_misto(Hash *h, unsigned long int hash)
 }
 
 
-static int zvetsit_hash(Hash *h)
+static int expand_hash(Hash *h)
 {
-	HashMember *stare_hashes = h->hashes;
+	HashMember *old_hashes = h->hashes;
 	int stara_size = h->size;
 
 	h->size *= 2;
@@ -89,93 +90,131 @@ static int zvetsit_hash(Hash *h)
 
 
 	for (int i=0; i<stara_size; i++) {
-		if (stare_hashes[i].full != EMPTY_HASH
-			&& stare_hashes[i].hash != 0)
+		if (old_hashes[i].full == FULL_HASH
+			&& old_hashes[i].hash != 0)
 		{
-			unsigned int index = volne_misto(h, stare_hashes[i].hash);
+			unsigned int index = free_space(h, old_hashes[i].hash);
 			set_Hash(h->hashes[index],
-				stare_hashes[i].name,
-				stare_hashes[i].info,
-				stare_hashes[i].full, 
-				stare_hashes[i].hash,
-				stare_hashes[i].link
+				old_hashes[i].name,
+				old_hashes[i].info,
+				old_hashes[i].full,
+				old_hashes[i].hash,
+				old_hashes[i].link
 			);
 		}
+
+		set_Hash(old_hashes[i], NULL, 0, EMPTY_HASH, 0, NULL);
 	}
 
-	free(stare_hashes);
+	free(old_hashes);
 	return 0;
 }
 
 
-HashMember *add_Hash(Hash *h, char *name, void *p)
+HashMember *add_Hash(Hash *h, unsigned long int hash, void *p)
 {
 	h->used++;
-	
-	// copy name
-	char *name_c = (char *) malloc(strlen(name) * sizeof(char));
-	strcpy(name_c, name);
 
 	if (h->used > (3 * (h->size)/4))
-		if (zvetsit_hash(h)) return NULL;
+		if (expand_hash(h)) return NULL;
 
-	unsigned long int hash = hash_string(name);
-	unsigned int index = volne_misto(h, hash);
-
-	set_Hash(h->hashes[index], name_c, 0, FULL_HASH, hash, p);
+	unsigned int index = free_space(h, hash);
+	if (h->hashes[index].full == FULL_HASH) h->used--;
+	set_Hash(h->hashes[index], NULL, 0, FULL_HASH, hash, p);
 
 	return &h->hashes[index];
 }
 
 
-HashMember *get_Hash(Hash *h, char *s)
+HashMember *add_string_Hash(Hash *h, char *name, void *p)
 {
-	unsigned long int hash = hash_string(s);
+	// copy name
+	char *name_c = (char *) malloc((strlen(name)+1) * sizeof(char));
+	strcpy(name_c, name);
+
+	unsigned long int hash = hash_string(name);
+
+	HashMember *hm = add_Hash(h, hash, p);
+	if (hm) hm->name = name_c;
+
+	return hm;
+}
+
+
+HashMember *del_Hash(Hash *h, unsigned int hash)
+{
+	HashMember *hm = get_Hash(h, hash);
+	if (hm) {
+		hm->full = DELETED_HASH;
+		h->used--;
+	}
+
+	return hm;
+}
+
+
+HashMember *del_string_Hash(Hash *h, char *s)
+{
+	return del_Hash(h, hash_string(s));
+}
+
+
+HashMember *get_Hash(Hash *h, unsigned long int hash)
+{
 	unsigned int i = hash % h->size;
 
-	while (h->hashes[i].full != EMPTY_HASH && h->hashes[i].hash != hash)
+	while (h->hashes[i].full != EMPTY_HASH && h->hashes[i].hash != hash) {
 		i++;
+		if (i >= (h->size)) i = 0;
+	}
 
-	if (h->hashes[i].hash != hash) return NULL;
+	if (h->hashes[i].hash != hash || h->hashes[i].full != FULL_HASH)
+		return NULL;
 
 	return &h->hashes[i];
 }
 
 
-static HashMember *clone_HashMember(HashMember *puvodni, unsigned int size)
+HashMember *get_string_Hash(Hash *h, char *s)
+{
+	unsigned long int hash = hash_string(s);
+	return get_Hash(h, hash);
+}
+
+
+static HashMember *clone_HashMember(HashMember *recent, unsigned int size)
 {
 	HashMember *hp = malloc(size * sizeof(HashMember));
 
 	for (int i=0; i<size; i++) {
 		set_Hash(hp[i],
-			puvodni[i].name,
-			puvodni[i].info,
-			puvodni[i].full,
-			puvodni[i].hash, 
-			puvodni[i].link
+			recent[i].name,
+			recent[i].info,
+			recent[i].full,
+			recent[i].hash,
+			recent[i].link
 		);
 	}
-
 
 	return hp;
 }
 
 
-Hash *clone_Hash(Hash *puvodni)
+Hash *clone_Hash(Hash *recent)
 {
 	Hash *h = (Hash *) malloc(sizeof(Hash));
 
-	h->hashes = clone_HashMember(puvodni->hashes, puvodni->size);
-	h->size = puvodni->size;
-	h->used = puvodni->used;
+	h->hashes = clone_HashMember(recent->hashes, recent->size);
+	h->size = recent->size;
+	h->used = recent->used;
 
 	return h;
 }
 
 
-#include <stdio.h>
-int delete_Hash(Hash *h)
+int free_Hash(Hash *h)
 {
+	// TODO memory leaks, due to cloning
 //	for (int i=0; i<h->size; i++) {
 //		if (h->hashes[i].name == NULL) continue;
 //		free(h->hashes[i].name);

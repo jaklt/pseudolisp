@@ -12,7 +12,7 @@ Function *new_Function(List *body_function, int params_count)
 	f->built_in       = BOOL_FALSE;
 	f->more_params    = BOOL_FALSE;
 
-	collect(FUNCTION, f);
+	gc_collect(FUNCTION, f);
 	return f;
 }
 
@@ -24,7 +24,7 @@ List *new_List(Symbol *symbol)
 	l->symbol = symbol;
 	l->next = NULL;
 
-	collect(LIST, l);
+	gc_collect(LIST, l);
 	return l;
 }
 
@@ -43,7 +43,7 @@ Symbol *new_Ordinal(E_TYPE type, t_number co)
 		default: break;
 	}
 
-	collect(NIL, s);
+	gc_collect(NIL, s);
 	return s;
 }
 
@@ -55,15 +55,16 @@ Symbol *new_Symbol(E_TYPE type, void *symbol)
 	s->type = type;
 	s->s.link = (void *)symbol;
 
-	collect(NIL, s);
+	gc_collect(NIL, s);
 	return s;
 }
 
 
 Symbol *new_NIL()
 {
+	// TODO only one instance (in cooperation with gc)
 	Symbol *s = new_Symbol(NIL, NULL);
-	collect(NIL, s);
+	gc_collect(NIL, s);
 	return s;
 }
 
@@ -89,6 +90,6 @@ Thunk *new_Thunk(Function *fce, List *params)
 	t->function = fce;
 	t->params = params;
 
-	collect(THUNK, t);
+	gc_collect(THUNK, t);
 	return t;
 }

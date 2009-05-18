@@ -5,6 +5,7 @@
 typedef enum {
 	EMPTY_HASH,
 	FULL_HASH,
+	DELETED_HASH,
 } HASH_TYPE;
 
 
@@ -26,9 +27,17 @@ typedef struct SHash {
 
 
 Hash *new_Hash();
-HashMember *add_Hash(Hash *h, char *name, void *p);
-HashMember *get_Hash(Hash *h, char *s);
+
+HashMember *add_Hash(Hash *h, unsigned long int hash, void *p);
+HashMember *add_string_Hash(Hash *h, char *name, void *p);
+
+HashMember *del_Hash(Hash *h, unsigned int hash);
+HashMember *del_string_Hash(Hash *h, char *s);
+
+HashMember *get_Hash(Hash *h, unsigned long int hash);
+HashMember *get_string_Hash(Hash *h, char *s);
+
 Hash *clone_Hash(Hash *h);
-int delete_Hash(Hash *h);
+int free_Hash(Hash *h);
 
 #endif

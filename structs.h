@@ -7,10 +7,10 @@ typedef enum {
 	NIL,
 	FUNCTION,
 	LIST,
+	THUNK,
 	NUMBER,
 	BOOL,
 	CHAR,
-	THUNK,
 	PARAMETER,
 } E_TYPE;
 

@@ -13,6 +13,8 @@ TODO
 Formatovany vystup:
 	(format t "~%Predali jste ~s" a)
 
+zmenit syntaxi def na [def [jmeno-fce parametry ...] ]
+
 ----------------------------------------------
 BUGREPORT:
 ---------
