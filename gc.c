@@ -3,6 +3,12 @@
 #include "gc.h"
 #include "hashovani.h"
 
+/*
+ * Tady je nacrt zpusobu jak bych provadel garbage collecting, ale vypada to,
+ * ze samotne collectovani hashovanim zabere strasne moc procesoroveho casu
+ * takze si to nejspis rozmyslim a udelam uplne jinak.
+ */
+
 static int counter = 0;
 static int freed   = 0;
 

@@ -9,7 +9,7 @@
  *
  * http://www.cse.yorku.ca/~oz/hash.html
  */
-static unsigned long int hash_string(char *s)
+unsigned long int hash_string(char *s)
 {
 	unsigned long int h = 5381;
 	char *c = s;
@@ -31,30 +31,26 @@ static unsigned long int hash_string(char *s)
 	hp.hash = HASH; \
 	hp.link = LINK; }
 
+#define empty_Hash(h) (h != NULL ? memset(h->hashes, 0, h->size * sizeof(HashMember)) : NULL)
 
-static int empty_Hash(Hash *h)
+
+static Hash *new_sized_Hash(int size)
 {
-	for (int i=0; i<(h->size); i++) {
-		set_Hash(h->hashes[i], NULL, 0, EMPTY_HASH, 0, NULL);
-	}
+	Hash *h = (Hash *) malloc(sizeof(Hash));
 
-	return 0;
+	h->hashes = (HashMember *) malloc(size * sizeof(HashMember));
+	h->size = size;
+	h->used = 0;
+
+	empty_Hash(h);
+	return h;
 }
 
 
 Hash *new_Hash()
 {
 	const int POC = 8;
-
-	Hash *h = (Hash *) malloc(sizeof(Hash));
-
-	h->hashes = (HashMember *) malloc(POC * sizeof(HashMember));
-	h->size = POC;
-	h->used = 0;
-
-	empty_Hash(h);
-
-	return h;
+	return new_sized_Hash(POC);
 }
 
 
@@ -81,6 +77,7 @@ static unsigned int free_space(Hash *h, unsigned long int hash)
 static int expand_hash(Hash *h)
 {
 	HashMember *old_hashes = h->hashes;
+	HashMember *hm;
 	int stara_size = h->size;
 
 	h->size *= 2;
@@ -88,22 +85,14 @@ static int expand_hash(Hash *h)
 	if (h->hashes == NULL) return 1;
 	empty_Hash(h);
 
-
 	for (int i=0; i<stara_size; i++) {
-		if (old_hashes[i].full == FULL_HASH
-			&& old_hashes[i].hash != 0)
+		if (old_hashes[i].full == FULL_HASH)
 		{
-			unsigned int index = free_space(h, old_hashes[i].hash);
-			set_Hash(h->hashes[index],
-				old_hashes[i].name,
-				old_hashes[i].info,
-				old_hashes[i].full,
-				old_hashes[i].hash,
-				old_hashes[i].link
-			);
+			hm = add_Hash(h, old_hashes[i].hash, old_hashes[i].link);
+			hm->name = old_hashes[i].name;
+			hm->info = old_hashes[i].info;
 		}
 
-		set_Hash(old_hashes[i], NULL, 0, EMPTY_HASH, 0, NULL);
 	}
 
 	free(old_hashes);
@@ -153,12 +142,6 @@ HashMember *del_Hash(Hash *h, unsigned int hash)
 }
 
 
-HashMember *del_string_Hash(Hash *h, char *s)
-{
-	return del_Hash(h, hash_string(s));
-}
-
-
 HashMember *get_Hash(Hash *h, unsigned long int hash)
 {
 	unsigned int i = hash % h->size;
@@ -175,38 +158,10 @@ HashMember *get_Hash(Hash *h, unsigned long int hash)
 }
 
 
-HashMember *get_string_Hash(Hash *h, char *s)
-{
-	unsigned long int hash = hash_string(s);
-	return get_Hash(h, hash);
-}
-
-
-static HashMember *clone_HashMember(HashMember *recent, unsigned int size)
-{
-	HashMember *hp = malloc(size * sizeof(HashMember));
-
-	for (int i=0; i<size; i++) {
-		set_Hash(hp[i],
-			recent[i].name,
-			recent[i].info,
-			recent[i].full,
-			recent[i].hash,
-			recent[i].link
-		);
-	}
-
-	return hp;
-}
-
-
 Hash *clone_Hash(Hash *recent)
 {
-	Hash *h = (Hash *) malloc(sizeof(Hash));
-
-	h->hashes = clone_HashMember(recent->hashes, recent->size);
-	h->size = recent->size;
-	h->used = recent->used;
+	Hash *h = new_sized_Hash(recent->size);
+	memcpy(h->hashes, recent->hashes, h->size * sizeof(HashMember));
 
 	return h;
 }
@@ -214,7 +169,6 @@ Hash *clone_Hash(Hash *recent)
 
 int free_Hash(Hash *h)
 {
-	// TODO memory leaks, due to cloning
 //	for (int i=0; i<h->size; i++) {
 //		if (h->hashes[i].name == NULL) continue;
 //		free(h->hashes[i].name);

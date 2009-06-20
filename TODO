@@ -1,9 +1,6 @@
 1000 do rekurze by mohlo stacit?
 
-Parsovani zdrojaku
-- procistit parser.c, funkce.c
-
-nefunguje [def ahoj[n] n] <~ treba nahradit za ~> [def ahoj [n] n] 
+nefunguje [def ahoj[n] n] <~ treba nahradit za ~> [def ahoj [n] n]
 
 - Nemelo by zaviset na poradi definic funkci!
 
@@ -13,7 +10,15 @@ TODO
 Formatovany vystup:
 	(format t "~%Predali jste ~s" a)
 
-zmenit syntaxi def na [def [jmeno-fce parametry ...] ]
+??? zmenit syntaxi def na [def [jmeno-fce parametry ...] ]
+
+Napsat lidsky parser.c
+
+Zasobnikove vyhodnocovani!
+Optimalizovat hashovani!
+Promyslet collect u GC!
+
+Vysledek volani = posledni vyraz -> def muze vracet funkci?
 
 ----------------------------------------------
 BUGREPORT:
@@ -44,7 +49,7 @@ Potencionalni leaky:
 ----------------------------------------------
 
 stav sveta - jak na nej?
-porovnavani symbolu v konstatnim case
+porovnavani symbolu
 
 prace s prameti a GC
 
