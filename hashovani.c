@@ -9,7 +9,7 @@
  *
  * http://www.cse.yorku.ca/~oz/hash.html
  */
-unsigned long int hash_string(char *s)
+static unsigned long int hash_string(char *s)
 {
 	unsigned long int h = 5381;
 	char *c = s;
@@ -142,6 +142,12 @@ HashMember *del_Hash(Hash *h, unsigned int hash)
 }
 
 
+HashMember *del_string_Hash(Hash *h, char *name)
+{
+	return del_Hash(h, hash_string(name));
+}
+
+
 HashMember *get_Hash(Hash *h, unsigned long int hash)
 {
 	unsigned int i = hash % h->size;
@@ -155,6 +161,12 @@ HashMember *get_Hash(Hash *h, unsigned long int hash)
 		return NULL;
 
 	return &h->hashes[i];
+}
+
+
+HashMember *get_string_Hash(Hash *h, char *name)
+{
+	return get_Hash(h, hash_string(name));
 }
 
 

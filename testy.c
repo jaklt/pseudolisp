@@ -6,6 +6,7 @@
 #include "execute.h"
 #include "parser.h"
 #include "hashovani.h"
+#include "gc.h"
 
 
 static Function **get_array_of_funtions();
@@ -24,6 +25,7 @@ static int thunk_s_dalsimy_parametry();
 
 int test()
 {
+	gc_init();
 	printf("-- Zacatek testovani:\n");
 	funkcni_testy(); NEXT;
 	testy_slozenych_funkci(); NEXT;

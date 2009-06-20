@@ -27,14 +27,14 @@ typedef struct SHash {
 
 
 Hash *new_Hash();
-unsigned long int hash_string(char *s)
+// unsigned long int hash_string(char *s)
 HashMember *add_Hash(Hash *h, unsigned long int hash, void *p);
 HashMember *del_Hash(Hash *h, unsigned int hash);
 HashMember *get_Hash(Hash *h, unsigned long int hash);
 
 HashMember *add_string_Hash(Hash *h, char *name, void *p);
-#define     del_string_Hash(h, s) del_Hash(h, hash_string(s))
-#define     get_string_Hash(h, s) get_Hash(h, hash_string(s))
+HashMember *del_string_Hash(Hash *h, char *name);
+HashMember *get_string_Hash(Hash *h, char *name);
 
 Hash *clone_Hash(Hash *h);
 int free_Hash(Hash *h);
