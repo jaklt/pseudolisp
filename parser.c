@@ -49,35 +49,35 @@ Hash *get_basic_hash()
 		int params_count;
 	} array_of_functions[] = {
 	//	name	function	params
-		{"+",		plus,	2},
-		{"-",		minus,	2},
-		{"*",		krat,	2},
-		{"/",		deleno,	2},
+		{"+",       plus,    2},
+		{"-",       minus,   2},
+		{"*",       krat,    2},
+		{"/",       deleno,  2},
 
-		{"if",		op_if,	3},
-		{"and",		op_and,	2},
-		{"or",		op_or,	2},
-		{"not",		op_not,	1},
+		{"if",      op_if,   3},
+		{"and",     op_and,  2},
+		{"or",      op_or,   2},
+		{"not",     op_not,  1},
 
-		{"nil?",	op_nil,	1},
-		{"list?",	op_list,1},
-		{"number?",	op_num,	1},
-		{"char?",	op_char,1},
-		{"bool?",	op_bool,1},
-		{"func?",	op_func,1},
+		{"nil?",    op_nil,  1},
+		{"list?",   op_list, 1},
+		{"number?", op_num,  1},
+		{"char?",   op_char, 1},
+		{"bool?",   op_bool, 1},
+		{"func?",   op_func, 1},
 
-		{"=",		eq,		2},
-		{">",		gt,		2},
+		{"=",       eq,      2},
+		{">",       gt,      2},
 
-		{"head",	head,	1},
-		{"tail",	tail,	1},
-		{"append",	append,	2},
+		{"head",    head,    1},
+		{"tail",    tail,    1},
+		{"append",  append,  2},
 
-		{"list",	list,	1},
-		{"print",	f_print,1},
-		{"print-string",	f_print_string,1},
-		{"env",		env,	0},
-		{"apply",	apply,	2},
+		{"list",    list,    1},
+		{"print",   f_print, 1},
+		{"print-string", f_print_string, 1},
+		{"env",     env,     0},
+		{"apply",   apply,   2},
 	};
 
 	for (int i=0; i<NUM_FUN; i++) {
@@ -249,9 +249,12 @@ static Symbol *kontext_params(Symbol *function, int level)
 
 
 /**
- * TODO Takhle to neni dobry, viz:
+ * TODO Neumi tohle:
  *   [def b [] [+ a 3]]
  *   [def a [] 3]
+ *
+ *      Nejde napsat zalomeny retezec na vic radku (ani backslashnutej)
+ *      XXX Nejde napsat retezec rozdeleny whitespacy!!!
  */
 Symbol *create_token(Hash *h, char *string, int level)
 {
@@ -276,6 +279,14 @@ Symbol *create_token(Hash *h, char *string, int level)
 		int i = 1;
 
 		for (; string[i] != '"' && string[i] != '\0'; i++) {
+			if (string[i] == '\\' && string[i+1] != '\0') {
+				switch (string[i+1]) {
+					case 'n': string[++i] = '\n'; break;
+					case 't': string[++i] = '\t'; break;
+					default: ERROR(SYNTAX_ERROR);
+				}
+			}
+
 			l->next = new_List(new_Ordinal(CHAR, string[i]));
 			l = l->next;
 		}

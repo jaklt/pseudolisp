@@ -27,14 +27,14 @@ int Symbol_to_bool(Symbol *symb)
 }
 
 
-static List *get_List(Symbol *s)
+List *get_List(Symbol *s)
 {
 	if (is_NIL(s) || s->type != LIST
-			|| !is_NIL(((List *)s->s.link)->symbol))
+			|| !is_NIL(((List *) s->s.link)->symbol))
 	{
 		return NULL;
 	} else {
-		return ((List *)s->s.link)->next;
+		return ((List *) s->s.link)->next;
 	}
 }
 
@@ -273,17 +273,22 @@ Symbol *undefined(List *params)
 }
 
 
-// TODO zfunkcnit
 Symbol *apply(List *params)
 {
-	params->next->symbol = resolve_Thunk(params->next->symbol);
-	if (params->next->symbol->type != LIST)
-		ERROR(OPERACE_NEMA_SMYSL);
+	Symbol *s = resolve_Thunk(params->symbol);
 
-	List *l = new_List(params->symbol);
-	l->next = (List *)params->next->symbol->s.link;
+	if (s->type != FUNCTION && s->type != THUNK) {
+		// ERROR(OPERACE_NEMA_SMYSL); // spatny pocet parametru ?
+		return s;
+	}
 
-	return new_Symbol(LIST, l);
+	Symbol *s2 = resolve_Thunk(params->next->symbol);
+	if (s2->type != LIST) ERROR(OPERACE_NEMA_SMYSL);
+
+	List *l = new_List(s);
+	l->next = get_List(s2);
+
+	return resolve_Thunk(new_Symbol(LIST, l));
 }
 
 

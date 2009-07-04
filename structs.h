@@ -58,13 +58,7 @@ Function *get_Function(char *name);
 Function *new_Function(List *body_function, int params_count);
 
 List *new_List(Symbol *symbol);
-
-
-/**
- * Konstruktor symbolu.
- */
 Symbol *new_Symbol(E_TYPE type, void *symbol);
-
 Symbol *new_Ordinal(E_TYPE type, t_number co);
 Symbol *new_NIL();
 int is_NIL(Symbol *s);

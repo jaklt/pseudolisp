@@ -1,6 +1,4 @@
-1000 do rekurze by mohlo stacit?
-
-nefunguje [def ahoj[n] n] <~ treba nahradit za ~> [def ahoj [n] n]
+nefunguje [def ahoj[n] n] <~ treba opravit za ~> [def ahoj [n] n]
 
 - Nemelo by zaviset na poradi definic funkci!
 
@@ -12,11 +10,13 @@ Formatovany vystup:
 
 ??? zmenit syntaxi def na [def [jmeno-fce parametry ...] ]
 
-Napsat lidsky parser.c
+Zlidstit parser.c
+Dopsat vsude komentare :-)
 
 Zasobnikove vyhodnocovani!
 Optimalizovat hashovani!
 Promyslet collect u GC!
+Parsovani stringu nefunguje spravne
 
 Vysledek volani = posledni vyraz -> def muze vracet funkci?
 
@@ -34,7 +34,7 @@ Neni to vic nez driv?
 OK.
 ~~> [fib 15]
 Number: 987
-~~> 
+~~>
 82949 collected
 
 

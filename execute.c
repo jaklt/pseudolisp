@@ -112,8 +112,8 @@ static Symbol *extend_Thunk(Symbol *s, List *l)
 	}
 
 	return new_Symbol(THUNK,
-			new_Thunk(((Thunk *)s->s.link)->function,
-				f_append(((Thunk *)s->s.link)->params, l)));
+			new_Thunk(((Thunk *) s->s.link)->function,
+				f_append(((Thunk *) s->s.link)->params, l)));
 }
 
 
@@ -135,17 +135,16 @@ Symbol *resolve_Thunk(Symbol *s)
 	Thunk *t;
 
 	if (s->type == LIST) {
-		List *l = (List *)s->s.link;
+		List *l = (List *) s->s.link;
 		// TODO nekolikrat se opakuje zbytecne
 		l->symbol = resolve_Thunk(l->symbol);
 
-		// TODO nemel by to bejt pred predchozim resolve_Thunk?
 		if (is_NIL(l->symbol)) return new_Symbol(LIST, l);
 
 		switch (l->symbol->type) {
 			case THUNK:
 				if (l->next == NULL) return resolve_Thunk(l->symbol);
-				t = (Thunk *)l->symbol->s.link;
+				t = (Thunk *) l->symbol->s.link;
 
 				// TODO zmenit na longer_or_append...
 				if (list_len(t->params) >= t->function->params_count) {
@@ -157,7 +156,7 @@ Symbol *resolve_Thunk(Symbol *s)
 					break;
 				}
 			case FUNCTION:
-				s = new_Symbol(THUNK, new_Thunk((Function *)l->symbol->s.link, l->next));
+				s = new_Symbol(THUNK, new_Thunk((Function *) l->symbol->s.link, l->next));
 				break;
 			case LIST:
 				l->symbol = resolve_Thunk(l->symbol);
@@ -176,13 +175,13 @@ Symbol *resolve_Thunk(Symbol *s)
 	}
 
 	if (is_NIL(s) || s->type != THUNK) return s;
-	t = (Thunk *)s->s.link;
+	t = (Thunk *) s->s.link;
 
 	while (t != NULL && list_len(t->params) >= t->function->params_count)
 	{
 		s = result(t->function, t->params);
 		if (!is_NIL(s) && s->type == LIST) s = resolve_Thunk(s);
-		t = (!is_NIL(s) && s->type == THUNK) ? (Thunk *)s->s.link : NULL;
+		t = (!is_NIL(s) && s->type == THUNK) ? (Thunk *) s->s.link : NULL;
 	}
 
 	replace_Symbol(sp, s);

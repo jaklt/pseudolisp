@@ -75,7 +75,7 @@ int is_NIL(Symbol *s)
 
 	// empty List
 	if (s->type == LIST) {
-		List *l = (List *)s->s.link;
+		List *l = (List *) s->s.link;
 		return (is_NIL(l->symbol) && l->next == NULL);
 	}
 

@@ -40,7 +40,7 @@ int throw_full_error(E_ERROR t, int line, char file[])
 	}
 
 	fprintf(stderr, ERR_END);
-	exit(1);
+	exit(t + 1);
 	return 1;
 }
 

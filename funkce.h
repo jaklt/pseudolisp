@@ -4,9 +4,11 @@
 #include "structs.h"
 
 
-/** Function pro podporu fungovani programu */
-Symbol *undefined(List *params);
 Symbol *apply(List *params);
+
+/** Pomocne funkce */
+Symbol *undefined(List *params);
+List *get_List(Symbol *s);
 
 /** Function matematickych operaci */
 Symbol *plus  (List *params);
