@@ -13,21 +13,11 @@
 List *parse_pipe(Hash *h, int level);
 
 
-static int prompt = 1;
-#define PROMPT "~~> "
+int prompt = 1;
 
 int set_prompt(int set)
 {
 	prompt = set;
-	return 0;
-}
-
-
-static FILE *input = NULL;
-
-int set_input(FILE *inp)
-{
-	input = inp;
 	return 0;
 }
 
@@ -95,79 +85,6 @@ Hash *get_basic_hash()
 	add_string_Hash(h, "FALSE", new_Ordinal(BOOL, BOOL_FALSE));
 
 	return h;
-}
-
-
-static inline int is_whitespace(char c)
-{
-	switch (c) {
-		case ' ':
-		case '\n':
-		case '\t':
-		case EOF:
-			return 1;
-		default:
-			return 0;
-	}
-}
-
-
-char read_char()
-{
-	static int is_prev = 0;
-	static char prev;
-	char c;
-	if (input == NULL) ERROR(VNITRNI_CHYBA);
-
-	if (is_prev) {
-		c = prev;
-		is_prev = 0;
-	} else {
-		c = getc(input);
-
-		if (c == '-') {
-			c = getc(input);
-
-			if (c == '-') {
-				while ((c = getc(input)) != '\n' && c != '\0');
-			} else {
-				prev = c;
-				is_prev = 1;
-				c = '-';
-			}
-		}
-	}
-
-	if (c == '\n' && prompt) printf(PROMPT);
-	return c;
-}
-
-
-static int read_word(char *chars, int if_remain)
-{
-	char *c = chars;
-
-	while (is_whitespace(*c = read_char()));
-
-	while (*c != OPEN_TAG && *c != CLOSE_TAG
-			&& !is_whitespace(*(++c) = read_char()));
-
-	if (*c == OPEN_TAG) throw_error(SYNTAX_ERROR);
-	if (*c == CLOSE_TAG) {
-		*c = '\0';
-		return 0;
-	}
-
-	*c = '\0';
-
-	if (if_remain && chars[0] == REMAIN_PARAMS_TAG) {
-		while ((*c = read_char()) != CLOSE_TAG)
-			if (!is_whitespace(*c)) ERROR(SYNTAX_ERROR);
-
-		return 0;
-	}
-
-	return 1;
 }
 
 
@@ -252,9 +169,6 @@ static Symbol *kontext_params(Symbol *function, int level)
  * TODO Neumi tohle:
  *   [def b [] [+ a 3]]
  *   [def a [] 3]
- *
- *      Nejde napsat zalomeny retezec na vic radku (ani backslashnutej)
- *      XXX Nejde napsat retezec rozdeleny whitespacy!!!
  */
 Symbol *create_token(Hash *h, char *string, int level)
 {
@@ -264,35 +178,6 @@ Symbol *create_token(Hash *h, char *string, int level)
 			|| (string[0] == '-' && '0' <= string[1] && string[1] <='9'))
 	{
 		s = new_Ordinal(NUMBER, (t_number) atof(string));
-	}
-
-	if (string[0] == '\'') { // char
-		// is ok?
-		if (string[1] == '\0' || string[2] != '\'' || string[3] != '\0')
-			ERROR(SYNTAX_ERROR);
-
-		s = new_Ordinal(CHAR, string[1]);
-
-	} else if (string[0] == '"') { // string
-		List *l = new_List(NULL);
-		s = new_Symbol(LIST, l);
-		int i = 1;
-
-		for (; string[i] != '"' && string[i] != '\0'; i++) {
-			if (string[i] == '\\' && string[i+1] != '\0') {
-				switch (string[i+1]) {
-					case 'n': string[++i] = '\n'; break;
-					case 't': string[++i] = '\t'; break;
-					default: ERROR(SYNTAX_ERROR);
-				}
-			}
-
-			l->next = new_List(new_Ordinal(CHAR, string[i]));
-			l = l->next;
-		}
-
-		if (string[i] != '"' || string[i+1] != '\0')
-			ERROR(SYNTAX_ERROR);
 	}
 
 	if (s == NULL) {
@@ -323,6 +208,7 @@ List *parse_pipe(Hash *h, int level)
 	int is_close_tag = 0;
 	List *all = new_List(NULL);
 	List *l = all;
+	Symbol *s = NULL;
 
 
 	while ((*c = read_char()) != EOF) {
@@ -349,6 +235,7 @@ List *parse_pipe(Hash *h, int level)
 				break;
 			}
 
+			// c is not empy
 			if (c != chars) {
 				l->next = new_List(create_token(h, chars, level));
 				l = l->next;
@@ -361,17 +248,29 @@ List *parse_pipe(Hash *h, int level)
 			continue;
 		}
 
-		whitespaces = 0;
+		if (!whitespaces) { c++; continue; }
 
-		if (*c == OPEN_TAG) {
-			l->next = parse_pipe(h, level);
+		switch (*c) {
+			case '\'': s = parse_char(); break;
+			case '"':  s = parse_string(); break;
 
-			if (l->next != NULL) {
-				l->next = new_List(new_Symbol(LIST, l->next));
-				l = l->next;
-			}
-		} else
-			c++;
+			case OPEN_TAG:
+				l->next = parse_pipe(h, level);
+
+				if (l->next != NULL) {
+					l->next = new_List(new_Symbol(LIST, l->next));
+					l = l->next;
+				}
+				break;
+
+			default: c++; whitespaces = 0; break;
+		}
+
+		if (s != NULL) {
+			l->next = new_List(s);
+			l = l->next;
+			s = NULL;
+		}
 	}
 
 	l = all->next; free(all);

@@ -40,8 +40,6 @@ Symbol *f_print(List *params)
 /**
  * Vypise parametry od nichz pozaduje, aby byly stringy
  * jako stringy.
- *
- * TODO rozhodnout se jeste co vracet
  */
 Symbol *f_print_string(List *params)
 {

@@ -1,15 +1,25 @@
 #ifndef PARSE_H
 #define PARSE_H
 
+#include "hashovani.h"
+#include "structs.h"
+
 #define OPEN_TAG  '['
 #define CLOSE_TAG ']'
 #define REMAIN_PARAMS_TAG '&'
+#define PROMPT "~~> "
 
-#include "hashovani.h"
 
+int is_whitespace(char c);
 Hash *get_basic_hash();
 int set_prompt(int set);
 int set_input(FILE *inp);
+
+char read_char();
+int read_word(char *chars, int if_remain);
+Symbol *parse_char();
+Symbol *parse_string();
+
 int play();
 
 #endif

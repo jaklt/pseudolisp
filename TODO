@@ -10,13 +10,12 @@ Formatovany vystup:
 
 ??? zmenit syntaxi def na [def [jmeno-fce parametry ...] ]
 
-Zlidstit parser.c
+Zlidstit parser.c + udelat kontroly preteceni
 Dopsat vsude komentare :-)
 
 Zasobnikove vyhodnocovani!
 Optimalizovat hashovani!
 Promyslet collect u GC!
-Parsovani stringu nefunguje spravne
 
 Vysledek volani = posledni vyraz -> def muze vracet funkci?
 
