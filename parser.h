@@ -10,7 +10,6 @@
 #define PROMPT "~~> "
 
 
-int is_whitespace(char c);
 Hash *get_basic_hash();
 int set_prompt(int set);
 int set_input(FILE *inp);

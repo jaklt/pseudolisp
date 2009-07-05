@@ -13,7 +13,7 @@ int set_input(FILE *inp)
 }
 
 
-inline int is_whitespace(char c)
+extern inline int is_whitespace(char c)
 {
 	switch (c) {
 		case ' ':
@@ -110,7 +110,7 @@ static char parse_just_char(int quoted)
 }
 
 
-Symbol *parse_char()
+inline Symbol *parse_char()
 {
 	return new_Ordinal(CHAR, parse_just_char(BOOL_TRUE));
 }

@@ -45,7 +45,7 @@ int throw_full_error(E_ERROR t, int line, char file[])
 }
 
 
-int throw_error(E_ERROR t)
+inline int throw_error(E_ERROR t)
 {
 	return throw_full_error(t, 0, NULL);
 }

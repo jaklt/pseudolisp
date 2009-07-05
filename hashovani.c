@@ -31,7 +31,8 @@ static unsigned long int hash_string(char *s)
 	hp.hash = HASH; \
 	hp.link = LINK; }
 
-#define empty_Hash(h) (h != NULL ? memset(h->hashes, 0, h->size * sizeof(HashMember)) : NULL)
+#define empty_Hash(h) \
+	((h) != NULL ? memset((h)->hashes, 0, (h)->size * sizeof(HashMember)) : NULL)
 
 
 static Hash *new_sized_Hash(int size)
@@ -47,7 +48,7 @@ static Hash *new_sized_Hash(int size)
 }
 
 
-Hash *new_Hash()
+inline Hash *new_Hash()
 {
 	const int POC = 8;
 	return new_sized_Hash(POC);
@@ -142,7 +143,7 @@ HashMember *del_Hash(Hash *h, unsigned int hash)
 }
 
 
-HashMember *del_string_Hash(Hash *h, char *name)
+inline HashMember *del_string_Hash(Hash *h, char *name)
 {
 	return del_Hash(h, hash_string(name));
 }
@@ -164,7 +165,7 @@ HashMember *get_Hash(Hash *h, unsigned long int hash)
 }
 
 
-HashMember *get_string_Hash(Hash *h, char *name)
+inline HashMember *get_string_Hash(Hash *h, char *name)
 {
 	return get_Hash(h, hash_string(name));
 }

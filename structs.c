@@ -62,14 +62,19 @@ Symbol *new_Symbol(E_TYPE type, void *symbol)
 
 Symbol *new_NIL()
 {
-	// TODO only one instance (in cooperation with gc)
-	Symbol *s = new_Symbol(NIL, NULL);
-	gc_collect(NIL, s);
+	static Symbol *s = NULL;
+
+	if (s == NULL) {
+		s = new_Symbol(NIL, NULL);
+		gc_collect(NIL, s);
+		gc_inc_immortal(NIL, s);
+	}
+
 	return s;
 }
 
 
-int is_NIL(Symbol *s)
+inline int is_NIL(Symbol *s)
 {
 	if (s == NULL || s->type == NIL) return 1;
 

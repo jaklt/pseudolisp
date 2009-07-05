@@ -11,6 +11,7 @@
 
 
 List *parse_pipe(Hash *h, int level);
+extern int is_whitespace(char c);
 
 
 int prompt = 1;
