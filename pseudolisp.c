@@ -2,9 +2,17 @@
 #include <stdlib.h>
 
 #include "testy.h"
-#include "parser.h"
+// #include "parser.h"
 
 
+int main(int argc, char *argv[])
+{
+	test();
+	return 0;
+}
+
+
+/*
 static int prompt = 1;
 
 int init()
@@ -71,3 +79,4 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
+*/

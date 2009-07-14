@@ -13,6 +13,9 @@ int throw_full_error(E_ERROR t, int line, char file[])
 	fprintf(stderr, ERR_START);
 
 	switch (t) {
+		case TYPE_ERROR:
+			fprintf(stderr, "Type error");
+			break;
 		case PRAZDNA_HODNOTA:
 			fprintf(stderr, "Empty value");
 			break;

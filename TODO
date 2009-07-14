@@ -16,6 +16,7 @@ Dopsat vsude komentare :-)
 Zasobnikove vyhodnocovani!
 Optimalizovat hashovani!
 Promyslet collect u GC!
+Jak delat skladani funkci? -> Hladovy zpusob dozirani parametru
 
 Vysledek volani = posledni vyraz -> def muze vracet funkci?
 

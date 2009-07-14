@@ -1,13 +1,15 @@
 #ifndef ERROR_H
 #define ERROR_H
 
-#define __MAKE_ERROR(n) {throw_full_error(n, __LINE__, __FILE__); }
-// #define __MAKE_ERROR(n) {throw_error(n); }
+#define __MAKE_ERROR(n) throw_full_error(n, __LINE__, __FILE__);
+// #define __MAKE_ERROR(n) throw_error(n);
 
 #define ERROR(n)  {__MAKE_ERROR(n); return 0; }
+#define ERROR_RET(n) (throw_full_error(n, __LINE__, __FILE__) ? NULL : NULL)
 
 
 typedef enum {
+	TYPE_ERROR,
 	PRAZDNA_HODNOTA,
 	OPERACE_NEMA_SMYSL,
 	MOC_HLUBOKA_REKURZE,

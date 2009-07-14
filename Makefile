@@ -1,9 +1,12 @@
 
-VERSION = 0.0.5
+VERSION = 0.1.0
 NAME = pseudolisp
 
-SRC = ${NAME}.c structs.c funkce.c helpers.c testy.c error.c hashovani.c execute.c reader.c parser.c gc.c funkce-sideef.c
-HEADERS = structs.h funkce.h helpers.h error.h hashovani.h execute.h parser.h gc.h
+# SRC = ${NAME}.c structs.c funkce.c helpers.c testy.c error.c hashovani.c execute.c reader.c parser.c gc.c funkce-sideef.c
+# HEADERS = structs.h funkce.h helpers.h error.h hashovani.h execute.h parser.h gc.h
+
+SRC = ${NAME}.c structs.c error.c
+HEADERS = structs.h error.h
 
 OBJ = ${SRC:.c=.o}
 
@@ -40,5 +43,5 @@ dist: ${SRC} ${HEADERS}
 
 znova: clean all
 
-tags: 
+tags:
 	ctags -R .
