@@ -52,7 +52,7 @@ Symbol *f_print_string(List *params)
 		if ((la = get_List(s)) != NULL) {
 			while (la != NULL) {
 				if (la->symbol->type != CHAR)
-					ERROR(OPERACE_NEMA_SMYSL);
+					ERROR(TYPE_ERROR);
 
 				putchar(la->symbol->s.character);
 				la = la->next;

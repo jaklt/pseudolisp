@@ -21,7 +21,7 @@ int is_TRUE(Symbol *s)
 int Symbol_to_bool(Symbol *symb)
 {
 	Symbol *s = resolve_Thunk(symb);
-	if (!is_NIL(s) && s->type != BOOL) ERROR(OPERACE_NEMA_SMYSL);
+	if (!is_NIL(s) && s->type != BOOL) ERROR(TYPE_ERROR);
 
 	return is_TRUE(s);
 }
@@ -48,7 +48,7 @@ Symbol *head(List *l)
 {
 	List *hl = get_List(resolve_Thunk(l->symbol));
 
-	if (hl == NULL) ERROR(OPERACE_NEMA_SMYSL);
+	if (hl == NULL) ERROR(TYPE_ERROR);
 	return hl->symbol;
 }
 
@@ -57,7 +57,7 @@ Symbol *tail(List *l)
 {
 	List *ret = get_List(resolve_Thunk(l->symbol));
 	
-	if (ret == NULL) ERROR(OPERACE_NEMA_SMYSL);
+	if (ret == NULL) ERROR(TYPE_ERROR);
 	return ret->next ? list(ret->next) : NULL;
 }
 
@@ -131,8 +131,8 @@ Symbol *deleno(List *params) { return inner_reduce(f_deleno, nubers_ok, params);
 
 Symbol *nubers_ok(Symbol *(*operace)(t_number, t_number), Symbol *a, Symbol *b)
 {
-	if (is_NIL(a)|| is_NIL(b)) ERROR(PRAZDNA_HODNOTA);
-	if (a->type != NUMBER || b->type != NUMBER) ERROR(OPERACE_NEMA_SMYSL);
+	if (is_NIL(a) || is_NIL(b) || a->type != NUMBER || b->type != NUMBER)
+		ERROR(TYPE_ERROR);
 
 	return operace(a->s.number, b->s.number);
 }
@@ -180,7 +180,7 @@ Symbol *op_if(List *params)
 {
 	Symbol *s = resolve_Thunk(params->symbol);
 
-	if (s->type != BOOL) ERROR(OPERACE_NEMA_SMYSL);
+	if (s->type != BOOL) ERROR(TYPE_ERROR);
 
 	if (s->s.boolean)
 		return params->next->symbol;
@@ -220,7 +220,7 @@ Symbol *op_not(List *params)
 	Symbol *s = resolve_Thunk(params->symbol);
 
 	if (is_NIL(s) || s->type != BOOL)
-		ERROR(OPERACE_NEMA_SMYSL);
+		ERROR(TYPE_ERROR);
 
 	return new_Ordinal(BOOL, s->s.boolean ? BOOL_FALSE : BOOL_TRUE);
 }
@@ -278,13 +278,13 @@ Symbol *apply(List *params)
 	Symbol *s = resolve_Thunk(params->symbol);
 
 	if (s->type != FUNCTION && s->type != THUNK) {
-		// ERROR(OPERACE_NEMA_SMYSL); // spatny pocet parametru ?
+		// ERROR(TYPE_ERROR); // spatny pocet parametru ?
 		return s;
 	}
 
 	Symbol *s2 = resolve_Thunk(params->next->symbol);
 	if (is_NIL(s2)) return s;
-	if (s2->type != LIST) ERROR(OPERACE_NEMA_SMYSL);
+	if (s2->type != LIST) ERROR(TYPE_ERROR);
 
 	List *l = new_List(s);
 	l->next = get_List(s2);
@@ -299,7 +299,7 @@ static Symbol *inner_reduce(
 		List *l
 	)
 {
-	if (l == NULL) ERROR(VNITRNI_CHYBA);
+	if (l == NULL) ERROR(INNER_ERROR);
 
 	Symbol *s = l->symbol;
 	l = l->next;

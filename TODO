@@ -13,6 +13,7 @@ Formatovany vystup:
 Zlidstit parser.c + udelat kontroly preteceni
 Dopsat vsude komentare :-)
 
+
 Zasobnikove vyhodnocovani!
 Optimalizovat hashovani!
 Promyslet collect u GC!

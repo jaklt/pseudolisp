@@ -16,17 +16,14 @@ int throw_full_error(E_ERROR t, int line, char file[])
 		case TYPE_ERROR:
 			fprintf(stderr, "Type error");
 			break;
-		case PRAZDNA_HODNOTA:
-			fprintf(stderr, "Empty value");
+		case TOO_DEEP_RECURSION:
+			fprintf(stderr, "Too deep recursion (&number)");
 			break;
-		case OPERACE_NEMA_SMYSL:
-			fprintf(stderr, "Operace nad neslucitelnymi typy");
+		case TOO_MANY_PARAMS:
+			fprintf(stderr, "Too many parameters");
 			break;
-		case MOC_HLUBOKA_REKURZE:
-			fprintf(stderr, "Prekonan maximalni hloubka rekurze (&cislo)");
-			break;
-		case VNITRNI_CHYBA:
-			fprintf(stderr, "Bad Function body");
+		case INNER_ERROR:
+			fprintf(stderr, "Inner error (maybe bad function body)");
 			break;
 		case NOT_IMPLEMENTED:
 			fprintf(stderr, "Not implemented yet");
@@ -43,8 +40,12 @@ int throw_full_error(E_ERROR t, int line, char file[])
 	}
 
 	fprintf(stderr, ERR_END);
+#ifdef DEBUG
+	return 1/0;
+#else
 	exit(t + 1);
 	return 1;
+#endif
 }
 
 

@@ -17,12 +17,13 @@ typedef unsigned long int t_point;
 #define BOOL_TRUE  ((t_point) 1)
 #define BOOL_FALSE ((t_point) 0) // zalezi zda chci, aby NIL == BOOL_FALSE
 
+#define MAX_NUM 0x1FFFFFFF
+#define MIN_NUM 0xE0000000
+
 #define p2n(p) (((t_point) (p)) & (~(t_point)3))
 #define type_match(p,t) (((p) & 3) == (t))
-#define get_p(p,t) (type_match(p,t) ? (void *) (p) : ERROR_RET(TYPE_ERROR))
+#define get_p(p,t) (type_match(p,t) ? (void *) p2n(p) : ERROR_RET(TYPE_ERROR))
 #define get_type(p) ((p) & 3)
-
-#define is_NIL(p) ((p) == NIL)
 
 #define make_Cons(p)  ((t_point) p2n(p)   | CONS)
 #define make_Thunk(p) ((t_point) p2n(p)   | THUNK)
@@ -34,7 +35,8 @@ typedef unsigned long int t_point;
 #define get_Thunk(p) ((Thunk *)    get_p(p, THUNK))
 #define get_Func(p)  ((Function *) get_p(p, FUNCTION))
 #define get_Num(p)   (type_match(p,NUMBER) ? \
-		(t_number) (p >> 2) : (t_number) ERROR_RET(TYPE_ERROR))
+		(t_number) ((p) >> 2) | ((p) & 0x80000000 ? 0xC0000000 : 0x00000000) \
+		: (t_number) ERROR_RET(TYPE_ERROR))
 
 #define next(p)                  \
 	(type_match((p)->b, CONS) ?  \
@@ -59,7 +61,7 @@ typedef struct SFunction {
 	int params_count;
 
 	union {
-		void *(*link)(Cons *);
+		t_point (*link)(Cons *);
 		Thunk *structure;
 	} body;
 } Function;
@@ -68,11 +70,24 @@ typedef struct SFunction {
 Function *new_Function(Thunk *body_function, int params_count);
 Thunk *new_Thunk(t_point fce, Cons *params);
 Cons *new_Cons(t_point a, t_point b);
-#define new_Param(a) new_Thunk(make_Num(a), NIL)
+#define new_List(a)  new_Cons(a, NIL)
+#define new_Param(a) new_Thunk(NIL, (Cons *) make_Num(a))
 
 #define pnew_Function(a,b) make_Func(new_Function((a),(b)))
 #define pnew_Thunk(a,b) make_Thunk(new_Thunk((a),(b)))
 #define pnew_Cons(a,b) make_Cons(new_Cons((a),(b)))
-#define pnew_Param(a) make_Thunk(new_Thunk(make_Num(a), NIL))
+#define pnew_List(a)  make_Cons(new_List(a))
+#define pnew_Param(a) make_Thunk(new_Param(a))
+
+
+#define is_NIL(p) ((p) == NIL)
+
+static inline int is_Param(t_point p)
+{
+	if (!type_match(p, THUNK)) return 0;
+	Thunk *t = get_Thunk(p);
+
+	return (t->function == NIL && type_match((t_point) t->params, NUMBER));
+}
 
 #endif

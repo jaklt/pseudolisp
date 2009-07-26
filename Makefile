@@ -2,15 +2,15 @@
 VERSION = 0.1.0
 NAME = pseudolisp
 
-# SRC = ${NAME}.c structs.c funkce.c helpers.c testy.c error.c hashovani.c execute.c reader.c parser.c gc.c funkce-sideef.c
-# HEADERS = structs.h funkce.h helpers.h error.h hashovani.h execute.h parser.h gc.h
+# SRC = funkce.c hashovani.c execute.c reader.c parser.c gc.c funkce-sideef.c
+# HEADERS = funkce.h hashovani.h parser.h gc.h
 
-SRC = ${NAME}.c structs.c error.c
-HEADERS = structs.h error.h
+SRC = ${NAME}.c structs.c error.c execute.c testy.c helpers.c
+HEADERS = structs.h error.h execute.h testy.h helpers.h
 
 OBJ = ${SRC:.c=.o}
 
-PARAMS = -std=c99 -g -Wall -pedantic
+PARAMS = -std=c99 -g -Wall -pedantic -DDEBUG
 # -pg je pro gprof
 # -g je pro gdb/valgrind
 # -D<nazev> odpovida "#define"

@@ -1,313 +1,203 @@
 #include <stdio.h>
 
-#include "funkce.h"
 #include "structs.h"
-#include "helpers.h"
 #include "execute.h"
-#include "parser.h"
-#include "hashovani.h"
-#include "gc.h"
+#include "helpers.h"
 
 
-static Function **get_array_of_funtions();
-static int funkcni_testy();
-static int testy_slozenych_funkci();
-static int zkouska_erroru();
-static int logicke_vyrazy();
-static int testovani_if();
-static int listove_testy();
-static int nekonecne_testy();
-static int thunk_s_dalsimy_parametry();
 #define NEXT printf("\n-- next test:\n")
-#define SPRAVNE(a) printf("\t** SPRAVNE: "); printf(a); printf(" **\n");
-#define SPRAVNE_NUMBER(a,b) printf("\t** SPRAVNE: "); printf(a,b); printf(" **\n");
+#define SPRAVNE(a) printf("\t** SPRAVNE: " a " **\n");
+#define SPRAVNE_NUMBER(a,b) printf("\t** SPRAVNE: " a " **\n", b);
 
+
+t_point f_plus(Cons *params)
+{
+	Cons *b = next(params);
+	params->a = resolve_Thunk(params->a);
+	b->a = resolve_Thunk(b->a);
+
+	if (!type_match(params->a, NUMBER) || !type_match(next(params)->a, NUMBER))
+		ERROR(TYPE_ERROR);
+
+	return make_Num(get_Num(params->a) + get_Num(next(params)->a));
+}
+
+
+t_point f_if(Cons *params)
+{
+	t_point b = resolve_Thunk(params->a);
+	if (b & (~1)) ERROR(TYPE_ERROR);
+
+	if (b == BOOL_TRUE)
+		return next(params)->a;
+	else
+		return next(next(params))->a;
+}
+
+
+t_point f_eq(Cons *params)
+{
+//	if (!type_match(params->a, NUMBER) || !type_match(next(params)->a, NUMBER))
+//		ERROR(TYPE_ERROR);
+	Cons *b = next(params);
+	params->a = resolve_Thunk(params->a);
+	b->a = resolve_Thunk(b->a);
+
+	if (get_Num(params->a) == get_Num(b->a))
+		return BOOL_TRUE;
+	else
+		return BOOL_FALSE;
+}
+
+
+Function *getter(int params_count, t_point (*link)(Cons *))
+{
+	Function *f = new_Function(NULL, params_count);
+	f->built_in = 1;
+	f->body.link = link;
+
+	return f;
+}
+
+Function *get_fplus()
+{
+	static Function *f = NULL;
+	if (f == NULL) f = getter(2, f_plus);
+	return f;
+}
+
+
+Function *get_fif()
+{
+	static Function *f = NULL;
+	if (f == NULL) f = getter(3, f_if);
+	return f;
+}
+
+
+Function *get_feq()
+{
+	static Function *f = NULL; 
+	if (f == NULL) f = getter(2, f_eq);
+	return f;
+}
+
+
+Thunk *insert_params(Cons *params, Function *kam);
+static int zakladni();
+static int parametry();
+static int resolvovani();
+static int rekurze();
+static int zakladni_fce();
 
 int test()
 {
-	gc_init();
+//	gc_init();
 	printf("-- Zacatek testovani:\n");
-	funkcni_testy(); NEXT;
-	testy_slozenych_funkci(); NEXT;
-	logicke_vyrazy(); NEXT;
-	testovani_if(); NEXT;
-	listove_testy(); NEXT;
-	thunk_s_dalsimy_parametry(); NEXT;
-	zkouska_erroru(); NEXT;
-	nekonecne_testy(); NEXT;
+	zakladni(); NEXT;
+	parametry(); NEXT;
+	resolvovani(); NEXT;
+	zakladni_fce(); NEXT;
+	rekurze(); NEXT;
 
 	return 0;
 }
 
 
-static int thunk_s_dalsimy_parametry()
+static int zakladni()
 {
-	Function **f = get_array_of_funtions();
+	Cons *c = new_Cons(NIL, pnew_Cons(make_Num(-12), NIL));
+	Thunk *par = new_Param(1);
+//	Function *f = get_fplus();
+//	Thunk *t = new_Thunk(make_Func(f), NULL);
 
-	List *a_body = new_List(new_Symbol(FUNCTION, f[0]));
-	a_body->next = new_List(new_Ordinal(NUMBER, 3));
-	Function *a = new_Function(a_body, 0);
+	printf("%li\n", get_Num(next(c)->a));
+	SPRAVNE("-12");
 
-	List *b_body = new_List(new_Symbol(LIST, new_List(new_Symbol(FUNCTION, a))));
-	b_body->next = new_List(new_Ordinal(NUMBER, 2));
-//	Function *b = new_Function(b_body, 0);
+	printf("Is param: %i\n", is_Param(make_Thunk(par)));
+//	print_List(c);
+//	print_Thunk(new_Thunk(make_Thunk(t), new_Cons(make_Num(12), NIL)));
+//	print_Cons(c);
+	return 0;
+}
 
-	print_Symbol(resolve_Thunk(new_Symbol(LIST, b_body)));
-	SPRAVNE("Number = 5");
 
+static int parametry()
+{
+	Function *f = get_fplus();
+	Thunk *t = new_Thunk(make_Func(f), new_Cons(make_Num(5), pnew_Cons(pnew_Param(1), NIL)));
+	Function *fce = new_Function(t, 1);
+	Cons *l = new_List(make_Num(4));
+
+	print_Symbol(make_Func(fce));
+	Thunk *p = insert_params(l, fce);
+	print_Thunk(p);
+	return 0;
+}
+
+
+static int resolvovani()
+{
+	Function *f = get_fplus();
+	Thunk *t = new_Thunk(make_Func(f), new_Cons(make_Num(5), pnew_Cons(pnew_Param(1), NIL)));
+	Function *fce = new_Function(t, 1);
+	Cons *l = new_List(make_Num(4));
+	Thunk *go = new_Thunk(make_Func(fce), l);
+
+	print_Symbol(resolve_Thunk(make_Thunk(go)));
 
 	return 0;
 }
 
 
-static int nekonecne_testy()
+static int zakladni_fce()
 {
-	Function *f = new_Function(NULL, 1);
-	Function **funkce = get_array_of_funtions();
+	Function *plus = get_fplus();
+	Function *f_if = get_fif();
+	Function *eq = get_feq();
 
-	// [def count [l] [tail [count NIL]]] [count NIL]
-	List *rec = new_List(new_Symbol(FUNCTION, f));
-	rec->next = new_List(new_NIL());
+	Thunk *t1 = new_Thunk(
+			make_Func(plus),
+			new_Cons(make_Num(1), pnew_List(make_Num(2))));
 
-	List *body = new_List(new_Symbol(FUNCTION, funkce[8]));
-	body->next = new_List(new_Symbol(LIST, rec));
+	Thunk *t2 = new_Thunk(
+			make_Func(eq),
+			new_Cons(make_Num(2), pnew_List(make_Thunk(t1))));
 
-	f->body.structure = body;
+	Thunk *t3 = new_Thunk(
+			make_Func(f_if),
+			new_Cons(make_Thunk(t2), pnew_Cons(make_Num(1), pnew_List(make_Thunk(t1)))));
 
-	List *calling = new_List(new_Symbol(FUNCTION, f));
-	calling->next = new_List(new_NIL());
+	print_Symbol(resolve_Thunk(make_Thunk(t3)));
+	SPRAVNE("3");
 
-	print_Symbol(resolve_Thunk(new_Symbol(LIST, calling)));
-
-	return 0; 
-}
-
-
-static int listove_testy()
-{
-	const int n = 10;
-	List *l = new_List(NULL);
-	List *nl = l;
-
-	for (int i=1; i<n; i++) {
-		nl->next = new_List(new_Ordinal(NUMBER, i*100));
-		nl = nl->next;
-	}
-
-	nl = new_List(new_Symbol(LIST, l));
-	nl->next = new_List(new_Symbol(LIST, l));
-	Symbol *list = append(nl);
-
-//	print_Symbol(list);
-
-	nl->symbol = new_NIL();
-	nl->next->next = new_List(new_Ordinal(CHAR, 'A'));
-	nl->next->next->next = new_List(new_Symbol(LIST, new_List(NULL)));
-	list = append(nl);
-	print_Symbol(list);
-
-	SPRAVNE("[100, ..., 900, 'A']");
-	return 0;
-}
-
-
-static int testovani_if()
-{
-	Function **f = get_array_of_funtions();
-
-	List *porovnani = new_List(new_Symbol(FUNCTION, f[6]));
-	porovnani->next = new_List(new_Ordinal(PARAMETER, 1));
-	porovnani->next->next = new_List(new_Ordinal(PARAMETER, 2));
-
-	List *body = new_List(new_Symbol(FUNCTION, f[4]));
-	body->next = new_List(new_Symbol(LIST, porovnani));
-	body->next->next = new_List(new_Ordinal(PARAMETER, 1));
-	body->next->next->next = new_List(new_Ordinal(PARAMETER, 2));
-
-	Symbol *fce = new_Symbol(FUNCTION, new_Function(body, 2));
-
-	List *volani = new_List(fce);
-	volani->next = new_List(new_Ordinal(NUMBER, 2));
-	volani->next->next = new_List(new_Ordinal(NUMBER, 3));
-
-	Symbol *vysl = resolve_Thunk(new_Symbol(LIST, volani));
-	print_Symbol(vysl);
-	SPRAVNE("Number = 3");
 
 	return 0;
 }
 
-
-static int logicke_vyrazy()
+/**
+ * Suma
+ */
+static int rekurze()
 {
-	Function **f = get_array_of_funtions();
+	Function *plus = get_fplus();
+	Function *eq = get_feq();
+	Function *f_if = get_fif();
+	Function *sum = new_Function(NULL, 1);
 
-	List *body = new_List(new_Symbol(FUNCTION, f[6]));
-	body->next = new_List(new_Ordinal(NUMBER, 12));
-	body->next->next = new_List(new_Ordinal(NUMBER, 11));
+	Thunk *t1 = new_Thunk(make_Func(eq), new_Cons(make_Num(1), pnew_List(pnew_Param(1))));
+	Thunk *t2 = new_Thunk(make_Func(plus), new_Cons(make_Num(-1), pnew_List(pnew_Param(1))));
+	Thunk *t3 = new_Thunk(make_Func(sum), new_List(make_Thunk(t2)));
+	Thunk *t4 = new_Thunk(make_Func(plus), new_Cons(pnew_Param(1), pnew_List(make_Thunk(t3))));
 
-	Symbol *vysl = resolve_Thunk(new_Symbol(LIST, body));
-	print_Symbol(vysl);
-	SPRAVNE("TRUE");
+	Thunk *t = new_Thunk(
+			make_Func(f_if),
+			new_Cons(make_Thunk(t1), pnew_Cons(make_Num(1), pnew_List(make_Thunk(t4)))));
+	sum->body.structure = t;
 
-	printf("\n");
-
-	List *body2 = new_List(new_Symbol(FUNCTION, f[5]));
-	body2->next = new_List(new_Ordinal(NUMBER, 11));
-	body2->next->next = new_List(new_Ordinal(NUMBER, 11));
-
-	vysl = resolve_Thunk(new_Symbol(LIST, body2));
-	print_Symbol(vysl);
-	SPRAVNE("TRUE");
-
-	printf("\n");
-
-	List *okif = new_List(new_Symbol(FUNCTION, f[4]));
-	okif->next = new_List(new_Ordinal(BOOL, BOOL_FALSE));
-	okif->next->next = new_List(new_Ordinal(NUMBER, 1));
-	okif->next->next->next = new_List(new_Ordinal(NUMBER, 2));
-
-	vysl = resolve_Thunk(new_Symbol(LIST, okif));
-	print_Symbol(vysl);
-	SPRAVNE("Number = 2");
+	Thunk *go = new_Thunk(make_Func(sum), new_List(make_Num(20)));
+	print_Symbol(resolve_Thunk(make_Thunk(go)));
+	SPRAVNE("210");
 
 	return 0;
-}
-
-
-static int zkouska_erroru()
-{
-	SPRAVNE("\"Error: Operace nad neslucitelnymi typy\"");
-	Function **f = get_array_of_funtions();
-
-	List *body = new_List(new_Symbol(FUNCTION, f[0]));
-	body->next = new_List(new_Ordinal(PARAMETER, 1));
-	body->next->next = new_List(new_Ordinal(PARAMETER, 2));
-
-	Function *a = new_Function(body, 2);
-
-	List *do_tanku = new_List(new_Symbol(FUNCTION, f[0]));
-	do_tanku->next = new_List(new_Ordinal(NUMBER, 3));
-//	do_tanku->next->next = new_List(new_Ordinal(NUMBER, 5));
-	do_tanku->next->next = new_List(new_NIL());
-
-
-	List *volani = new_List(new_Ordinal(NUMBER, 2));
-	volani->next = new_List(new_Symbol(LIST, do_tanku));
-
-	Symbol *vysledek = resolve_Thunk(result(a, volani));
-
-	printf("vysledek-error: %s\n", (vysledek == NULL) ? "JO" : "NE");
-	print_Symbol(vysledek);
-	printf("vysledek-error2: %s\n", (resolve_Thunk(new_Symbol(LIST, do_tanku)) == NULL) ? "JO" : "NE");
-
-	return 0;
-}
-
-
-static int testy_slozenych_funkci()
-{
-	// 	plus minus krat deleno
-	Function **f = get_array_of_funtions();
-
-	List *body = new_List(new_Symbol(FUNCTION, f[0]));
-	body->next = new_List(new_Ordinal(NUMBER, 3));
-	body->next->next = new_List(new_Ordinal(PARAMETER, 1));
-
-	Function *a = new_Function(body, 1);
-
-	Symbol *vysledek = resolve_Thunk(result(a, new_List(new_Ordinal(NUMBER, 8))));
-	print_Symbol(vysledek);
-	printf("parameter: %d\n", (int)a->body.structure->next->next->symbol->s.character);
-
-	SPRAVNE("Number = 11, parameter 1");
-	printf("\n"); 
-
-	body->next->next = NULL;
-	List *calling = new_List(new_Symbol(LIST, body));
-	calling->next = new_List(new_Ordinal(NUMBER, 3));
-
-	print_Symbol(resolve_Thunk(new_Symbol(LIST, calling)));
-
-	SPRAVNE("Number = 6");
-	return 0;
-}
-
-
-static int funkcni_testy()
-{
-	Function **f = get_array_of_funtions();
-	const int n = 5;
-	List *l = new_List(NULL);
-	List *nl = l;
-
-	for (int i=0; i<n; i++) {
-		nl->next = new_List(new_Ordinal(NUMBER, i+3));
-		nl = nl->next;
-	}
-
-	print_List(l->next);
-
-//	Symbol *vysl = krat(l);
-	Symbol *vysl = result(f[0], l->next);
-	print_Symbol(vysl);
-
-	SPRAVNE("Number = 25");
-	return 0;
-}
-
-
-static Function **get_array_of_funtions()
-{
-	// - vytvoreni instanci vsech built-in funkci
-
-	#define n 10
-	static Function *array[n];
-	static int hotovson = 1;
-	
-	if (hotovson) {
-		hotovson = 0;
-
-		array[0] = new_Function(NULL, 2);
-		array[0]->built_in = BOOL_TRUE;
-		array[0]->body.link = plus;
-
-		array[1] = new_Function(NULL, 2);
-		array[1]->built_in = BOOL_TRUE;
-		array[1]->body.link = minus;
-
-		array[2] = new_Function(NULL, 2);
-		array[2]->built_in = BOOL_TRUE;
-		array[2]->body.link = krat;
-
-		array[3] = new_Function(NULL, 2);
-		array[3]->built_in = BOOL_TRUE;
-		array[3]->body.link = deleno;
-
-		array[4] = new_Function(NULL, 3);
-		array[4]->built_in = BOOL_TRUE;
-		array[4]->body.link = op_if;
-
-		array[5] = new_Function(NULL, 2);
-		array[5]->built_in = BOOL_TRUE;
-		array[5]->body.link = eq;
-
-		array[6] = new_Function(NULL, 2);
-		array[6]->built_in = BOOL_TRUE;
-		array[6]->body.link = gt;
-
-		array[7] = new_Function(NULL, 2);
-		array[7]->built_in = BOOL_TRUE;
-		array[7]->body.link = append;
-
-		array[8] = new_Function(NULL, 1);
-		array[8]->built_in = BOOL_TRUE;
-		array[8]->body.link = tail;
-
-		array[9] = new_Function(NULL, 1);
-		array[9]->built_in = BOOL_TRUE;
-		array[9]->body.link = head;
-	}
-
-	return array;
 }

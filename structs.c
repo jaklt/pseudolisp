@@ -8,8 +8,8 @@ Function *new_Function(Thunk *body_function, int params_count)
 
 	f->body.structure = body_function;
 	f->params_count   = params_count;
-	f->built_in       = BOOL_FALSE;
-	f->more_params    = BOOL_FALSE;
+	f->built_in       = 0;
+	f->more_params    = 0;
 
 	return f;
 }

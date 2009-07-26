@@ -32,7 +32,7 @@ char read_char()
 	static int is_prev = 0;
 	static char prev;
 	char c;
-	if (input == NULL) ERROR(VNITRNI_CHYBA);
+	if (input == NULL) ERROR(INNER_ERROR);
 
 	if (is_prev) {
 		c = prev;
