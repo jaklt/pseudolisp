@@ -21,14 +21,18 @@ static Cons *f_append(Cons *a, Cons *b)
 }
 
 
-static int list_len(Cons *l)
+/**
+ * Zjisti zda list l je aspon count dlouhy. Do other
+ * nastavi odkaz na (count+1)-ty prvek.
+ */
+static int list_length_ok(Cons *l, int count, Cons **other)
 {
-	int i = 0;
-	while (l != NULL) {
-		i++; l = next(l);
+	while (l != NULL && count) {
+		count--; l = next(l);
 	}
 
-	return i;
+	*other = l;
+	return count == 0;
 }
 
 
@@ -80,24 +84,22 @@ static t_point result(Thunk *t, int *done)
 {
 	if (type_match(t->function, FUNCTION) && (t->function != BOOL_TRUE)) {
 		Function *f = get_Func(t->function);
-		if (list_len(t->params) >= f->params_count) {
-			Cons *c = NULL;
+		Cons *other_params = NULL;
+
+		if (list_length_ok(t->params, f->params_count, &other_params)) {
 			*done = 0;
 
 			// prebytek parametru
-			if (!f->more_params) {
-				int i = f->params_count;
-				c = t->params;
-				while (i) { i--; c = next(c); }
-			}
+			if (f->more_params) other_params = NULL;
 
 			if (f->built_in)
+				// FIXME tady jeste nejsou doplneny parametry
 				t->function = f->body.link(t->params);
 			else
 				t->function = make_Thunk(insert_params(t->params, f));
 
-			t->params = c;
-			if (c == NULL)
+			t->params = other_params;
+			if (other_params == NULL)
 				return t->function;
 			else
 				return make_Thunk(t);
@@ -116,6 +118,7 @@ static t_point result(Thunk *t, int *done)
 		return make_Thunk(t);
 	}
 
+	// nejde ani o volani funkce ani o nevyhodnoceny Thunk
 	if (t->params == NULL)
 		return t->function;
 	else
@@ -144,10 +147,14 @@ t_point resolve_Thunk(t_point s)
 			int zaloha = akt;
 			filo[akt] = result(get_Thunk(s), &seen[akt]);
 
-			if (zaloha != akt) ERROR(UNDEFINED);
+			// pokud se tohle pokazi tak je nekde neco hodne spatne
+			if (zaloha != akt) ERROR(INNER_ERROR);
 
 			// nic se nezmenilo
-			if ((s == filo[akt]) && seen[akt]) akt--;
+			if ((s == filo[akt]) && seen[akt]) {
+				if (akt == start) break;
+				akt--;
+			}
 			continue;
 		}
 

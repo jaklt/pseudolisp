@@ -5,6 +5,7 @@
 #include "error.h"
 
 static int odsazeni = 0;
+static int resolve  = 1;
 
 
 static int odsadit()
@@ -18,9 +19,8 @@ static int odsadit()
 
 int print_Symbol(t_point s)
 {
-#ifndef DEBUG
-//	s = resolve_Thunk(s); // TODO podmineny preklad
-#endif
+	if (resolve) s = resolve_Thunk(s);
+
 	switch (get_type(s)) {
 		case FUNCTION:
 			if (s == BOOL_TRUE)
@@ -126,11 +126,14 @@ int print_Thunk(Thunk *t)
 {
 	printf("Thunk:\n");
 	if (t == NULL) return 1;
+	int tmp = resolve;
 	odsazeni++;
+	resolve = 0;
 
 	odsadit(); print_Symbol(t->function);
 	odsadit(); printf("Parameters - "); print_List(t->params);
 
 	odsazeni--;
+	resolve = tmp;
 	return 0;
 }

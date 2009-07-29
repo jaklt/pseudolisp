@@ -50,8 +50,7 @@ static Hash *new_sized_Hash(int size)
 
 inline Hash *new_Hash()
 {
-	const int POC = 8;
-	return new_sized_Hash(POC);
+	return new_sized_Hash(BASIC_HASH_SIZE);
 }
 
 
@@ -101,7 +100,7 @@ static int expand_hash(Hash *h)
 }
 
 
-HashMember *add_Hash(Hash *h, unsigned long int hash, void *p)
+HashMember *add_Hash(Hash *h, unsigned long int hash, unsigned long int p)
 {
 	h->used++;
 
@@ -116,7 +115,7 @@ HashMember *add_Hash(Hash *h, unsigned long int hash, void *p)
 }
 
 
-HashMember *add_string_Hash(Hash *h, char *name, void *p)
+HashMember *add_string_Hash(Hash *h, char *name, unsigned long int p)
 {
 	// copy name
 	char *name_c = (char *) malloc((strlen(name)+1) * sizeof(char));

@@ -16,8 +16,8 @@ int set_input(FILE *inp);
 
 char read_char();
 int read_word(char *chars, int if_remain);
-Symbol *parse_char();
-Symbol *parse_string();
+t_point parse_char();
+t_point parse_string();
 
 int play();
 

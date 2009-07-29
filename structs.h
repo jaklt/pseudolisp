@@ -90,4 +90,7 @@ static inline int is_Param(t_point p)
 	return (t->function == NIL && type_match((t_point) t->params, NUMBER));
 }
 
+#define is_Func(s)  (type_match(s, FUNCTION) && s != BOOL_TRUE)
+#define is_Thunk(s) (type_match(s, THUNK) && !is_Param(s))
+
 #endif

@@ -2,17 +2,13 @@
 #include <stdlib.h>
 
 #include "testy.h"
-// #include "parser.h"
+#include "parser.h"
+
+#ifndef VERSION
+#define VERSION "?.?.?"
+#endif
 
 
-int main(int argc, char *argv[])
-{
-	test();
-	return 0;
-}
-
-
-/*
 static int prompt = 1;
 
 int init()
@@ -31,11 +27,14 @@ int runargs(char *arg)
 			test();
 			exit(0);
 		case 'v':
-			printf("PseudoLISP 0.0.5, made by Jakl Tomas.\n");
+			printf("PseudoLISP " VERSION ", made by Jakl Tomas.\n");
 			break;
 		case 'c':
 			init();
 			play();
+			break;
+		case 'q':
+			fprintf(stderr, "Not implemented yet.\n");
 			break;
 		case 'p':
 			prompt = 0;
@@ -46,6 +45,7 @@ int runargs(char *arg)
 					"  -v\tprint version\n"
 					"  -t\trun tests\n"
 					"  -c\trun console\n"
+					"  -q\tquiet (only forced ouptut)\n"
 					"  -p\tdisable prompt\n"
 					"  -h\tprint this help\n\n");
 			break;
@@ -79,4 +79,3 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
-*/

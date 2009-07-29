@@ -171,7 +171,6 @@ static int zakladni_fce()
 	print_Symbol(resolve_Thunk(make_Thunk(t3)));
 	SPRAVNE("3");
 
-
 	return 0;
 }
 

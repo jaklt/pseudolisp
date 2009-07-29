@@ -41,11 +41,11 @@ int throw_full_error(E_ERROR t, int line, char file[])
 
 	fprintf(stderr, ERR_END);
 #ifdef DEBUG
-	return 1/0;
+	(* (int *) 0) = 0;
 #else
 	exit(t + 1);
-	return 1;
 #endif
+	return 1;
 }
 
 

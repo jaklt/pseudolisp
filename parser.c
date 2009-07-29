@@ -2,15 +2,18 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "funkce.h"
+// #include "funkce.h"
 #include "parser.h"
 #include "helpers.h"
 #include "error.h"
 #include "execute.h"
-#include "gc.h"
+// #include "gc.h"
 
+extern t_point f_plus(Cons *params);
+extern t_point f_if(Cons *params);
+extern t_point f_eq(Cons *params);
 
-List *parse_pipe(Hash *h, int level);
+t_point parse_pipe(Hash *h, int level);
 extern int is_whitespace(char c);
 
 
@@ -32,13 +35,39 @@ Hash *get_basic_hash()
 
 	h = new_Hash();
 	Function *f;
-	Symbol *s;
+	t_point s;
 
 	struct function {
 		char *name;
-		Symbol *(*link)(List *);
+		t_point (*link)(Cons *);
 		int params_count;
+		int more_params;
 	} array_of_functions[] = {
+	//	name	function	params  more_params
+		{"+",       f_plus,    2,     1},
+		{"if",      f_if,      3,     0},
+		{"=",       f_eq,      2,     1},
+	};
+
+	for (int i=0; i<NUM_FUN; i++) {
+		f = new_Function(NULL, array_of_functions[i].params_count);
+		f->built_in = BOOL_TRUE;
+		f->body.link = array_of_functions[i].link;
+		f->more_params = array_of_functions[i].more_params;
+		s = make_Func(f);
+
+		add_string_Hash(h, array_of_functions[i].name, s);
+//		gc_inc_immortal(NIL, s);
+	}
+
+	add_string_Hash(h, "NIL",   NIL);
+	add_string_Hash(h, "TRUE",  BOOL_TRUE);
+	add_string_Hash(h, "FALSE", BOOL_FALSE);
+
+	return h;
+}
+
+/*
 	//	name	function	params
 		{"+",       plus,    2},
 		{"-",       minus,   2},
@@ -69,30 +98,13 @@ Hash *get_basic_hash()
 		{"print-string", f_print_string, 1},
 		{"env",     env,     0},
 		{"apply",   apply,   2},
-	};
-
-	for (int i=0; i<NUM_FUN; i++) {
-		f = new_Function(NULL, array_of_functions[i].params_count);
-		f->built_in = BOOL_TRUE;
-		f->body.link = array_of_functions[i].link;
-		s = new_Symbol(FUNCTION, f);
-
-		add_string_Hash(h, array_of_functions[i].name, s);
-		gc_inc_immortal(NIL, s);
-	}
-
-	add_string_Hash(h, "NIL", new_NIL());
-	add_string_Hash(h, "TRUE",  new_Ordinal(BOOL, BOOL_TRUE));
-	add_string_Hash(h, "FALSE", new_Ordinal(BOOL, BOOL_FALSE));
-
-	return h;
-}
+*/
 
 
-Symbol *init_def(Hash *h, char *name, int level)
+t_point init_def(Hash *h, char *name, int level)
 {
 	Function *f = new_Function(NULL, 0);
-	Symbol *s = new_Symbol(FUNCTION, f);
+	t_point s = make_Func(f);
 	HashMember *hm = NULL;
 	if (name != NULL) {
 		hm = add_string_Hash(h, name, s);
@@ -107,62 +119,67 @@ Symbol *init_def(Hash *h, char *name, int level)
 	while (is_whitespace(chars[0] = read_char()));
 	if (chars[0] != OPEN_TAG) ERROR(SYNTAX_ERROR);
 
-	while (read_word(chars, BOOL_TRUE)) {
-		add_string_Hash(new_h, chars, new_Ordinal(PARAMETER, ++param_counter));
+	while (read_word(chars, 1)) {
+		add_string_Hash(new_h, chars, pnew_Param(++param_counter));
 	}
 
 	if (chars[0] != '\0') {
-		add_string_Hash(new_h, chars, new_Ordinal(PARAMETER, ++param_counter));
+		add_string_Hash(new_h, chars, pnew_Param(++param_counter));
 
 		// nastaveni parametru se zbytkem z volani
 		if (chars[0] == REMAIN_PARAMS_TAG) {
-			f->more_params = BOOL_TRUE;
+			f->more_params = 0;
 			param_counter--;
 		}
 	}
 
 	// asociace funkce
-	f->built_in = BOOL_FALSE;
+	f->built_in = 0;
 	f->params_count = param_counter;
 
 	// vytvoreni tela funkce
-	f->body.structure = parse_pipe(new_h, param_counter+f->more_params);
+	s = parse_pipe(new_h, param_counter+f->more_params);
+	if (is_Thunk(s))
+		f->body.structure = get_Thunk(s);
+	else
+		f->body.structure = new_Thunk(s, NULL);
+
 	if (f->body.structure == NULL) ERROR(SYNTAX_ERROR);
 	free_Hash(new_h);
 
-	return s;
+	return make_Func(f);
 }
 
 
-Symbol *get_Undefined()
+t_point get_Undefined()
 {
-	static Symbol *u = NULL;
-
-	if (u == NULL) {
+	static t_point u = NIL;
+/*
+	if (u == NIL) {
 		Function *f = new_Function(NULL, 0);
-		f->built_in = BOOL_TRUE;
+		f->built_in = 1;
 		f->body.link = undefined;
 
-		u = new_Symbol(FUNCTION, f);
+		u = make_Func(f);
 	}
-
+*/
 	return u;
 }
 
 
-static Symbol *kontext_params(Symbol *function, int level)
+static t_point kontext_params(t_point function, int level)
 {
 	if (level <= 0) return function;
 
-	List *l = new_List(function);
-	function = new_Symbol(LIST, l);
+	Cons params = {.b = NIL};
+	Cons *l = &params;
 
 	for (int i=1; i<=level; i++) {
-		l->next = new_List(new_Ordinal(PARAMETER, i));
-		l = l->next;
+		l->b = pnew_List(pnew_Param(i));
+		l = next(l);
 	}
 
-	return function;
+	return pnew_Thunk(function, get_Cons(params.b));
 }
 
 
@@ -171,17 +188,17 @@ static Symbol *kontext_params(Symbol *function, int level)
  *   [def b [] [+ a 3]]
  *   [def a [] 3]
  */
-Symbol *create_token(Hash *h, char *string, int level)
+t_point create_token(Hash *h, char *string, int level)
 {
-	Symbol *s = NULL;
+	t_point s = NIL;
 	
-	if (('0' <= string[0] && string[0] <='9')
-			|| (string[0] == '-' && '0' <= string[1] && string[1] <='9'))
+	if (('0' <= string[0] && string[0] <= '9')
+			|| (string[0] == '-' && '0' <= string[1] && string[1] <= '9'))
 	{
-		s = new_Ordinal(NUMBER, (t_number) atof(string));
+		s = make_Num((t_number) atof(string));
 	}
 
-	if (s == NULL) {
+	if (s == NIL) {
 		HashMember *hp = get_string_Hash(h, string);
 
 		if (hp == NULL) {
@@ -191,7 +208,8 @@ Symbol *create_token(Hash *h, char *string, int level)
 		s = hp->link;
 
 		// doplneni kontextu do volani funkce
-		if (s->type == FUNCTION)
+		// TODO delat jen kdyz je treba
+		if (is_Func(s))
 			s = kontext_params(s, min(hp->info, level));
 	}
 
@@ -199,17 +217,17 @@ Symbol *create_token(Hash *h, char *string, int level)
 }
 
 
-List *parse_pipe(Hash *h, int level)
+t_point parse_pipe(Hash *h, int level)
 {
 	char chars[101];
 	char *c = chars;
-	int whitespaces = 1;
+	int whitespaces = 1; // cetli jsme whitespace?
 	int first = 1;
 	int is_def = 0;
 	int is_close_tag = 0;
-	List *all = new_List(NULL);
-	List *l = all;
-	Symbol *s = NULL;
+	Cons all = {NIL, NIL};
+	Cons *l = &all;
+	t_point s = NIL;
 
 
 	while ((*c = read_char()) != EOF) {
@@ -225,12 +243,11 @@ List *parse_pipe(Hash *h, int level)
 				if (is_close_tag) ERROR(SYNTAX_ERROR);
 				if (is_def) {
 					// is def
-					if (!read_word(chars, BOOL_FALSE)) ERROR(SYNTAX_ERROR);
+					if (!read_word(chars, 0)) ERROR(SYNTAX_ERROR);
 					init_def(h, chars, level);
 				} else {
 					// is lambda
-					l->next = new_List(kontext_params(init_def(h, NULL, level), level));
-					l = l->next;
+					return kontext_params(init_def(h, NULL, level), level);
 				}
 
 				break;
@@ -238,8 +255,15 @@ List *parse_pipe(Hash *h, int level)
 
 			// c is not empy
 			if (c != chars) {
-				l->next = new_List(create_token(h, chars, level));
-				l = l->next;
+				l->b = create_token(h, chars, level);
+
+				if (first) {
+					l->a = l->b;
+					l->b = NIL;
+				} else {
+					l->b = pnew_List(l->b);
+					l = next(l);
+				}
 			}
 
 			if (is_close_tag) break;
@@ -249,6 +273,7 @@ List *parse_pipe(Hash *h, int level)
 			continue;
 		}
 
+		// nacitame dal
 		if (!whitespaces) { c++; continue; }
 
 		switch (*c) {
@@ -256,48 +281,56 @@ List *parse_pipe(Hash *h, int level)
 			case '"':  s = parse_string(); break;
 
 			case OPEN_TAG:
-				l->next = parse_pipe(h, level);
+				l->b = parse_pipe(h, level);
 
-				if (l->next != NULL) {
-					l->next = new_List(new_Symbol(LIST, l->next));
-					l = l->next;
+				if (l->b != NIL) {
+					if (first) {
+						l->a = l->b;
+						l->b = NIL;
+						first = 0;
+					} else {
+						l->b = pnew_List(l->b);
+						l = next(l);
+					}
 				}
 				break;
 
 			default: c++; whitespaces = 0; break;
 		}
 
-		if (s != NULL) {
-			l->next = new_List(s);
-			l = l->next;
-			s = NULL;
+		if (s != NIL) {
+			l->b = pnew_List(s);
+			l = next(l);
+			s = NIL;
 		}
 	}
-
-	l = all->next; free(all);
-	return l;
+	
+	if (all.a == NIL && all.b == NIL)
+		return NIL;
+	else
+		return pnew_Thunk(all.a, get_Cons(all.b));
 }
 
 
 int play()
 {
-	gc_init();
+//	gc_init();
 	Hash *h = get_basic_hash();
-	List *parsed;
+	t_point parsed;
 	char c;
 
 	if (prompt) printf(PROMPT);
 	while ((c = read_char()) != EOF) {
 		if (c == OPEN_TAG) {
 			parsed = parse_pipe(h, 0);
-			if (parsed != NULL) {
-				print_Symbol(resolve_Thunk(new_Symbol(LIST, parsed)));
+			if (parsed != NIL) {
+				print_Symbol(parsed);
 			} else if (prompt)
 				printf("OK\n");
-			gc();
+//			gc();
 		}
 	}
 
-	printf("\n\n"); gc_score();
+	printf("\n\n"); // gc_score();
 	return 0;
 }
