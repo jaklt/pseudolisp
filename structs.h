@@ -29,6 +29,7 @@ typedef unsigned long int t_point;
 #define make_Thunk(p) ((t_point) p2n(p)   | THUNK)
 #define make_Func(p)  ((t_point) p2n(p)   | FUNCTION)
 #define make_Num(p)   ((t_point) ((p) << 2) | NUMBER)
+#define make_Bool(t)  ((t) ? BOOL_TRUE : BOOL_FALSE)
 
 #define get_NIL(p)   (is_NIL(p) ? (void *) NULL : ERROR_RET(TYPE_ERROR))
 #define get_Cons(p)  ((Cons *)     get_p(p, CONS))
@@ -42,6 +43,7 @@ typedef unsigned long int t_point;
 	(type_match((p)->b, CONS) ?  \
 	 get_Cons((p)->b) : (Cons *) get_NIL((p)->b))
 
+#define pnext(p)  make_Cons(next(p))
 
 typedef struct SCons {
 	t_point a;
@@ -92,5 +94,7 @@ static inline int is_Param(t_point p)
 
 #define is_Func(s)  (type_match(s, FUNCTION) && s != BOOL_TRUE)
 #define is_Thunk(s) (type_match(s, THUNK) && !is_Param(s))
+#define is_Bool(s)  ((s) == BOOL_TRUE || (s) == BOOL_FALSE)
+#define is_Num(s)   type_match(s, NUMBER)
 
 #endif

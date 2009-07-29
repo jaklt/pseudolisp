@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-// #include "funkce.h"
+#include "funkce.h"
 #include "parser.h"
 #include "helpers.h"
 #include "error.h"
@@ -44,14 +44,40 @@ Hash *get_basic_hash()
 		int more_params;
 	} array_of_functions[] = {
 	//	name	function	params  more_params
-		{"+",       f_plus,    2,     1},
-		{"if",      f_if,      3,     0},
-		{"=",       f_eq,      2,     1},
+		{"+",       plus,    2,     1},
+		{"-",       minus,   2,     1},
+		{"*",       krat,    2,     1},
+		{"/",       deleno,  2,     1},
+
+		{"if",      op_if,   3,     0},
+		{"and",     op_and,  2,     1},
+		{"or",      op_or,   2,     1},
+		{"not",     op_not,  1,     0},
+
+//		{"nil?",    op_nil,  1,     0},
+//		{"list?",   op_list, 1,     0},
+//		{"number?", op_num,  1,     0},
+//		{"char?",   op_char, 1,     0},
+//		{"bool?",   op_bool, 1,     0},
+//		{"func?",   op_func, 1,     0},
+
+		{"=",       eq,      2,     1},
+		{">",       gt,      2,     1},
+
+		{"head",    head,    1,     0},
+		{"tail",    tail,    1,     0},
+//		{"append",  append,  2,     1},
+
+		{"list",    list,    1,     1},
+//		{"print",   f_print, 1,     1},
+//		{"print-string", f_print_string, 1,     1},
+//		{"env",     env,     0,     0},
+//		{"apply",   apply,   2,     0},
 	};
 
 	for (int i=0; i<NUM_FUN; i++) {
 		f = new_Function(NULL, array_of_functions[i].params_count);
-		f->built_in = BOOL_TRUE;
+		f->built_in = 1;
 		f->body.link = array_of_functions[i].link;
 		f->more_params = array_of_functions[i].more_params;
 		s = make_Func(f);
@@ -66,39 +92,6 @@ Hash *get_basic_hash()
 
 	return h;
 }
-
-/*
-	//	name	function	params
-		{"+",       plus,    2},
-		{"-",       minus,   2},
-		{"*",       krat,    2},
-		{"/",       deleno,  2},
-
-		{"if",      op_if,   3},
-		{"and",     op_and,  2},
-		{"or",      op_or,   2},
-		{"not",     op_not,  1},
-
-		{"nil?",    op_nil,  1},
-		{"list?",   op_list, 1},
-		{"number?", op_num,  1},
-		{"char?",   op_char, 1},
-		{"bool?",   op_bool, 1},
-		{"func?",   op_func, 1},
-
-		{"=",       eq,      2},
-		{">",       gt,      2},
-
-		{"head",    head,    1},
-		{"tail",    tail,    1},
-		{"append",  append,  2},
-
-		{"list",    list,    1},
-		{"print",   f_print, 1},
-		{"print-string", f_print_string, 1},
-		{"env",     env,     0},
-		{"apply",   apply,   2},
-*/
 
 
 t_point init_def(Hash *h, char *name, int level)
