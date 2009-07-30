@@ -64,12 +64,12 @@ typedef struct SFunction {
 
 	union {
 		t_point (*link)(Cons *);
-		Thunk *structure;
+		t_point structure;
 	} body;
 } Function;
 
 
-Function *new_Function(Thunk *body_function, int params_count);
+Function *new_Function(t_point body_function, int params_count);
 Thunk *new_Thunk(t_point fce, Cons *params);
 Cons *new_Cons(t_point a, t_point b);
 #define new_List(a)  new_Cons(a, NIL)
@@ -86,15 +86,16 @@ Cons *new_Cons(t_point a, t_point b);
 
 static inline int is_Param(t_point p)
 {
-	if (!type_match(p, THUNK)) return 0;
+	if (!type_match(p, THUNK) || (p == (t_point) 2)) return 0;
 	Thunk *t = get_Thunk(p);
 
 	return (t->function == NIL && type_match((t_point) t->params, NUMBER));
 }
 
 #define is_Func(s)  (type_match(s, FUNCTION) && s != BOOL_TRUE)
-#define is_Thunk(s) (type_match(s, THUNK) && !is_Param(s))
+#define is_Thunk(s) (type_match(s, THUNK) && !is_Param(s) && ((s) != (t_point) 2))
 #define is_Bool(s)  ((s) == BOOL_TRUE || (s) == BOOL_FALSE)
 #define is_Num(s)   type_match(s, NUMBER)
+#define is_Cons(s)  type_match(s, CONS)
 
 #endif

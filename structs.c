@@ -2,7 +2,7 @@
 #include "structs.h"
 
 
-Function *new_Function(Thunk *body_function, int params_count)
+Function *new_Function(t_point body_function, int params_count)
 {
 	Function *f = (Function *) malloc(sizeof(Function));
 

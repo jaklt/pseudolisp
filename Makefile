@@ -2,10 +2,10 @@
 VERSION = 0.1.0
 NAME = pseudolisp
 
-# SRC = gc.c funkce-sideef.c
+# SRC = gc.c
 # HEADERS = gc.h
 
-SRC = ${NAME}.c structs.c error.c execute.c testy.c helpers.c hashovani.c reader.c parser.c funkce.c
+SRC = ${NAME}.c structs.c error.c execute.c testy.c helpers.c hashovani.c reader.c parser.c funkce.c funkce-sideef.c
 HEADERS = structs.h error.h execute.h testy.h helpers.h hashovani.h parser.h funkce.h
 
 OBJ = ${SRC:.c=.o}

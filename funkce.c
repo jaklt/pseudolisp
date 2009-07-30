@@ -47,7 +47,7 @@ t_point get_append()
 	static Function *f = NULL;
 
 	if (f == NULL) {
-		f = new_Function(NULL, 2);
+		f = new_Function(NIL, 2);
 
 		f->built_in = 1;
 		f->body.link = append;
@@ -60,30 +60,27 @@ t_point get_append()
 }
 
 
-// XXX sezere False -> ma teda smysl mit oddeleny false od NIL,
-//     nebo by append nemel pozirat NILy? (oboje divny)
-// TODO jen nacrt
+// XXX nestandartne dokaze pracovat i s prvky co nejsou Cons
 t_point append(Cons *params)
 {
-	/*
 	t_point s = resolve_Thunk(params->a);
 	Cons *c = next(params);
 
 	if (is_NIL(s) || !type_match(s, CONS)) {
 		if (c->b == NIL)
-			return resolve_Thunk(c->a);
+			return pnew_Cons(s, c->a);
 		else
-			return append(c);
-		return pnew_Cons(s, pnew_Thunk(get_append(), next(params)));
+			return pnew_Cons(s, pnew_Thunk(get_append(), next(params)));
 	}
 	else if (type_match(s, CONS)) {
 		c = get_Cons(s);
 
-		return pnew_Cons(c->a, pnew_Thunk(get_append(), new_Cons(c->b, pnext(params))));
-	}
-	*/
-
-	ERROR(NOT_IMPLEMENTED);
+		if (c->b == NIL) {
+			return append(new_Cons(c->a, pnext(params)));
+		} else
+			return pnew_Cons(c->a, pnew_Thunk(get_append(), new_Cons(c->b, pnext(params))));
+	} else
+		ERROR(INNER_ERROR);
 }
 
 
@@ -121,10 +118,7 @@ t_point nubers_ok(t_point (*operace)(t_number, t_number), t_point a, t_point b)
 
 static inline t_point is_not_null(t_point vysl)
 {
-	if (!is_NIL(vysl))
-		return BOOL_TRUE;
-	else
-		return BOOL_FALSE;
+	return make_Bool(!is_NIL(vysl));
 }
 
 
@@ -196,46 +190,25 @@ t_point op_not(Cons *params)
 
 	if (!is_Bool(s)) ERROR(TYPE_ERROR);
 
-	return s == BOOL_TRUE ? BOOL_FALSE : BOOL_TRUE;
+	return make_Bool(!(s == BOOL_TRUE));
 }
 
 
-t_point op_nil(Cons *params)
+t_point op_nil(Cons *params)  { return make_Bool(is_NIL(resolve_Thunk(params->a))); }
+t_point op_cons(Cons *params) { return make_Bool(type_match(resolve_Thunk(params->a), CONS)); }
+t_point op_num(Cons *params)  { return make_Bool(type_match(resolve_Thunk(params->a), NUMBER)); }
+
+t_point op_bool(Cons *params)
 {
-	return make_Bool(is_NIL(resolve_Thunk(params->a)));
+	t_point s = resolve_Thunk(params->a);
+	return make_Bool(is_Bool(s));
 }
-
-
-// TODO muze zpusobit pad
-t_point op_list(Cons *params)
-{
-	return make_Bool(get_Cons(resolve_Thunk(params->a)) != NULL);
-}
-
-
-// TODO jinak
-/*
-static t_point op_ok(t_point s, int t)
-{
-	s = resolve_Thunk(s);
-	return new_Ordinal(BOOL,
-			!is_NIL(s) && s->type == t? BOOL_TRUE : BOOL_FALSE);
-}
-
-
-t_point op_num(Cons *params)  { return op_ok(params->symbol, NUMBER); }
-t_point op_bool(Cons *params) { return op_ok(params->symbol, BOOL); }
 
 t_point op_func(Cons *params)
 {
-	t_point s = resolve_Thunk(params->symbol);
-
-	if (!is_NIL(s) && (s->type == FUNCTION || s->type == THUNK))
-		return new_Ordinal(BOOL, BOOL_TRUE);
-	else
-		return new_Ordinal(BOOL, BOOL_FALSE);
+	t_point s = resolve_Thunk(params->a);
+	return make_Bool(is_Func(s) || is_Param(s));
 }
-*/
 
 
 /**
@@ -275,7 +248,7 @@ static t_point inner_reduce(
 	l = next(l);
 
 	while (l != NULL && s != NIL) {
-		s = overeni(operace, s, resolve_Thunk(l->a));
+		s = overeni(operace, resolve_Thunk(s), resolve_Thunk(l->a));
 		l= next(l);
 	}
 

@@ -24,7 +24,7 @@ int print_Symbol(t_point s)
 	switch (get_type(s)) {
 		case FUNCTION:
 			if (s == BOOL_TRUE)
-				printf("True\n");
+				printf("TRUE\n");
 			else
 #ifndef DEBUG
 				printf("Function: built in %d, %d%s parameters\n",
@@ -46,14 +46,9 @@ int print_Symbol(t_point s)
 			break;
 		case CONS:
 			if (s == NIL)
-				printf("NIL/False\n");
+				printf("NIL/FALSE\n");
 			else
-				// TODO moznost naznacit, ze jde o List
-#ifndef DEBUG
-	  			printf("Cons\n");
-#else
-				print_Cons(get_Cons(s));
-#endif
+				print_List(get_Cons(s));
 			break;
 		case NUMBER: printf("Number: %li\n", get_Num(s)); break;
 		default:     printf("Wrong type (%lx)\n", (t_number) s); return 1;
@@ -63,14 +58,19 @@ int print_Symbol(t_point s)
 }
 
 
+// TODO jeste jinak
 int print_List(Cons *l)
 {
-	if (l == NULL) { printf("Empty List\n"); return 1; }
 	odsazeni++;
 	printf("List:\n");
 
 	while (l != NULL) {
 		odsadit();
+		if (resolve) l->b = resolve_Thunk(l->b);
+		if (!type_match(l->b, CONS)) {
+			print_Cons(l);
+			break;
+		}
 		print_Symbol(l->a);
 		l = next(l);
 	}
@@ -103,9 +103,11 @@ int print_Function(Function *f)
 {
 	printf("Function:\n");
 	if (f == NULL) return 1;
+	int tmp = resolve;
+	resolve = 0;
 	odsazeni++;
 
-	odsadit(); printf("Number of parameters: %d\n", f->params_count);
+	odsadit(); printf("Number of parameters: %d%s\n", f->params_count, f->more_params ? "+" : "");
 
 	if (f->built_in) {
 		odsadit(); printf("Build in\n");
@@ -113,11 +115,12 @@ int print_Function(Function *f)
 #ifndef DEBUG
 		odsadit(); printf("Not built in\n");
 #else
-		odsadit(); printf("Function body - "); print_Thunk(f->body.structure);
+		odsadit(); printf("Function body - "); print_Symbol(f->body.structure);
 #endif
 	}
 
 	odsazeni--;
+	resolve = tmp;
 	return 0;
 }
 
@@ -127,8 +130,8 @@ int print_Thunk(Thunk *t)
 	printf("Thunk:\n");
 	if (t == NULL) return 1;
 	int tmp = resolve;
-	odsazeni++;
 	resolve = 0;
+	odsazeni++;
 
 	odsadit(); print_Symbol(t->function);
 	odsadit(); printf("Parameters - "); print_List(t->params);

@@ -58,7 +58,7 @@ static t_point ip_run(t_point *exp_params, t_point kam)
 }
 
 
-Thunk *insert_params(Cons *params, Function *kam)
+t_point insert_params(Cons *params, Function *kam)
 {
 	int count = kam->params_count + (kam->more_params ? 1 : 0);
 	t_point exp_params[count];
@@ -72,11 +72,10 @@ Thunk *insert_params(Cons *params, Function *kam)
 	// doplneni posledniho parametru pro neomezeny pocet parametru
 	if (kam->more_params)
 		exp_params[count-1] = make_Cons(params);
-//	else if(params != NULL) ERROR(TOO_MANY_PARAMS);
 
-	l = ip_run(exp_params, make_Thunk(kam->body.structure));
+	l = ip_run(exp_params, kam->body.structure);
 
-	return get_Thunk(l);
+	return l;
 }
 
 
@@ -93,10 +92,9 @@ static t_point result(Thunk *t, int *done)
 			if (f->more_params) other_params = NULL;
 
 			if (f->built_in)
-				// FIXME tady jeste nejsou doplneny parametry
 				t->function = f->body.link(t->params);
 			else
-				t->function = make_Thunk(insert_params(t->params, f));
+				t->function = insert_params(t->params, f);
 
 			t->params = other_params;
 			if (other_params == NULL)
@@ -138,7 +136,7 @@ t_point resolve_Thunk(t_point s)
 
 	while (1) {
 		s = filo[akt];
-		if (!type_match(s, THUNK) || is_Param(s)) {
+		if (!is_Thunk(s)) {
 			if (akt == start) break;
 			goto dalsi;
 		}

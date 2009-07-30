@@ -54,29 +54,28 @@ Hash *get_basic_hash()
 		{"or",      op_or,   2,     1},
 		{"not",     op_not,  1,     0},
 
-//		{"nil?",    op_nil,  1,     0},
-//		{"list?",   op_list, 1,     0},
-//		{"number?", op_num,  1,     0},
-//		{"char?",   op_char, 1,     0},
-//		{"bool?",   op_bool, 1,     0},
-//		{"func?",   op_func, 1,     0},
+		{"nil?",    op_nil,  1,     0},
+		{"cons?",   op_cons, 1,     0},
+		{"number?", op_num,  1,     0},
+		{"bool?",   op_bool, 1,     0},
+		{"func?",   op_func, 1,     0},
 
 		{"=",       eq,      2,     1},
 		{">",       gt,      2,     1},
 
 		{"head",    head,    1,     0},
 		{"tail",    tail,    1,     0},
-//		{"append",  append,  2,     1},
+		{"append",  append,  2,     1},
 
 		{"list",    list,    1,     1},
-//		{"print",   f_print, 1,     1},
-//		{"print-string", f_print_string, 1,     1},
-//		{"env",     env,     0,     0},
+		{"dump",  f_dump,    1,     1},
+		{"print-string", f_print_string, 1,     1},
+		{"env",     env,     0,     0},
 //		{"apply",   apply,   2,     0},
 	};
 
 	for (int i=0; i<NUM_FUN; i++) {
-		f = new_Function(NULL, array_of_functions[i].params_count);
+		f = new_Function(NIL, array_of_functions[i].params_count);
 		f->built_in = 1;
 		f->body.link = array_of_functions[i].link;
 		f->more_params = array_of_functions[i].more_params;
@@ -96,7 +95,7 @@ Hash *get_basic_hash()
 
 t_point init_def(Hash *h, char *name, int level)
 {
-	Function *f = new_Function(NULL, 0);
+	Function *f = new_Function(NIL, 0);
 	t_point s = make_Func(f);
 	HashMember *hm = NULL;
 	if (name != NULL) {
@@ -121,7 +120,7 @@ t_point init_def(Hash *h, char *name, int level)
 
 		// nastaveni parametru se zbytkem z volani
 		if (chars[0] == REMAIN_PARAMS_TAG) {
-			f->more_params = 0;
+			f->more_params = 1;
 			param_counter--;
 		}
 	}
@@ -131,13 +130,7 @@ t_point init_def(Hash *h, char *name, int level)
 	f->params_count = param_counter;
 
 	// vytvoreni tela funkce
-	s = parse_pipe(new_h, param_counter+f->more_params);
-	if (is_Thunk(s))
-		f->body.structure = get_Thunk(s);
-	else
-		f->body.structure = new_Thunk(s, NULL);
-
-	if (f->body.structure == NULL) ERROR(SYNTAX_ERROR);
+	f->body.structure = parse_pipe(new_h, param_counter+f->more_params);
 	free_Hash(new_h);
 
 	return make_Func(f);
@@ -147,15 +140,14 @@ t_point init_def(Hash *h, char *name, int level)
 t_point get_Undefined()
 {
 	static t_point u = NIL;
-/*
 	if (u == NIL) {
-		Function *f = new_Function(NULL, 0);
+		Function *f = new_Function(NIL, 0);
 		f->built_in = 1;
 		f->body.link = undefined;
 
 		u = make_Func(f);
 	}
-*/
+
 	return u;
 }
 
@@ -272,34 +264,27 @@ t_point parse_pipe(Hash *h, int level)
 		switch (*c) {
 			case '\'': s = parse_char(); break;
 			case '"':  s = parse_string(); break;
-
-			case OPEN_TAG:
-				l->b = parse_pipe(h, level);
-
-				if (l->b != NIL) {
-					if (first) {
-						l->a = l->b;
-						l->b = NIL;
-						first = 0;
-					} else {
-						l->b = pnew_List(l->b);
-						l = next(l);
-					}
-				}
-				break;
+			case OPEN_TAG: s = parse_pipe(h, level); break;
 
 			default: c++; whitespaces = 0; break;
 		}
 
 		if (s != NIL) {
-			l->b = pnew_List(s);
-			l = next(l);
+			if (first) {
+				l->a = s;
+				l->b = NIL;
+				first = 0;
+			} else {
+				l->b = pnew_List(s);
+				l = next(l);
+			}
+
 			s = NIL;
 		}
 	}
 	
-	if (all.a == NIL && all.b == NIL)
-		return NIL;
+	if (all.b == NIL)
+		return all.a;
 	else
 		return pnew_Thunk(all.a, get_Cons(all.b));
 }
@@ -317,6 +302,7 @@ int play()
 		if (c == OPEN_TAG) {
 			parsed = parse_pipe(h, 0);
 			if (parsed != NIL) {
+				if (is_Func(parsed)) parsed = pnew_Thunk(parsed, NIL);
 				print_Symbol(parsed);
 			} else if (prompt)
 				printf("OK\n");

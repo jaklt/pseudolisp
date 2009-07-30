@@ -23,7 +23,7 @@ t_point op_not(Cons *params);
 t_point op_if  (Cons *params);
 
 t_point op_nil (Cons *params);
-t_point op_list(Cons *params);
+t_point op_cons(Cons *params);
 t_point op_num (Cons *params);
 t_point op_char(Cons *params);
 t_point op_bool(Cons *params);
@@ -41,7 +41,7 @@ t_point tail(Cons *l);
 
 /** Sideefectove funkce */
 t_point env(Cons *params);
-t_point f_print(Cons *params);
+t_point f_dump(Cons *params);
 t_point f_print_string(Cons *params);
 
 #endif
