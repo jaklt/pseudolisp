@@ -71,7 +71,7 @@ Hash *get_basic_hash()
 		{"dump",  f_dump,    1,     1},
 		{"print-string", f_print_string, 1,     1},
 		{"env",     env,     0,     0},
-//		{"apply",   apply,   2,     0},
+		{"apply",   apply,   2,     0},
 	};
 
 	for (int i=0; i<NUM_FUN; i++) {
@@ -283,7 +283,7 @@ t_point parse_pipe(Hash *h, int level)
 		}
 	}
 	
-	if (all.b == NIL)
+	if (all.b == NIL && !is_Func(all.a))
 		return all.a;
 	else
 		return pnew_Thunk(all.a, get_Cons(all.b));
@@ -302,7 +302,6 @@ int play()
 		if (c == OPEN_TAG) {
 			parsed = parse_pipe(h, 0);
 			if (parsed != NIL) {
-				if (is_Func(parsed)) parsed = pnew_Thunk(parsed, NIL);
 				print_Symbol(parsed);
 			} else if (prompt)
 				printf("OK\n");

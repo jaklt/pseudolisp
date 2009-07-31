@@ -66,19 +66,19 @@ t_point append(Cons *params)
 	t_point s = resolve_Thunk(params->a);
 	Cons *c = next(params);
 
-	if (is_NIL(s) || !type_match(s, CONS)) {
+	if (is_NIL(s)) {
+		if (c->b == NIL)
+			return c->a;
+		else
+			return append(c);
+	} else if (!type_match(s, CONS)) {
 		if (c->b == NIL)
 			return pnew_Cons(s, c->a);
 		else
 			return pnew_Cons(s, pnew_Thunk(get_append(), next(params)));
-	}
-	else if (type_match(s, CONS)) {
+	} else if (type_match(s, CONS)) {
 		c = get_Cons(s);
-
-		if (c->b == NIL) {
-			return append(new_Cons(c->a, pnext(params)));
-		} else
-			return pnew_Cons(c->a, pnew_Thunk(get_append(), new_Cons(c->b, pnext(params))));
+		return pnew_Cons(c->a, pnew_Thunk(get_append(), new_Cons(c->b, pnext(params))));
 	} else
 		ERROR(INNER_ERROR);
 }
@@ -207,7 +207,7 @@ t_point op_bool(Cons *params)
 t_point op_func(Cons *params)
 {
 	t_point s = resolve_Thunk(params->a);
-	return make_Bool(is_Func(s) || is_Param(s));
+	return make_Bool(is_Func(s) || is_Thunk(s));
 }
 
 
@@ -225,12 +225,10 @@ t_point undefined(Cons *params)
 t_point apply(Cons *params)
 {
 	t_point s = resolve_Thunk(params->a);
-
-	if (!is_Func(s) && !is_Thunk(s))
-		ERROR(TOO_MANY_PARAMS);
-
 	t_point s2 = resolve_Thunk(next(params)->a);
-	if (is_NIL(s2)) return s; // TODO zkusit pak oddelat
+
+	if (is_NIL(s2)) return s;
+	if (!is_Func(s) && !is_Thunk(s)) ERROR(TYPE_ERROR);
 
 	return resolve_Thunk(pnew_Thunk(s, get_Cons(s2)));
 }
