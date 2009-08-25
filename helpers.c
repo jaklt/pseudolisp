@@ -133,7 +133,7 @@ int print_Thunk(Thunk *t)
 	resolve = 0;
 	odsazeni++;
 
-	odsadit(); print_Symbol(t->function);
+	odsadit(); printf("To call - "); print_Symbol(t->function);
 	odsadit(); printf("Parameters - "); print_List(t->params);
 
 	odsazeni--;

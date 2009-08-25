@@ -6,4 +6,5 @@ if has("gui_running")
 	:!ctags -R .
 
 	:e structs.h
+	:e TODO
 endif

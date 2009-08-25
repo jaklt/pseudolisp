@@ -135,6 +135,7 @@ static int zakladni_fce()
 	return 0;
 }
 
+
 /**
  * Suma
  */

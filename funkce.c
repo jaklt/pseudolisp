@@ -61,6 +61,7 @@ t_point get_append()
 
 
 // XXX nestandartne dokaze pracovat i s prvky co nejsou Cons
+// TODO nefunguje spolehlive - viz testy/a
 t_point append(Cons *params)
 {
 	t_point s = resolve_Thunk(params->a);
@@ -226,9 +227,17 @@ t_point apply(Cons *params)
 {
 	t_point s = resolve_Thunk(params->a);
 	t_point s2 = resolve_Thunk(next(params)->a);
+	Cons *l = get_Cons(s2);
 
 	if (is_NIL(s2)) return s;
 	if (!is_Func(s) && !is_Thunk(s)) ERROR(TYPE_ERROR);
+
+	// XXX - pfuj, ale resi neuplne definovane seznamy
+	//     - neni mozne predat nekonecno parametru
+	while (l != NULL) {
+		if (!is_Cons(l->b)) l->b = resolve_Thunk(l->b);
+		l = next(l);
+	}
 
 	return resolve_Thunk(pnew_Thunk(s, get_Cons(s2)));
 }

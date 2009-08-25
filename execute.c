@@ -17,7 +17,7 @@ static Cons *f_append(Cons *a, Cons *b)
 	}
 
 	l->b = make_Cons(b);
-	return l;
+	return ret;
 }
 
 
@@ -45,7 +45,7 @@ static t_point ip_run(t_point *exp_params, t_point kam)
 
 	else if (type_match(kam, CONS))
 		return pnew_Cons(ip_run(exp_params, get_Cons(kam)->a),
-		                ip_run(exp_params, get_Cons(kam)->b));
+		                 ip_run(exp_params, get_Cons(kam)->b));
 
 	else if (is_Param(kam))
 		return exp_params[get_Num((t_point) get_Thunk(kam)->params) - 1];
