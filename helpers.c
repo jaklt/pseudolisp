@@ -8,12 +8,10 @@ static int odsazeni = 0;
 static int resolve  = 1;
 
 
-static int odsadit()
+static void odsadit()
 {
 	for (int i=0; i<odsazeni; i++)
 		printf("  ");
-
-	return 0;
 }
 
 
@@ -27,11 +25,12 @@ int print_Symbol(t_point s)
 				printf("TRUE\n");
 			else
 #ifndef DEBUG
-				printf("Function: built in %d, %d%s parameters\n",
-						(get_Func(s))->built_in, (get_Func(s))->params_count,
+				printf("Function: %sbuilt in, %d%s parameters\n",
+						(get_Func(s))->built_in ? "" : "not ",
+						(get_Func(s))->params_count,
 						(get_Func(s))->more_params ? "+" : "");
 #else
-				print_Function(get_Func(s));
+				return print_Function(get_Func(s));
 #endif
 			break;
 		case THUNK:
@@ -41,14 +40,14 @@ int print_Symbol(t_point s)
 #ifndef DEBUG
 				printf("Thunk\n");
 #else
-				print_Thunk(get_Thunk(s));
+				return print_Thunk(get_Thunk(s));
 #endif
 			break;
 		case CONS:
 			if (s == NIL)
 				printf("NIL/FALSE\n");
 			else
-				print_List(get_Cons(s));
+				return print_List(get_Cons(s));
 			break;
 		case NUMBER: printf("Number: %li\n", get_Num(s)); break;
 		default:     printf("Wrong type (%lx)\n", (t_number) s); return 1;
@@ -58,19 +57,22 @@ int print_Symbol(t_point s)
 }
 
 
-// TODO jeste jinak
 int print_List(Cons *l)
 {
-	odsazeni++;
-	printf("List:\n");
+	int first = 1;
 
 	while (l != NULL) {
-		odsadit();
 		if (resolve) l->b = resolve_Thunk(l->b);
 		if (!type_match(l->b, CONS)) {
-			print_Cons(l);
-			break;
+			if (!first) odsadit();
+			return print_Cons(l);
 		}
+		if (first) {
+			odsazeni++;
+			printf("List:\n");
+			first = 0;
+		}
+		odsadit();
 		print_Symbol(l->a);
 		l = next(l);
 	}
@@ -84,8 +86,8 @@ int print_Cons(Cons *c)
 {
 	if (c == NULL) { printf("NIL\n"); return 1; }
 	if (type_match((t_point) c, NUMBER)) {
-		printf("Jejda miso!\n");
-		return 1;
+		// printovan parametr jako Thunk
+		return __MAKE_ERROR(INNER_ERROR);
 	}
 
 	odsazeni++;
@@ -110,7 +112,7 @@ int print_Function(Function *f)
 	odsadit(); printf("Number of parameters: %d%s\n", f->params_count, f->more_params ? "+" : "");
 
 	if (f->built_in) {
-		odsadit(); printf("Build in\n");
+		odsadit(); printf("Built in\n");
 	} else {
 #ifndef DEBUG
 		odsadit(); printf("Not built in\n");

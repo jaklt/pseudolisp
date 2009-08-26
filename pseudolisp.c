@@ -11,16 +11,15 @@
 
 static int prompt = 1;
 
-int init()
+void init()
 {
 	set_prompt(prompt);
 	set_input(stdin);
 //	set_show_collected(0);
-	return 0;
 }
 
 
-int runargs(char *arg)
+void runargs(char *arg)
 {
 	switch (arg[0]) {
 		case 't':
@@ -56,7 +55,6 @@ int runargs(char *arg)
 	}
 
 	if (*(++arg) != '\0') runargs(arg);
-	return 0;
 }
 
 

@@ -19,10 +19,9 @@ extern int is_whitespace(char c);
 
 int prompt = 1;
 
-int set_prompt(int set)
+void set_prompt(int set)
 {
 	prompt = set;
-	return 0;
 }
 
 
@@ -63,11 +62,14 @@ Hash *get_basic_hash()
 		{"=",       eq,      2,     1},
 		{">",       gt,      2,     1},
 
-		{"head",    head,    1,     0},
-		{"tail",    tail,    1,     0},
+		{"head",    car,     1,     0},
+		{"car",     car,     1,     0},
+		{"tail",    cdr,     1,     0},
+		{"cdr",     cdr,     1,     0},
 		{"append",  append,  2,     1},
-
 		{"list",    list,    1,     1},
+		{"cons",    cons,    2,     0},
+
 		{"dump",  f_dump,    1,     1},
 		{"print-string", f_print_string, 1,     1},
 		{"env",     env,     0,     0},
@@ -290,7 +292,7 @@ t_point parse_pipe(Hash *h, int level)
 }
 
 
-int play()
+void play()
 {
 //	gc_init();
 	Hash *h = get_basic_hash();
@@ -310,5 +312,4 @@ int play()
 	}
 
 	printf("\n\n"); // gc_score();
-	return 0;
 }

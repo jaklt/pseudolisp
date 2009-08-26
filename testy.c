@@ -45,13 +45,13 @@ Function *get_feq()
 
 
 t_point insert_params(Cons *params, Function *kam);
-static int zakladni();
-static int parametry();
-static int resolvovani();
-static int rekurze();
-static int zakladni_fce();
+static void zakladni();
+static void parametry();
+static void resolvovani();
+static void rekurze();
+static void zakladni_fce();
 
-int test()
+void test()
 {
 //	gc_init();
 	printf("-- Zacatek testovani:\n");
@@ -60,12 +60,10 @@ int test()
 	resolvovani(); NEXT;
 	zakladni_fce(); NEXT;
 	rekurze(); NEXT;
-
-	return 0;
 }
 
 
-static int zakladni()
+static void zakladni()
 {
 	Cons *c = new_Cons(NIL, pnew_Cons(make_Num(-12), NIL));
 	Thunk *par = new_Param(1);
@@ -79,11 +77,10 @@ static int zakladni()
 //	print_List(c);
 //	print_Thunk(new_Thunk(make_Thunk(t), new_Cons(make_Num(12), NIL)));
 //	print_Cons(c);
-	return 0;
 }
 
 
-static int parametry()
+static void parametry()
 {
 	Function *f = get_fplus();
 	t_point t = pnew_Thunk(make_Func(f), new_Cons(make_Num(5), pnew_Cons(pnew_Param(1), NIL)));
@@ -93,11 +90,10 @@ static int parametry()
 //	print_Symbol(make_Func(fce));
 	print_Symbol(insert_params(l, fce));
 	SPRAVNE("9");
-	return 0;
 }
 
 
-static int resolvovani()
+static void resolvovani()
 {
 	Function *f = get_fplus();
 	t_point t = pnew_Thunk(make_Func(f), new_Cons(make_Num(5), pnew_Cons(pnew_Param(1), NIL)));
@@ -107,11 +103,10 @@ static int resolvovani()
 
 	print_Symbol(resolve_Thunk(make_Thunk(go)));
 	SPRAVNE("9");
-	return 0;
 }
 
 
-static int zakladni_fce()
+static void zakladni_fce()
 {
 	Function *plus = get_fplus();
 	Function *f_if = get_fif();
@@ -131,15 +126,13 @@ static int zakladni_fce()
 
 	print_Symbol(resolve_Thunk(make_Thunk(t3)));
 	SPRAVNE("3");
-
-	return 0;
 }
 
 
 /**
  * Suma
  */
-static int rekurze()
+static void rekurze()
 {
 	Function *plus = get_fplus();
 	Function *eq = get_feq();
@@ -159,6 +152,4 @@ static int rekurze()
 	Thunk *go = new_Thunk(make_Func(sum), new_List(make_Num(20)));
 	print_Symbol(resolve_Thunk(make_Thunk(go)));
 	SPRAVNE("210");
-
-	return 0;
 }

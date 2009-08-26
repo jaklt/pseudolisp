@@ -2,13 +2,13 @@
 #define ERROR_H
 
 #ifdef DEBUG
-	#define __MAKE_ERROR(n) throw_full_error(n, __LINE__, __FILE__);
+	#define __MAKE_ERROR(n) throw_full_error(n, __LINE__, __FILE__)
 #else
-	#define __MAKE_ERROR(n) throw_error(n);
+	#define __MAKE_ERROR(n) throw_error(n)
 #endif
 
 #define ERROR(n)  {__MAKE_ERROR(n); return 0; }
-#define ERROR_RET(n) (throw_full_error(n, __LINE__, __FILE__) ? NULL : NULL)
+#define ERROR_RET(n) (__MAKE_ERROR(n) ? NULL : NULL)
 
 
 typedef enum {

@@ -45,7 +45,7 @@ int throw_full_error(E_ERROR t, int line, char file[])
 #else
 	exit(t + 1);
 #endif
-	return 1;
+	return t + 1;
 }
 
 

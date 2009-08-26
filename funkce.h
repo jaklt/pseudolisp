@@ -8,7 +8,6 @@ t_point apply(Cons *params);
 
 /** Pomocne funkce */
 t_point undefined(Cons *params);
-Cons *get_List(t_point s);
 
 /** Function matematickych operaci */
 t_point plus  (Cons *params);
@@ -33,11 +32,12 @@ t_point op_func(Cons *params);
 t_point eq(Cons *params);
 t_point gt(Cons *params);
 
-/** Function pro praci s Listy */
+/** Funkce pro praci s dvojici */
 t_point list(Cons *params);
+t_point cons(Cons *params);
+t_point car(Cons *l);
+t_point cdr(Cons *l);
 t_point append(Cons *params);
-t_point head(Cons *l);
-t_point tail(Cons *l);
 
 /** Sideefectove funkce */
 t_point env(Cons *params);

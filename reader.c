@@ -6,10 +6,9 @@
 extern int prompt;
 static FILE *input = NULL;
 
-int set_input(FILE *inp)
+void set_input(FILE *inp)
 {
 	input = inp;
-	return 0;
 }
 
 

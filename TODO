@@ -15,8 +15,6 @@ Pridat funkce cons, cdr, car a nejaky na porovnavani symbolu
 Optimalizovat hashovani!
 Promyslet collect u GC!
 Jak delat skladani funkci? -> Hladovy zpusob dozirani parametru
-                           -> Nova verze neumi ani skladani co umela stara!
-						      (zkus [[. b a] 1 1] v testy/skladani.psl)
 
 Vysledek volani = posledni vyraz -> def muze vracet funkci?
 

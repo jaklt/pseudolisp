@@ -179,7 +179,7 @@ Hash *clone_Hash(Hash *recent)
 }
 
 
-int free_Hash(Hash *h)
+void free_Hash(Hash *h)
 {
 //	for (int i=0; i<h->size; i++) {
 //		if (h->hashes[i].name == NULL) continue;
@@ -188,6 +188,4 @@ int free_Hash(Hash *h)
 
 	free(h->hashes);
 	free(h);
-
-	return 0;
 }

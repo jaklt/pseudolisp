@@ -17,7 +17,7 @@ static t_point inner_reduce(
  * ------------------
  */
 
-t_point head(Cons *l)
+t_point car(Cons *l)
 {
 	Cons *hl = get_Cons(resolve_Thunk(l->a));
 
@@ -26,8 +26,7 @@ t_point head(Cons *l)
 }
 
 
-// XXX mozna jeste nejaka kontrola typu nebo neco
-t_point tail(Cons *l)
+t_point cdr(Cons *l)
 {
 	Cons *ret = get_Cons(resolve_Thunk(l->a));
 	
@@ -39,6 +38,12 @@ t_point tail(Cons *l)
 t_point list(Cons *params)
 {
 	return make_Cons(params);
+}
+
+
+t_point cons(Cons *params)
+{
+	return pnew_Cons(params->a, next(params)->a);
 }
 
 

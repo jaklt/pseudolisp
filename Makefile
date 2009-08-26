@@ -10,7 +10,7 @@ HEADERS = structs.h error.h execute.h testy.h helpers.h hashovani.h parser.h fun
 
 OBJ = ${SRC:.c=.o}
 
-PARAMS = -std=c99 -Wall -pedantic -D'VERSION="${VERSION}"' -g -DDEBUG
+PARAMS = -std=c99 -Wall -pedantic -D'VERSION="${VERSION}"' # -g -DDEBUG
 # -pg je pro gprof
 # -g je pro gdb/valgrind
 

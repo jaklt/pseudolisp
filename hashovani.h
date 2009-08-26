@@ -38,6 +38,6 @@ HashMember *del_string_Hash(Hash *h, char *name);
 HashMember *get_string_Hash(Hash *h, char *name);
 
 Hash *clone_Hash(Hash *h);
-int free_Hash(Hash *h);
+void free_Hash(Hash *h);
 
 #endif
