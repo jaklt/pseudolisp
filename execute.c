@@ -81,7 +81,7 @@ t_point insert_params(Cons *params, Function *kam)
 
 static t_point result(Thunk *t, int *done)
 {
-	if (type_match(t->function, FUNCTION) && (t->function != BOOL_TRUE)) {
+	if (is_Func(t->function)) {
 		Function *f = get_Func(t->function);
 		Cons *other_params = NULL;
 

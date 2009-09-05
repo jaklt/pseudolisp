@@ -10,10 +10,12 @@ Dopsat vsude komentare :-)
 Osetrit cteni vstupu - omezeni na 101!
 Sofistikovanejsi hlaseni chyb
 Nemelo by zaviset na poradi definic funkci!
-Pridat funkce cons, cdr, car a nejaky na porovnavani symbolu
+Pridat funkce na porovnavani symbolu
+Kontrolovat meze u cisel
 
 Optimalizovat hashovani!
 Promyslet collect u GC!
+Při spuštění souboru nakonec volat main.
 Jak delat skladani funkci? -> Hladovy zpusob dozirani parametru
 
 Vysledek volani = posledni vyraz -> def muze vracet funkci?
@@ -22,7 +24,6 @@ Vysledek volani = posledni vyraz -> def muze vracet funkci?
 BUGREPORT:
 ---------
 
-Neni to vic nez driv?
 ~~> [def fib [n]
 ~~> 	[if [> n 1]
 ~~> 		[+ [fib [- n 2]] [fib [- n  1]]]
@@ -32,8 +33,11 @@ Neni to vic nez driv?
 OK.
 ~~> [fib 15]
 Number: 987
-~~>
-82949 collected
+
+82949 collected ~~> Neni to vic nez driv?
+
+Ted:
+258513 collected, 0 freed ~~> klidne muzu i pridat :-/
 
 ----------------------------------------------
 Potencionalni leaky:

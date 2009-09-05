@@ -7,7 +7,7 @@
 #include "helpers.h"
 #include "error.h"
 #include "execute.h"
-// #include "gc.h"
+#include "gc.h"
 
 extern t_point f_plus(Cons *params);
 extern t_point f_if(Cons *params);
@@ -84,7 +84,7 @@ Hash *get_basic_hash()
 		s = make_Func(f);
 
 		add_string_Hash(h, array_of_functions[i].name, s);
-//		gc_inc_immortal(NIL, s);
+		gc_inc_immortal(s);
 	}
 
 	add_string_Hash(h, "NIL",   NIL);
@@ -294,7 +294,7 @@ t_point parse_pipe(Hash *h, int level)
 
 void play()
 {
-//	gc_init();
+	gc_init();
 	Hash *h = get_basic_hash();
 	t_point parsed;
 	char c;
@@ -307,9 +307,9 @@ void play()
 				print_Symbol(parsed);
 			} else if (prompt)
 				printf("OK\n");
-//			gc();
+			gc();
 		}
 	}
 
-	printf("\n\n"); // gc_score();
+	printf("\n\n"); gc_score();
 }
