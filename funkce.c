@@ -3,6 +3,9 @@
 #include "funkce.h"
 #include "error.h"
 #include "execute.h"
+#include "gc.h"
+
+#define resolve_and_store(s) ((s) = resolve_Thunk(s))
 
 
 static t_point inner_reduce(
@@ -19,7 +22,7 @@ static t_point inner_reduce(
 
 t_point car(Cons *l)
 {
-	Cons *hl = get_Cons(resolve_Thunk(l->a));
+	Cons *hl = get_Cons(resolve_and_store(l->a));
 
 	if (hl == NULL) ERROR(TYPE_ERROR);
 	return hl->a;
@@ -28,7 +31,7 @@ t_point car(Cons *l)
 
 t_point cdr(Cons *l)
 {
-	Cons *ret = get_Cons(resolve_Thunk(l->a));
+	Cons *ret = get_Cons(resolve_and_store(l->a));
 	
 	if (ret == NULL) ERROR(TYPE_ERROR);
 	return ret->b;
@@ -58,7 +61,7 @@ t_point get_append()
 		f->body.link = append;
 		f->more_params = 1;
 
-		//	gc_inc_immortal(???, make_Func(f));
+		gc_inc_immortal(make_Func(f));
 	}
 
 	return make_Func(f);
@@ -66,10 +69,9 @@ t_point get_append()
 
 
 // XXX nestandartne dokaze pracovat i s prvky co nejsou Cons
-// TODO nefunguje spolehlive - viz testy/a
 t_point append(Cons *params)
 {
-	t_point s = resolve_Thunk(params->a);
+	t_point s = resolve_and_store(params->a);
 	Cons *c = next(params);
 
 	if (is_NIL(s)) {
@@ -154,7 +156,7 @@ t_point gt(Cons *params)
 
 t_point op_if(Cons *params)
 {
-	t_point b = resolve_Thunk(params->a);
+	t_point b = resolve_and_store(params->a);
 	if (!is_Bool(b)) ERROR(TYPE_ERROR);
 
 	if (b == BOOL_TRUE)
@@ -169,7 +171,7 @@ t_point op_and(Cons *params)
 	int t = 1;
 
 	while (params != NULL && t) {
-		t = resolve_Thunk(params->a) == BOOL_TRUE;
+		t = resolve_and_store(params->a) == BOOL_TRUE;
 		params = next(params);
 	}
 
@@ -182,7 +184,7 @@ t_point op_or (Cons *params)
 	int t = 0;
 
 	while (params != NULL && !t) {
-		t = resolve_Thunk(params->a) == BOOL_TRUE;
+		t = resolve_and_store(params->a) == BOOL_TRUE;
 		params = next(params);
 	}
 
@@ -192,7 +194,7 @@ t_point op_or (Cons *params)
 
 t_point op_not(Cons *params)
 {
-	t_point s = resolve_Thunk(params->a);
+	t_point s = resolve_and_store(params->a);
 
 	if (!is_Bool(s)) ERROR(TYPE_ERROR);
 
@@ -200,19 +202,19 @@ t_point op_not(Cons *params)
 }
 
 
-t_point op_nil(Cons *params)  { return make_Bool(is_NIL(resolve_Thunk(params->a))); }
-t_point op_cons(Cons *params) { return make_Bool(type_match(resolve_Thunk(params->a), CONS)); }
-t_point op_num(Cons *params)  { return make_Bool(type_match(resolve_Thunk(params->a), NUMBER)); }
+t_point op_nil(Cons *params)  { return make_Bool(is_NIL(resolve_and_store(params->a))); }
+t_point op_cons(Cons *params) { return make_Bool(type_match(resolve_and_store(params->a), CONS)); }
+t_point op_num(Cons *params)  { return make_Bool(type_match(resolve_and_store(params->a), NUMBER)); }
 
 t_point op_bool(Cons *params)
 {
-	t_point s = resolve_Thunk(params->a);
+	t_point s = resolve_and_store(params->a);
 	return make_Bool(is_Bool(s));
 }
 
 t_point op_func(Cons *params)
 {
-	t_point s = resolve_Thunk(params->a);
+	t_point s = resolve_and_store(params->a);
 	return make_Bool(is_Func(s) || is_Thunk(s));
 }
 
@@ -230,8 +232,8 @@ t_point undefined(Cons *params)
 
 t_point apply(Cons *params)
 {
-	t_point s = resolve_Thunk(params->a);
-	t_point s2 = resolve_Thunk(next(params)->a);
+	t_point s = resolve_and_store(params->a);
+	t_point s2 = resolve_and_store(next(params)->a);
 	Cons *l = get_Cons(s2);
 
 	if (is_NIL(s2)) return s;
@@ -256,11 +258,11 @@ static t_point inner_reduce(
 {
 	if (l == NULL) ERROR(INNER_ERROR);
 
-	t_point s = resolve_Thunk(l->a);
+	t_point s = resolve_and_store(l->a);
 	l = next(l);
 
 	while (l != NULL && s != NIL) {
-		s = overeni(operace, resolve_Thunk(s), resolve_Thunk(l->a));
+		s = overeni(operace, resolve_and_store(s), resolve_and_store(l->a));
 		l= next(l);
 	}
 

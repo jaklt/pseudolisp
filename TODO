@@ -36,8 +36,14 @@ Number: 987
 
 82949 collected ~~> Neni to vic nez driv?
 
-Ted:
+po prepsani:
 258513 collected, 0 freed ~~> klidne muzu i pridat :-/
+
+----------------------------------------------
+
+Vypisovani rekurzivnich funkci v DEBUG modu je nekonecne
+
+[tail [list 1 2 2] 4] --> Thunk
 
 ----------------------------------------------
 Potencionalni leaky:
