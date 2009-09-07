@@ -97,19 +97,11 @@ t_point append(Cons *params)
  * ---------------------------
  */
 
-t_point nubers_ok(t_point (*operace)(t_number, t_number), t_point a, t_point b);
-
-
-static inline t_point f_plus  (t_number a, t_number b) { return make_Num(a+b); }
-static inline t_point f_krat  (t_number a, t_number b) { return make_Num(a*b); }
-static inline t_point f_minus (t_number a, t_number b) { return make_Num(a-b); }
-static inline t_point f_deleno(t_number a, t_number b) { return make_Num(a/b); }
-
-
-t_point plus  (Cons *params) { return inner_reduce(f_plus,   nubers_ok, params); }
-t_point krat  (Cons *params) { return inner_reduce(f_krat,   nubers_ok, params); }
-t_point minus (Cons *params) { return inner_reduce(f_minus,  nubers_ok, params); }
-t_point deleno(Cons *params) { return inner_reduce(f_deleno, nubers_ok, params); }
+t_point bools_ok(t_point (*operace)(t_point, t_point), t_point a, t_point b)
+{
+	if (!is_Bool(a) || !is_Bool(b)) ERROR(TYPE_ERROR);
+	return operace(a, b);
+}
 
 
 t_point nubers_ok(t_point (*operace)(t_number, t_number), t_point a, t_point b)
@@ -117,6 +109,18 @@ t_point nubers_ok(t_point (*operace)(t_number, t_number), t_point a, t_point b)
 	if (!is_Num(a) || !is_Num(b)) ERROR(TYPE_ERROR);
 	return operace(get_Num(a), get_Num(b));
 }
+
+
+static inline t_point f_plus (t_number a, t_number b) { return make_Num(a+b); }
+static inline t_point f_mult (t_number a, t_number b) { return make_Num(a*b); }
+static inline t_point f_minus(t_number a, t_number b) { return make_Num(a-b); }
+static inline t_point f_div  (t_number a, t_number b) { return make_Num(a/b); }
+
+
+t_point op_plus (Cons *params) { return inner_reduce(f_plus,  nubers_ok, params); }
+t_point op_mult (Cons *params) { return inner_reduce(f_mult,  nubers_ok, params); }
+t_point op_minus(Cons *params) { return inner_reduce(f_minus, nubers_ok, params); }
+t_point op_div  (Cons *params) { return inner_reduce(f_div,   nubers_ok, params); }
 
 
 /**
@@ -142,13 +146,13 @@ static inline t_point f_gt(t_number a, t_number b)
 }
 
 
-t_point eq(Cons *params)
+t_point op_eq(Cons *params)
 {
 	return is_not_null(inner_reduce(f_eq, nubers_ok, params));
 }
 
 
-t_point gt(Cons *params)
+t_point op_gt(Cons *params)
 {
 	return is_not_null(inner_reduce(f_gt, nubers_ok, params));
 }
@@ -166,20 +170,19 @@ t_point op_if(Cons *params)
 }
 
 
-t_point op_and(Cons *params)
+static inline t_point f_and(t_number a, t_number b)
 {
-	int t = 1;
-
-	while (params != NULL && t) {
-		t = resolve_and_store(params->a) == BOOL_TRUE;
-		params = next(params);
-	}
-
-	return make_Bool(t);
+	return (a == BOOL_TRUE && b == BOOL_TRUE) ? a : NIL;
 }
 
 
-t_point op_or (Cons *params)
+t_point op_and(Cons *params)
+{
+	return is_not_null(inner_reduce(f_and, bools_ok, params));
+}
+
+
+t_point op_or(Cons *params)
 {
 	int t = 0;
 
@@ -195,7 +198,6 @@ t_point op_or (Cons *params)
 t_point op_not(Cons *params)
 {
 	t_point s = resolve_and_store(params->a);
-
 	if (!is_Bool(s)) ERROR(TYPE_ERROR);
 
 	return make_Bool(!(s == BOOL_TRUE));
@@ -262,7 +264,7 @@ static t_point inner_reduce(
 	l = next(l);
 
 	while (l != NULL && s != NIL) {
-		s = overeni(operace, resolve_and_store(s), resolve_and_store(l->a));
+		s = overeni(operace, s, resolve_and_store(l->a));
 		l= next(l);
 	}
 

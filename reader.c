@@ -14,15 +14,7 @@ void set_input(FILE *inp)
 
 extern inline int is_whitespace(char c)
 {
-	switch (c) {
-		case ' ':
-		case '\n':
-		case '\t':
-		case EOF:
-			return 1;
-		default:
-			return 0;
-	}
+	return (c == ' ' || c == '\n' || c == '\t' || c == EOF);
 }
 
 

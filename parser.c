@@ -43,10 +43,10 @@ Hash *get_basic_hash()
 		int more_params;
 	} array_of_functions[] = {
 	//	name	function	params  more_params
-		{"+",       plus,    2,     1},
-		{"-",       minus,   2,     1},
-		{"*",       krat,    2,     1},
-		{"/",       deleno,  2,     1},
+		{"+",       op_plus, 2,     1},
+		{"-",       op_minus,2,     1},
+		{"*",       op_mult, 2,     1},
+		{"/",       op_div,  2,     1},
 
 		{"if",      op_if,   3,     0},
 		{"and",     op_and,  2,     1},
@@ -59,8 +59,8 @@ Hash *get_basic_hash()
 		{"bool?",   op_bool, 1,     0},
 		{"func?",   op_func, 1,     0},
 
-		{"=",       eq,      2,     1},
-		{">",       gt,      2,     1},
+		{"=",       op_eq,   2,     1},
+		{">",       op_gt,   2,     1},
 
 		{"head",    car,     1,     0},
 		{"car",     car,     1,     0},

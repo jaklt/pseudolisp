@@ -10,16 +10,16 @@ t_point apply(Cons *params);
 t_point undefined(Cons *params);
 
 /** Function matematickych operaci */
-t_point plus  (Cons *params);
-t_point minus (Cons *params);
-t_point krat  (Cons *params);
-t_point deleno(Cons *params);
+t_point op_plus (Cons *params);
+t_point op_minus(Cons *params);
+t_point op_mult (Cons *params);
+t_point op_div  (Cons *params);
 
 /** Function logickych operaci */
 t_point op_and(Cons *params);
 t_point op_or (Cons *params);
 t_point op_not(Cons *params);
-t_point op_if  (Cons *params);
+t_point op_if (Cons *params);
 
 t_point op_nil (Cons *params);
 t_point op_cons(Cons *params);
@@ -29,8 +29,8 @@ t_point op_bool(Cons *params);
 t_point op_func(Cons *params);
 
 /** Function pro porovnavani */
-t_point eq(Cons *params);
-t_point gt(Cons *params);
+t_point op_eq(Cons *params);
+t_point op_gt(Cons *params);
 
 /** Funkce pro praci s dvojici */
 t_point list(Cons *params);

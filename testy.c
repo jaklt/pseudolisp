@@ -24,7 +24,7 @@ Function *getter(int params_count, t_point (*link)(Cons *))
 Function *get_fplus()
 {
 	static Function *f = NULL;
-	if (f == NULL) f = getter(2, plus);
+	if (f == NULL) f = getter(2, op_plus);
 	return f;
 }
 
@@ -40,7 +40,7 @@ Function *get_fif()
 Function *get_feq()
 {
 	static Function *f = NULL;
-	if (f == NULL) f = getter(2, eq);
+	if (f == NULL) f = getter(2, op_eq);
 	return f;
 }
 
