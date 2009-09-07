@@ -7,8 +7,8 @@
 #define check(hm) { if ((hm) != NULL && (hm)->info == 0 && hm->link == 0) \
                         to_free(hm); }
 
-static int collected = 0;
-static int freed   = 0;
+static unsigned long int collected = 0;
+static unsigned long int freed   = 0;
 
 static Hash *col  = NULL; // hash of collected
 static void to_free(HashMember *hm);
@@ -50,7 +50,7 @@ int gc_dec_immortal(t_point p) { return !gc_change(p, -1, change_immort); }
 
 void gc_score()
 {
-	printf("%d collected, %d freed (%d left)\n", collected, freed, col->used);
+	printf("%lu collected, %lu freed (%d left)\n", collected, freed, col->used);
 }
 
 

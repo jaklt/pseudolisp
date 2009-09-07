@@ -7,8 +7,8 @@ HEADERS = structs.h error.h execute.h testy.h helpers.h hashovani.h parser.h fun
 
 OBJ = ${SRC:.c=.o}
 
-PARAMS = -std=c99 -Wall -pedantic -D'VERSION="${VERSION}"' # -g -DDEBUG
-# -g je pro gdb/valgrind
+PARAMS = -std=c99 -Wall -pedantic -D'VERSION="${VERSION}"'
+PARAMS += -g -DDEBUG # je pro gdb/valgrind a DEBUG mod
 # PARAMS += -pg # je pro gprof
 # PARAMS += -fprofile-arcs -ftest-coverage # je pro gcov
 

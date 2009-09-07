@@ -312,5 +312,7 @@ void play()
 		}
 	}
 
+#ifdef DEBUG
 	printf("\n\n"); gc_score();
+#endif
 }

@@ -41,18 +41,23 @@ static int list_length_ok(Cons *l, int count, Cons **other)
  */
 static t_point ip_run(t_point *exp_params, t_point kam)
 {
+	t_point p1, p2;
 	if (kam == NIL) return NIL;
 
-	else if (type_match(kam, CONS))
-		return pnew_Cons(ip_run(exp_params, get_Cons(kam)->a),
-		                 ip_run(exp_params, get_Cons(kam)->b));
+	else if (type_match(kam, CONS)) {
+		p1 = ip_run(exp_params, get_Cons(kam)->a);
+		p2 = ip_run(exp_params, get_Cons(kam)->b);
+		return pnew_Cons(p1, p2);
+	}
 
 	else if (is_Param(kam))
 		return exp_params[get_Num((t_point) get_Thunk(kam)->params) - 1];
 
-	else if (type_match(kam, THUNK))
-		return pnew_Thunk(ip_run(exp_params, get_Thunk(kam)->function),
-		         get_Cons(ip_run(exp_params, make_Cons(get_Thunk(kam)->params))));
+	else if (type_match(kam, THUNK)) {
+		p1 = ip_run(exp_params, get_Thunk(kam)->function);
+		p2 = ip_run(exp_params, make_Cons(get_Thunk(kam)->params));
+		return pnew_Thunk(p1, get_Cons(p2));
+	}
 
 	return kam;
 }

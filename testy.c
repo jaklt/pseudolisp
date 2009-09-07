@@ -4,6 +4,7 @@
 #include "funkce.h"
 #include "execute.h"
 #include "helpers.h"
+#include "gc.h"
 
 
 #define NEXT printf("\n-- next test:\n")
@@ -53,7 +54,7 @@ static void zakladni_fce();
 
 void test()
 {
-//	gc_init();
+	gc_init();
 	printf("-- Zacatek testovani:\n");
 	zakladni(); NEXT;
 	parametry(); NEXT;
