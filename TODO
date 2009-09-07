@@ -1,21 +1,22 @@
-nefunguje [def ahoj[n] n] <~ treba opravit za ~> [def ahoj [n] n]
-
-- Nemelo by zaviset na poradi definic funkci!
-
-----------------------------------------------
 TODO
 ----
 Formatovany vystup:
 	(format t "~%Predali jste ~s" a)
 
 ??? zmenit syntaxi def na [def [jmeno-fce parametry ...] ]
+??? nefunguje [def ahoj[n] n] <~ treba opravit za ~> [def ahoj [n] n]
 
-Zlidstit parser.c + udelat kontroly preteceni
 Dopsat vsude komentare :-)
+Osetrit cteni vstupu - omezeni na 101!
+Sofistikovanejsi hlaseni chyb
+Nemelo by zaviset na poradi definic funkci!
+Pridat funkce na porovnavani symbolu
+Kontrolovat meze u cisel
 
-Zasobnikove vyhodnocovani!
 Optimalizovat hashovani!
 Promyslet collect u GC!
+Při spuštění souboru nakonec volat main.
+Jak delat skladani funkci? -> Hladovy zpusob dozirani parametru
 
 Vysledek volani = posledni vyraz -> def muze vracet funkci?
 
@@ -23,7 +24,6 @@ Vysledek volani = posledni vyraz -> def muze vracet funkci?
 BUGREPORT:
 ---------
 
-Neni to vic nez driv?
 ~~> [def fib [n]
 ~~> 	[if [> n 1]
 ~~> 		[+ [fib [- n 2]] [fib [- n  1]]]
@@ -33,24 +33,28 @@ Neni to vic nez driv?
 OK.
 ~~> [fib 15]
 Number: 987
-~~>
-82949 collected
 
+39510 collected, 39462 freed (48 left)
+-- nejde toto cislo jeste snizit?
 
-[def a [] [append 1 [a]]]
-[head [a]] ~> diverguje!!
-=> Bud opravit APPEND, nebo to prepsat podle MJova hintu :-/
+----------------------------------------------
+
+Vypisovani rekurzivnich funkci v DEBUG modu je nekonecne
+
+[tail [list 1 2 2] 4] --> Thunk
 
 ----------------------------------------------
 Potencionalni leaky:
 	pri pamatovani jmen vseho, z hashe se nemazou
 
 ----------------------------------------------
+Do dokumentace
+	zminit rekurzi na miste = bez zaplneni stacku
+	closures
+
+----------------------------------------------
 
 stav sveta - jak na nej?
-porovnavani symbolu
-
-prace s prameti a GC
 
 rozmyslet zda nema byt u Tanku i aktualni pocet parametru
 = rychlejsi pri porovnavani zda je to jeste tank, nebo vysledek tanku
@@ -71,11 +75,6 @@ Nejak takto:?
 	[defm fib [2] 1]
 	[defm fib [n] [+ [fib [- n 1]] [fib [- n 2]]]]
 
-Funkce apply!
-(define a '(1 2 3 4))
-
-(apply + a)
-
 ----------------------------------------------
 
 Co tohle?
@@ -85,20 +84,6 @@ List comprehension
 
 Clojure
 	http://clojure.org/functional_programming
-
-nil - means false or empty list
-
-----------------------------------------------
-
-Vrstvy:
-	- zavolani funkce s danymi parametry
-	- sestaveni tela funkce a doplneni parametru kde je to nutne
-	- zjisteni zda neni funkce tank, pokud jo, hazet do nej parametry
-	  a volat jej dokud neni funkce nebo blbost -> error
-	- vraceni tanku s volanim ziskane funkce a zbyvajicimi parametry
-
-Tohle cele provadet tak dlouho dokud se nevrati neco co neni tank
-
 
 ----------------------------------------------
 

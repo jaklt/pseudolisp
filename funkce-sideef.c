@@ -8,7 +8,7 @@
 
 
 // TODO prepsat tak, ze vrati seznam nazvu promenych = nutno vypsat print-string
-Symbol *env(List *params)
+t_point env(Cons *params)
 {
 	Hash *h = get_basic_hash();
 
@@ -18,22 +18,22 @@ Symbol *env(List *params)
 	}
 	printf("\n");
 
-	return NULL;
+	return BOOL_TRUE;
 }
 
 
 /**
  * Ladici funkce. Vypise parametry a vrati prvni.
  */
-Symbol *f_print(List *params)
+t_point f_dump(Cons *params)
 {
-	List *l = params;
+	Cons *l = params;
 	while (l != NULL) {
-		print_Symbol(l->symbol);
-		l = l->next;
+		print_Symbol(l->a);
+		l = next(l);
 	}
 
-	return params->symbol;
+	return params->a;
 }
 
 
@@ -41,27 +41,29 @@ Symbol *f_print(List *params)
  * Vypise parametry od nichz pozaduje, aby byly stringy
  * jako stringy.
  */
-Symbol *f_print_string(List *params)
+t_point f_print_string(Cons *params)
 {
-	List *l = params;
-	List *la;
-	Symbol *s;
+	Cons *l = params;
+	Cons *la;
+	t_point s;
 
 	while (l != NULL) {
-		s = resolve_Thunk(l->symbol);
-		if ((la = get_List(s)) != NULL) {
+		s = resolve_Thunk(l->a);
+		if (is_Cons(s)) {
+			la = get_Cons(s);
 			while (la != NULL) {
-				if (la->symbol->type != CHAR)
-					ERROR(OPERACE_NEMA_SMYSL);
+				la->a = resolve_Thunk(la->a);
+				if (!is_Num(la->a))
+					ERROR(TYPE_ERROR);
 
-				putchar(la->symbol->s.character);
-				la = la->next;
+				putchar(get_Num(la->a));
+				la = next(la);
 			}
 		}
 
-		l = l->next;
+		l = next(l);
 	}
 
 	printf("\n");
-	return new_Ordinal(BOOL, BOOL_TRUE);
+	return BOOL_TRUE;
 }

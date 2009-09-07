@@ -4,44 +4,44 @@
 #include "structs.h"
 
 
-Symbol *apply(List *params);
+t_point apply(Cons *params);
 
 /** Pomocne funkce */
-Symbol *undefined(List *params);
-List *get_List(Symbol *s);
+t_point undefined(Cons *params);
 
 /** Function matematickych operaci */
-Symbol *plus  (List *params);
-Symbol *minus (List *params);
-Symbol *krat  (List *params);
-Symbol *deleno(List *params);
+t_point op_plus (Cons *params);
+t_point op_minus(Cons *params);
+t_point op_mult (Cons *params);
+t_point op_div  (Cons *params);
 
 /** Function logickych operaci */
-Symbol *op_and(List *params);
-Symbol *op_or (List *params);
-Symbol *op_not(List *params);
-Symbol *op_if  (List *params);
+t_point op_and(Cons *params);
+t_point op_or (Cons *params);
+t_point op_not(Cons *params);
+t_point op_if (Cons *params);
 
-Symbol *op_nil (List *params);
-Symbol *op_list(List *params);
-Symbol *op_num (List *params);
-Symbol *op_char(List *params);
-Symbol *op_bool(List *params);
-Symbol *op_func(List *params);
+t_point op_nil (Cons *params);
+t_point op_cons(Cons *params);
+t_point op_num (Cons *params);
+t_point op_char(Cons *params);
+t_point op_bool(Cons *params);
+t_point op_func(Cons *params);
 
 /** Function pro porovnavani */
-Symbol *eq(List *params);
-Symbol *gt(List *params);
+t_point op_eq(Cons *params);
+t_point op_gt(Cons *params);
 
-/** Function pro praci s Listy */
-Symbol *list(List *params);
-Symbol *append(List *params);
-Symbol *head(List *l);
-Symbol *tail(List *l);
+/** Funkce pro praci s dvojici */
+t_point list(Cons *params);
+t_point cons(Cons *params);
+t_point car(Cons *l);
+t_point cdr(Cons *l);
+t_point append(Cons *params);
 
 /** Sideefectove funkce */
-Symbol *env(List *params);
-Symbol *f_print(List *params);
-Symbol *f_print_string(List *params);
+t_point env(Cons *params);
+t_point f_dump(Cons *params);
+t_point f_print_string(Cons *params);
 
 #endif

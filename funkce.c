@@ -3,40 +3,16 @@
 #include "funkce.h"
 #include "error.h"
 #include "execute.h"
+#include "gc.h"
+
+#define resolve_and_store(s) ((s) = resolve_Thunk(s))
 
 
-static Symbol *inner_reduce(
-		Symbol *(),
-		Symbol *(*overeni)(Symbol *(), Symbol *, Symbol *),
-		List *l
+static t_point inner_reduce(
+		t_point (),
+		t_point (*overeni)(t_point (), t_point , t_point ),
+		Cons *l
 	);
-
-
-int is_TRUE(Symbol *s)
-{
-	return (!is_NIL(s) && s->type == BOOL && s->s.boolean);
-}
-
-
-int Symbol_to_bool(Symbol *symb)
-{
-	Symbol *s = resolve_Thunk(symb);
-	if (!is_NIL(s) && s->type != BOOL) ERROR(OPERACE_NEMA_SMYSL);
-
-	return is_TRUE(s);
-}
-
-
-List *get_List(Symbol *s)
-{
-	if (is_NIL(s) || s->type != LIST
-			|| !is_NIL(((List *) s->s.link)->symbol))
-	{
-		return NULL;
-	} else {
-		return ((List *) s->s.link)->next;
-	}
-}
 
 
 /**
@@ -44,68 +20,75 @@ List *get_List(Symbol *s)
  * ------------------
  */
 
-Symbol *head(List *l)
+t_point car(Cons *l)
 {
-	List *hl = get_List(resolve_Thunk(l->symbol));
+	Cons *hl = get_Cons(resolve_and_store(l->a));
 
-	if (hl == NULL) ERROR(OPERACE_NEMA_SMYSL);
-	return hl->symbol;
+	if (hl == NULL) ERROR(TYPE_ERROR);
+	return hl->a;
 }
 
 
-Symbol *tail(List *l)
+t_point cdr(Cons *l)
 {
-	List *ret = get_List(resolve_Thunk(l->symbol));
+	Cons *ret = get_Cons(resolve_and_store(l->a));
 	
-	if (ret == NULL) ERROR(OPERACE_NEMA_SMYSL);
-	return ret->next ? list(ret->next) : NULL;
+	if (ret == NULL) ERROR(TYPE_ERROR);
+	return ret->b;
 }
 
 
-Symbol *list(List *params)
+t_point list(Cons *params)
 {
-	List *l = new_List(NULL);
-	l->next = params;
-
-	return new_Symbol(LIST, l);
+	return make_Cons(params);
 }
 
 
-Symbol *append(List *params)
+t_point cons(Cons *params)
 {
-	List *vysl = new_List(NULL);
-	List *l = vysl;
-	List *cp;
-	Symbol *s;
+	return pnew_Cons(params->a, next(params)->a);
+}
 
-	while (params != NULL) {
-		s = resolve_Thunk(params->symbol);
-		if (is_NIL(s)) { params = params->next; continue; };
-	
-		cp = get_List(s);
 
-		// nejde o list -> pripojit jak to je
-		if (cp == NULL) {
-			l->next = new_List(s);
-			l = l->next;
-		}
+t_point get_append()
+{
+	static Function *f = NULL;
 
-		if (params->next != NULL) {
-			// kopirovani cp pokud se jedna o List
-			while (cp != NULL) {
-				l->next = new_List(cp->symbol);
-				l = l->next;
-				cp = cp->next;
-			}
-		} else if (cp != NULL) {
-			// TODO nestaci
-			l->next = cp;
-		}
+	if (f == NULL) {
+		f = new_Function(NIL, 2);
 
-		params = params->next;
+		f->built_in = 1;
+		f->body.link = append;
+		f->more_params = 1;
+
+		gc_inc_immortal(make_Func(f));
 	}
 
-	return new_Symbol(LIST, vysl);
+	return make_Func(f);
+}
+
+
+// XXX nestandartne dokaze pracovat i s prvky co nejsou Cons
+t_point append(Cons *params)
+{
+	t_point s = resolve_and_store(params->a);
+	Cons *c = next(params);
+
+	if (is_NIL(s)) {
+		if (c->b == NIL)
+			return c->a;
+		else
+			return append(c);
+	} else if (!type_match(s, CONS)) {
+		if (c->b == NIL)
+			return pnew_Cons(s, c->a);
+		else
+			return pnew_Cons(s, pnew_Thunk(get_append(), next(params)));
+	} else if (type_match(s, CONS)) {
+		c = get_Cons(s);
+		return pnew_Cons(c->a, pnew_Thunk(get_append(), new_Cons(c->b, pnext(params))));
+	} else
+		ERROR(INNER_ERROR);
 }
 
 
@@ -114,151 +97,127 @@ Symbol *append(List *params)
  * ---------------------------
  */
 
-Symbol *nubers_ok(Symbol *(*operace)(t_number, t_number), Symbol *a, Symbol *b);
-
-
-static inline Symbol *f_plus  (t_number a, t_number b) { return new_Ordinal(NUMBER, a+b); }
-static inline Symbol *f_krat  (t_number a, t_number b) { return new_Ordinal(NUMBER, a*b); }
-static inline Symbol *f_minus (t_number a, t_number b) { return new_Ordinal(NUMBER, a-b); }
-static inline Symbol *f_deleno(t_number a, t_number b) { return new_Ordinal(NUMBER, a/b); }
-
-
-Symbol *plus  (List *params) { return inner_reduce(f_plus,   nubers_ok, params); }
-Symbol *krat  (List *params) { return inner_reduce(f_krat,   nubers_ok, params); }
-Symbol *minus (List *params) { return inner_reduce(f_minus,  nubers_ok, params); }
-Symbol *deleno(List *params) { return inner_reduce(f_deleno, nubers_ok, params); }
-
-
-Symbol *nubers_ok(Symbol *(*operace)(t_number, t_number), Symbol *a, Symbol *b)
+t_point bools_ok(t_point (*operace)(t_point, t_point), t_point a, t_point b)
 {
-	if (is_NIL(a)|| is_NIL(b)) ERROR(PRAZDNA_HODNOTA);
-	if (a->type != NUMBER || b->type != NUMBER) ERROR(OPERACE_NEMA_SMYSL);
-
-	return operace(a->s.number, b->s.number);
+	if (!is_Bool(a) || !is_Bool(b)) ERROR(TYPE_ERROR);
+	return operace(a, b);
 }
+
+
+t_point nubers_ok(t_point (*operace)(t_number, t_number), t_point a, t_point b)
+{
+	if (!is_Num(a) || !is_Num(b)) ERROR(TYPE_ERROR);
+	return operace(get_Num(a), get_Num(b));
+}
+
+
+static inline t_point f_plus (t_number a, t_number b) { return make_Num(a+b); }
+static inline t_point f_mult (t_number a, t_number b) { return make_Num(a*b); }
+static inline t_point f_minus(t_number a, t_number b) { return make_Num(a-b); }
+static inline t_point f_div  (t_number a, t_number b) { return make_Num(a/b); }
+
+
+t_point op_plus (Cons *params) { return inner_reduce(f_plus,  nubers_ok, params); }
+t_point op_mult (Cons *params) { return inner_reduce(f_mult,  nubers_ok, params); }
+t_point op_minus(Cons *params) { return inner_reduce(f_minus, nubers_ok, params); }
+t_point op_div  (Cons *params) { return inner_reduce(f_div,   nubers_ok, params); }
 
 
 /**
- * Function pro porovnavani
+ * Funkce pro porovnavani
  * ----------------------
  */
 
-static inline Symbol *is_not_null(Symbol *vysl)
+static inline t_point is_not_null(t_point vysl)
 {
-	if (!is_NIL(vysl))
-		return new_Ordinal(BOOL, BOOL_TRUE);
-	else
-		return new_Ordinal(BOOL, BOOL_FALSE);
+	return make_Bool(!is_NIL(vysl));
 }
 
 
-static inline Symbol *f_eq(t_number a, t_number b)
+static inline t_point f_eq(t_number a, t_number b)
 {
-	return (a == b) ? new_Ordinal(NUMBER, a) : new_NIL(); 
+	return (a == b) ? make_Num(a) : NIL;
 }
 
 
-static inline Symbol *f_gt(t_number a, t_number b)
+static inline t_point f_gt(t_number a, t_number b)
 {
-	return (a > b) ? new_Ordinal(NUMBER, b) : new_NIL();
+	return (a > b) ? make_Num(b) : NIL;
 }
 
 
-Symbol *eq(List *params)
+t_point op_eq(Cons *params)
 {
 	return is_not_null(inner_reduce(f_eq, nubers_ok, params));
 }
 
 
-Symbol *gt(List *params)
+t_point op_gt(Cons *params)
 {
 	return is_not_null(inner_reduce(f_gt, nubers_ok, params));
 }
 
 
-Symbol *op_if(List *params)
+t_point op_if(Cons *params)
 {
-	Symbol *s = resolve_Thunk(params->symbol);
+	t_point b = resolve_and_store(params->a);
+	if (!is_Bool(b)) ERROR(TYPE_ERROR);
 
-	if (s->type != BOOL) ERROR(OPERACE_NEMA_SMYSL);
-
-	if (s->s.boolean)
-		return params->next->symbol;
+	if (b == BOOL_TRUE)
+		return next(params)->a;
 	else
-		return params->next->next->symbol;
+		return next(next(params))->a;
 }
 
 
-Symbol *op_and(List *params)
+static inline t_point f_and(t_number a, t_number b)
 {
-	int t = 1;
-
-	while (params != NULL && t) {
-		t = Symbol_to_bool(params->symbol);
-		params = params->next;
-	}
-
-	return new_Ordinal(BOOL, t);
+	return (a == BOOL_TRUE && b == BOOL_TRUE) ? a : NIL;
 }
 
 
-Symbol *op_or (List *params)
+t_point op_and(Cons *params)
+{
+	return is_not_null(inner_reduce(f_and, bools_ok, params));
+}
+
+
+t_point op_or(Cons *params)
 {
 	int t = 0;
 
 	while (params != NULL && !t) {
-		t = Symbol_to_bool(params->symbol);
-		params = params->next;
+		t = resolve_and_store(params->a) == BOOL_TRUE;
+		params = next(params);
 	}
 
-	return new_Ordinal(BOOL, t);
+	return make_Bool(t);
 }
 
 
-Symbol *op_not(List *params)
+t_point op_not(Cons *params)
 {
-	Symbol *s = resolve_Thunk(params->symbol);
+	t_point s = resolve_and_store(params->a);
+	if (!is_Bool(s)) ERROR(TYPE_ERROR);
 
-	if (is_NIL(s) || s->type != BOOL)
-		ERROR(OPERACE_NEMA_SMYSL);
-
-	return new_Ordinal(BOOL, s->s.boolean ? BOOL_FALSE : BOOL_TRUE);
+	return make_Bool(!(s == BOOL_TRUE));
 }
 
 
-Symbol *op_nil(List *params)
+t_point op_nil(Cons *params)  { return make_Bool(is_NIL(resolve_and_store(params->a))); }
+t_point op_cons(Cons *params) { return make_Bool(type_match(resolve_and_store(params->a), CONS)); }
+t_point op_num(Cons *params)  { return make_Bool(type_match(resolve_and_store(params->a), NUMBER)); }
+
+t_point op_bool(Cons *params)
 {
-	return new_Ordinal(BOOL, is_NIL(resolve_Thunk(params->symbol)));
+	t_point s = resolve_and_store(params->a);
+	return make_Bool(is_Bool(s));
 }
 
-
-Symbol *op_list(List *params)
+t_point op_func(Cons *params)
 {
-	return new_Ordinal(BOOL,
-			get_List(resolve_Thunk(params->symbol)) != NULL ? BOOL_TRUE : BOOL_FALSE);
-}
-
-
-static Symbol *op_ok(Symbol *s, E_TYPE t)
-{
-	s = resolve_Thunk(s);
-	return new_Ordinal(BOOL,
-			!is_NIL(s) && s->type == t? BOOL_TRUE : BOOL_FALSE);
-}
-
-
-Symbol *op_num(List *params)  { return op_ok(params->symbol, NUMBER); }
-Symbol *op_char(List *params) { return op_ok(params->symbol, CHAR); }
-Symbol *op_bool(List *params) { return op_ok(params->symbol, BOOL); }
-
-Symbol *op_func(List *params)
-{
-	Symbol *s = resolve_Thunk(params->symbol);
-
-	if (!is_NIL(s) && (s->type == FUNCTION || s->type == THUNK))
-		return new_Ordinal(BOOL, BOOL_TRUE);
-	else
-		return new_Ordinal(BOOL, BOOL_FALSE);
+	t_point s = resolve_and_store(params->a);
+	return make_Bool(is_Func(s) || is_Thunk(s));
 }
 
 
@@ -267,48 +226,46 @@ Symbol *op_func(List *params)
  * --------------------
  */
 
-Symbol *undefined(List *params)
+t_point undefined(Cons *params)
 {
 	ERROR(UNDEFINED);
 }
 
 
-Symbol *apply(List *params)
+t_point apply(Cons *params)
 {
-	Symbol *s = resolve_Thunk(params->symbol);
+	t_point s = resolve_and_store(params->a);
+	t_point s2 = resolve_and_store(next(params)->a);
+	Cons *l = get_Cons(s2);
 
-	if (s->type != FUNCTION && s->type != THUNK) {
-		// ERROR(OPERACE_NEMA_SMYSL); // spatny pocet parametru ?
-		return s;
+	if (is_NIL(s2)) return s;
+	if (!is_Func(s) && !is_Thunk(s)) ERROR(TYPE_ERROR);
+
+	// XXX - pfuj, ale resi neuplne definovane seznamy
+	//     - neni mozne predat nekonecno parametru
+	while (l != NULL) {
+		if (!is_Cons(l->b)) l->b = resolve_Thunk(l->b);
+		l = next(l);
 	}
 
-	Symbol *s2 = resolve_Thunk(params->next->symbol);
-	if (is_NIL(s2)) return s;
-	if (s2->type != LIST) ERROR(OPERACE_NEMA_SMYSL);
-
-	List *l = new_List(s);
-	l->next = get_List(s2);
-
-	return resolve_Thunk(new_Symbol(LIST, l));
+	return resolve_Thunk(pnew_Thunk(s, get_Cons(s2)));
 }
 
 
-static Symbol *inner_reduce(
-		Symbol *(*operace)(void),
-		Symbol *(*overeni)(Symbol *(*operace)(void), Symbol *, Symbol *),
-		List *l
+static t_point inner_reduce(
+		t_point (*operace)(void),
+		t_point (*overeni)(t_point (*operace)(void), t_point, t_point),
+		Cons *l
 	)
 {
-	if (l == NULL) ERROR(VNITRNI_CHYBA);
+	if (l == NULL) ERROR(INNER_ERROR);
 
-	Symbol *s = l->symbol;
-	l = l->next;
+	t_point s = resolve_and_store(l->a);
+	l = next(l);
 
-	while (l != NULL && s != NULL) {
-		// TODO ma byt kontrola na NULL nebo NIL?
-		// TODO resolve_Thunk zde je brzo ne?
-		s = overeni(operace, resolve_Thunk(s), resolve_Thunk(l->symbol));
-		l= l->next;
+	while (l != NULL && s != NIL) {
+		s = overeni(operace, s, resolve_and_store(l->a));
+		l= next(l);
 	}
 
 	return s;

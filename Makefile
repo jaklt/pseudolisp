@@ -1,16 +1,16 @@
 
-VERSION = 0.0.5
+VERSION = 0.5.0
 NAME = pseudolisp
 
-SRC = ${NAME}.c structs.c funkce.c helpers.c testy.c error.c hashovani.c execute.c reader.c parser.c gc.c funkce-sideef.c
-HEADERS = structs.h funkce.h helpers.h error.h hashovani.h execute.h parser.h gc.h
+SRC = ${NAME}.c structs.c error.c execute.c testy.c helpers.c hashovani.c reader.c parser.c funkce.c funkce-sideef.c gc.c
+HEADERS = structs.h error.h execute.h testy.h helpers.h hashovani.h parser.h funkce.h gc.h
 
 OBJ = ${SRC:.c=.o}
 
-PARAMS = -std=c99 -g -Wall -pedantic
-# -pg je pro gprof
-# -g je pro gdb/valgrind
-# -D<nazev> odpovida "#define"
+PARAMS = -std=c99 -Wall -pedantic -D'VERSION="${VERSION}"'
+# PARAMS += -g -DDEBUG # je pro gdb/valgrind a DEBUG mod
+# PARAMS += -pg # je pro gprof
+# PARAMS += -fprofile-arcs -ftest-coverage # je pro gcov
 
 # optimalizace kompilace podle vysledku profielru
 # http://www.abclinuxu.cz/blog/kazdy_den_jinak/2007/5/gcc-a-optimalizace-s-profilerem
@@ -32,7 +32,7 @@ ${NAME}: ${OBJ} ${HEADERS}
 
 clean:
 	@echo Cleaning
-	@rm -f ${OBJ}
+	@rm -f ${OBJ} *.gcda *.gcno *.gcov gmon.out
 
 dist: ${SRC} ${HEADERS}
 	@rm -f ${NAME}-${VERSION}.tar.bz2
@@ -40,5 +40,5 @@ dist: ${SRC} ${HEADERS}
 
 znova: clean all
 
-tags: 
+tags:
 	ctags -R .

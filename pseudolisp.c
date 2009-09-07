@@ -4,30 +4,36 @@
 #include "testy.h"
 #include "parser.h"
 
+#ifndef VERSION
+#define VERSION "?.?.?"
+#endif
+
 
 static int prompt = 1;
 
-int init()
+void init()
 {
 	set_prompt(prompt);
 	set_input(stdin);
 //	set_show_collected(0);
-	return 0;
 }
 
 
-int runargs(char *arg)
+void runargs(char *arg)
 {
 	switch (arg[0]) {
 		case 't':
 			test();
 			exit(0);
 		case 'v':
-			printf("PseudoLISP 0.0.5, made by Jakl Tomas.\n");
+			printf("PseudoLISP " VERSION ", made by Jakl Tomas.\n");
 			break;
 		case 'c':
 			init();
 			play();
+			break;
+		case 'q':
+			fprintf(stderr, "Not implemented yet.\n");
 			break;
 		case 'p':
 			prompt = 0;
@@ -38,6 +44,7 @@ int runargs(char *arg)
 					"  -v\tprint version\n"
 					"  -t\trun tests\n"
 					"  -c\trun console\n"
+					"  -q\tquiet (only forced ouptut)\n"
 					"  -p\tdisable prompt\n"
 					"  -h\tprint this help\n\n");
 			break;
@@ -48,7 +55,6 @@ int runargs(char *arg)
 	}
 
 	if (*(++arg) != '\0') runargs(arg);
-	return 0;
 }
 
 

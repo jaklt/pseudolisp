@@ -3,8 +3,7 @@
 
 #include "structs.h"
 
-
-Symbol *resolve_Thunk(Symbol *s);
-Symbol *result(Function *f, List *params);
+#define FILO_DEPTH 1000
+t_point resolve_Thunk(t_point s);
 
 #endif

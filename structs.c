@@ -3,98 +3,39 @@
 #include "gc.h"
 
 
-Function *new_Function(List *body_function, int params_count)
+Function *new_Function(t_point body_function, int params_count)
 {
 	Function *f = (Function *) malloc(sizeof(Function));
 
 	f->body.structure = body_function;
 	f->params_count   = params_count;
-	f->built_in       = BOOL_FALSE;
-	f->more_params    = BOOL_FALSE;
+	f->built_in       = 0;
+	f->more_params    = 0;
 
-	gc_collect(FUNCTION, f);
+	gc_collect(make_Func(f));
 	return f;
 }
 
 
-List *new_List(Symbol *symbol)
+Cons *new_Cons(t_point a, t_point b)
 {
-	List *l = (List *) malloc(sizeof(List));
+	Cons *l = (Cons *) malloc(sizeof(Cons));
 
-	l->symbol = symbol;
-	l->next = NULL;
+	l->a = a;
+	l->b = b;
 
-	gc_collect(LIST, l);
+	gc_collect(make_Cons(l));
 	return l;
 }
 
 
-Symbol *new_Ordinal(E_TYPE type, t_number co)
-{
-	Symbol *s = (Symbol *) malloc(sizeof(Symbol));
-
-	s->type = type;
-
-	switch (type) {
-		case PARAMETER:
-		case NUMBER: s->s.number   =        co; break;
-		case   BOOL: s->s.boolean  = (int)  co; break;
-		case  CHAR: s->s.character = (char) co; break;
-		default: break;
-	}
-
-	gc_collect(NIL, s);
-	return s;
-}
-
-
-Symbol *new_Symbol(E_TYPE type, void *symbol)
-{
-	Symbol *s = (Symbol *) malloc(sizeof(Symbol));
-
-	s->type = type;
-	s->s.link = (void *)symbol;
-
-	gc_collect(NIL, s);
-	return s;
-}
-
-
-Symbol *new_NIL()
-{
-	static Symbol *s = NULL;
-
-	if (s == NULL) {
-		s = new_Symbol(NIL, NULL);
-		gc_collect(NIL, s);
-		gc_inc_immortal(NIL, s);
-	}
-
-	return s;
-}
-
-
-inline int is_NIL(Symbol *s)
-{
-	if (s == NULL || s->type == NIL) return 1;
-
-	// empty List
-	if (s->type == LIST) {
-		List *l = (List *) s->s.link;
-		return (is_NIL(l->symbol) && l->next == NULL);
-	}
-
-	return 0;
-}
-
-
-Thunk *new_Thunk(Function *fce, List *params)
+Thunk *new_Thunk(t_point fce, Cons *params)
 {
 	Thunk *t = (Thunk *) malloc(sizeof(Thunk));
 
 	t->function = fce;
 	t->params = params;
 
-	gc_collect(THUNK, t);
+	gc_collect(make_Thunk(t));
 	return t;
 }

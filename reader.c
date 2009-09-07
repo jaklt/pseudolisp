@@ -6,24 +6,15 @@
 extern int prompt;
 static FILE *input = NULL;
 
-int set_input(FILE *inp)
+void set_input(FILE *inp)
 {
 	input = inp;
-	return 0;
 }
 
 
 extern inline int is_whitespace(char c)
 {
-	switch (c) {
-		case ' ':
-		case '\n':
-		case '\t':
-		case EOF:
-			return 1;
-		default:
-			return 0;
-	}
+	return (c == ' ' || c == '\n' || c == '\t' || c == EOF);
 }
 
 
@@ -32,7 +23,7 @@ char read_char()
 	static int is_prev = 0;
 	static char prev;
 	char c;
-	if (input == NULL) ERROR(VNITRNI_CHYBA);
+	if (input == NULL) ERROR(INNER_ERROR);
 
 	if (is_prev) {
 		c = prev;
@@ -104,31 +95,30 @@ static char parse_just_char(int quoted)
 			default: ERROR(SYNTAX_ERROR);
 		}
 	}
-
 	if (quoted && read_char() != '\'') ERROR(SYNTAX_ERROR);
 	return c;
 }
 
 
-inline Symbol *parse_char()
+inline t_point parse_char()
 {
-	return new_Ordinal(CHAR, parse_just_char(BOOL_TRUE));
+	return make_Num(parse_just_char(1));
 }
 
 
-Symbol *parse_string()
+t_point parse_string()
 {
-	List *l = new_List(NULL);
-	Symbol *ret = new_Symbol(LIST, l);
+	Cons ret = {.b = NIL};
+	Cons *l = &ret;
 	char c;
 
-	c = parse_just_char(BOOL_FALSE);
+	c = parse_just_char(0);
 	while (c != '"' && c != '\0') {
-		l->next = new_List(new_Ordinal(CHAR, c));
-		l = l->next;
-		c = parse_just_char(BOOL_FALSE);
+		l->b = pnew_Cons(make_Num(c), NIL);
+		l = next(l);
+		c = parse_just_char(0);
 	}
 
 	if (c != '"') ERROR(SYNTAX_ERROR);
-	return ret;
+	return ret.b;
 }

@@ -1,17 +1,21 @@
 #ifndef ERROR_H
 #define ERROR_H
 
-#define __MAKE_ERROR(n) {throw_full_error(n, __LINE__, __FILE__); }
-// #define __MAKE_ERROR(n) {throw_error(n); }
+#ifdef DEBUG
+	#define __MAKE_ERROR(n) throw_full_error(n, __LINE__, __FILE__)
+#else
+	#define __MAKE_ERROR(n) throw_error(n)
+#endif
 
 #define ERROR(n)  {__MAKE_ERROR(n); return 0; }
+#define ERROR_RET(n) (__MAKE_ERROR(n) ? NULL : NULL)
 
 
 typedef enum {
-	PRAZDNA_HODNOTA,
-	OPERACE_NEMA_SMYSL,
-	MOC_HLUBOKA_REKURZE,
-	VNITRNI_CHYBA,
+	TYPE_ERROR,
+	TOO_DEEP_RECURSION,
+	TOO_MANY_PARAMS,
+	INNER_ERROR,
 	NOT_IMPLEMENTED,
 	UNDEFINED,
 	SYNTAX_ERROR,

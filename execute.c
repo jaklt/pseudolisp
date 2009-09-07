@@ -4,186 +4,176 @@
 #include "execute.h"
 
 
-static List *f_append(List *a, List *b)
+static Cons *f_append(Cons *a, Cons *b)
 {
 	if (a == NULL) return b;
-	List *ret = new_List(NULL);
-	List *l = ret;
+	Cons *ret = new_Cons(a->a, NIL);
+	Cons *l = ret;
 
-	while (a != NULL) {
-		l->next = new_List(a->symbol);
-		l = l->next;
-		a = a->next;
+	while (a->b != NIL) {
+		a = next(a);
+		l->b = pnew_Cons(a->a, NIL);
+		l = next(l);
 	}
 
-	l->next = b;
-	l = ret->next; free(ret);
-	return l;
+	l->b = make_Cons(b);
+	return ret;
 }
 
 
-static int list_len(List *l)
+/**
+ * Zjisti zda list l je aspon count dlouhy. Do other
+ * nastavi odkaz na (count+1)-ty prvek.
+ */
+static int list_length_ok(Cons *l, int count, Cons **other)
 {
-	int i = 0;
-	while (l != NULL) {
-		i++; l = l->next;
+	while (l != NULL && count) {
+		count--; l = next(l);
 	}
 
-	return i;
+	*other = l;
+	return count == 0;
 }
 
 
-static List *insert_params_run(Symbol **exp_params, List *kam);
-static Symbol *insert_params_solve(Symbol **exp_params, Symbol *s)
+/**
+ * insert_params run
+ */
+static t_point ip_run(t_point *exp_params, t_point kam)
 {
-	if (is_NIL(s)) return NULL;
-	if (s->type == LIST)
-		return new_Symbol(LIST, insert_params_run(exp_params, (List *) s->s.link));
-	else if (s->type == PARAMETER)
-		return exp_params[s->s.number - 1];
+	t_point p1, p2;
+	if (kam == NIL) return NIL;
 
-	return s;
-}
-
-
-static List *insert_params_run(Symbol **exp_params, List *l)
-{
-	if (l == NULL) return NULL;
-	List *ret = new_List(insert_params_solve(exp_params, l->symbol));
-	List *ret_tmp = ret;
-
-	while (l->next != NULL) {
-		l = l->next;
-		ret->next = new_List(insert_params_solve(exp_params, l->symbol));
-		ret = ret->next;
+	else if (type_match(kam, CONS)) {
+		p1 = ip_run(exp_params, get_Cons(kam)->a);
+		p2 = ip_run(exp_params, get_Cons(kam)->b);
+		return pnew_Cons(p1, p2);
 	}
 
-	return ret_tmp;
+	else if (is_Param(kam))
+		return exp_params[get_Num((t_point) get_Thunk(kam)->params) - 1];
+
+	else if (type_match(kam, THUNK)) {
+		p1 = ip_run(exp_params, get_Thunk(kam)->function);
+		p2 = ip_run(exp_params, make_Cons(get_Thunk(kam)->params));
+		return pnew_Thunk(p1, get_Cons(p2));
+	}
+
+	return kam;
 }
 
 
-List *insert_params(List *params, Function *kam)
+t_point insert_params(Cons *params, Function *kam)
 {
-	int count = (kam->params_count + (kam->more_params ? 1 : 0));
-	Symbol **exp_params = (Symbol **) malloc(count * sizeof(Symbol *));
-	List *l;
+	int count = kam->params_count + (kam->more_params ? 1 : 0);
+	t_point exp_params[count];
+	t_point l;
 
 	for (int i=0; i<kam->params_count; i++) {
-		exp_params[i] = params->symbol;
-		params = params->next;
+		exp_params[i] = params->a;
+		params = next(params);
 	}
 
 	// doplneni posledniho parametru pro neomezeny pocet parametru
-	if (kam->more_params) {
-		l = new_List(NULL);
-		l->next = params;
-		exp_params[count-1] = new_Symbol(LIST, l);
-	}
+	if (kam->more_params)
+		exp_params[count-1] = make_Cons(params);
 
-	l = insert_params_run(exp_params, kam->body.structure);
+	l = ip_run(exp_params, kam->body.structure);
 
-	free(exp_params);
 	return l;
 }
 
 
-static int replace_Symbol(Symbol *s, Symbol *with)
+static t_point result(Thunk *t, int *done)
 {
-	if (s == NULL) return 1;
+	if (is_Func(t->function)) {
+		Function *f = get_Func(t->function);
+		Cons *other_params = NULL;
 
-	if (is_NIL(with)) {
-		s->type = NIL;
-		return 0;
-	}
+		if (list_length_ok(t->params, f->params_count, &other_params)) {
+			*done = 0;
 
-	s->type = with->type;
-	s->s = with->s;
-	return 0;
-}
+			// prebytek parametru
+			if (f->more_params) other_params = NULL;
 
+			if (f->built_in)
+				t->function = f->body.link(t->params);
+			else
+				t->function = insert_params(t->params, f);
 
-static Symbol *extend_Thunk(Symbol *s, List *l)
-{
-	if (is_NIL(s)) ERROR(VNITRNI_CHYBA);
-	if (s->type != THUNK) {
-		List *nl = new_List(s);
-		nl->next = l;
-		return new_Symbol(LIST, nl);
-	}
-
-	return new_Symbol(THUNK,
-			new_Thunk(((Thunk *) s->s.link)->function,
-				f_append(((Thunk *) s->s.link)->params, l)));
-}
-
-
-Symbol *result(Function *f, List *params)
-{
-	if (f == NULL) return NULL;
-	if (f->built_in == BOOL_TRUE) return f->body.link(params);
-	List *l = insert_params(params, f);
-
-	if (l == NULL || l->symbol == NULL) return new_Symbol(LIST, l);
-	return resolve_Thunk(new_Symbol(LIST, l));
-}
-
-
-Symbol *resolve_Thunk(Symbol *s)
-{
-	if (is_NIL(s)) return NULL;
-	Symbol *sp = s;
-	Thunk *t;
-
-	if (s->type == LIST) {
-		List *l = (List *) s->s.link;
-		// TODO nekolikrat se opakuje zbytecne
-		l->symbol = resolve_Thunk(l->symbol);
-
-		if (is_NIL(l->symbol)) return new_Symbol(LIST, l);
-
-		switch (l->symbol->type) {
-			case THUNK:
-				if (l->next == NULL) return resolve_Thunk(l->symbol);
-				t = (Thunk *) l->symbol->s.link;
-
-				// TODO zmenit na longer_or_append...
-				if (list_len(t->params) >= t->function->params_count) {
-					l->symbol = resolve_Thunk(l->symbol);
-					return resolve_Thunk(s);
-				}
-				else {
-					s = extend_Thunk(l->symbol, l->next);
-					break;
-				}
-			case FUNCTION:
-				s = new_Symbol(THUNK, new_Thunk((Function *) l->symbol->s.link, l->next));
-				break;
-			case LIST:
-				l->symbol = resolve_Thunk(l->symbol);
-				if (is_NIL(l->symbol)) {
-					if  (l->next != NULL) ERROR(VNITRNI_CHYBA);
-					return NULL;
-				} else if (l->symbol->type == LIST) {
-					if (l->next == NULL) return l->symbol;
-					ERROR(VNITRNI_CHYBA);
-				}
-				return resolve_Thunk(s);
-			default:
-				if (l->next != NULL) ERROR(VNITRNI_CHYBA);
-				return l->symbol;
+			t->params = other_params;
+			if (other_params == NULL)
+				return t->function;
+			else
+				return make_Thunk(t);
+		} else {
+			*done = 1;
+			return make_Thunk(t);
 		}
 	}
+	
+	if (type_match(t->function, THUNK) && !is_Param(t->function)) {
+		*done = 0;
+		Thunk *t2 = get_Thunk(t->function);
+		t->function = t2->function;
+		t->params = f_append(t2->params, t->params);
 
-	if (is_NIL(s) || s->type != THUNK) return s;
-	t = (Thunk *) s->s.link;
-
-	while (t != NULL && list_len(t->params) >= t->function->params_count)
-	{
-		s = result(t->function, t->params);
-		if (!is_NIL(s) && s->type == LIST) s = resolve_Thunk(s);
-		t = (!is_NIL(s) && s->type == THUNK) ? (Thunk *) s->s.link : NULL;
+		return make_Thunk(t);
 	}
 
-	replace_Symbol(sp, s);
-	return s;
+	// nejde ani o volani funkce ani o nevyhodnoceny Thunk
+	if (t->params == NULL)
+		return t->function;
+	else
+		ERROR(TOO_MANY_PARAMS);
+}
+
+
+t_point resolve_Thunk(t_point s)
+{
+	static t_point filo[FILO_DEPTH];
+	static int     seen[FILO_DEPTH];
+	static int akt = 0;
+	int start = akt;
+
+	filo[akt] = s;
+	seen[akt] = 0;
+
+	while (1) {
+		s = filo[akt];
+		if (!is_Thunk(s)) {
+			if (akt == start) break;
+			goto dalsi;
+		}
+
+		if (seen[akt]) {
+			int zaloha = akt;
+			filo[akt] = result(get_Thunk(s), &seen[akt]);
+
+			// pokud se tohle pokazi tak je nekde neco hodne spatne
+			if (zaloha != akt) ERROR(INNER_ERROR);
+
+			// nic se nezmenilo
+			if ((s == filo[akt]) && seen[akt]) {
+				if (akt == start) break;
+				akt--;
+			}
+			continue;
+		}
+
+		// jeste jsme prvek nevideli && je to Thunk
+		// -> dame funkci na zasobnik a vysledek vyhodnotime pozdeji
+		else {
+			seen[akt] = 1;
+			if (++akt >= FILO_DEPTH) ERROR(TOO_DEEP_RECURSION);
+			filo[akt] = get_Thunk(s)->function;
+			seen[akt] = 0;
+			continue;
+		}
+
+dalsi:
+		if (--akt < start) ERROR(INNER_ERROR);
+	}
+
+	return filo[akt];
 }

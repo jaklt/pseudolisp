@@ -5,10 +5,9 @@
 
 #include "structs.h"
 
-char *new_temp_name();
-int print_Typ(E_TYPE t);
-int print_Symbol(Symbol *s);
-int print_List(List *l);
+int print_Symbol(t_point s);
+int print_List(Cons *c);
+int print_Cons(Cons *c);
 int print_Function(Function *f);
 int print_Thunk(Thunk *t);
 

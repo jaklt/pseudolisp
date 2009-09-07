@@ -50,12 +50,11 @@ static Hash *new_sized_Hash(int size)
 
 inline Hash *new_Hash()
 {
-	const int POC = 8;
-	return new_sized_Hash(POC);
+	return new_sized_Hash(BASIC_HASH_SIZE);
 }
 
 
-static unsigned int free_space(Hash *h, unsigned long int hash)
+static inline unsigned int free_space(Hash *h, unsigned long int hash)
 {
 	unsigned int index = (unsigned int) hash % h->size;
 
@@ -82,6 +81,7 @@ static int expand_hash(Hash *h)
 	int stara_size = h->size;
 
 	h->size *= 2;
+	h->used = 0;
 	h->hashes = (HashMember *) malloc((h->size)*sizeof(HashMember));
 	if (h->hashes == NULL) return 1;
 	empty_Hash(h);
@@ -101,12 +101,12 @@ static int expand_hash(Hash *h)
 }
 
 
-HashMember *add_Hash(Hash *h, unsigned long int hash, void *p)
+HashMember *add_Hash(Hash *h, unsigned long int hash, unsigned long int p)
 {
-	h->used++;
-
 	if (h->used > (3 * (h->size)/4))
 		if (expand_hash(h)) return NULL;
+
+	h->used++;
 
 	unsigned int index = free_space(h, hash);
 	if (h->hashes[index].full == FULL_HASH) h->used--;
@@ -116,7 +116,7 @@ HashMember *add_Hash(Hash *h, unsigned long int hash, void *p)
 }
 
 
-HashMember *add_string_Hash(Hash *h, char *name, void *p)
+HashMember *add_string_Hash(Hash *h, char *name, unsigned long int p)
 {
 	// copy name
 	char *name_c = (char *) malloc((strlen(name)+1) * sizeof(char));
@@ -174,13 +174,14 @@ inline HashMember *get_string_Hash(Hash *h, char *name)
 Hash *clone_Hash(Hash *recent)
 {
 	Hash *h = new_sized_Hash(recent->size);
+	h->used = recent->used;
 	memcpy(h->hashes, recent->hashes, h->size * sizeof(HashMember));
 
 	return h;
 }
 
 
-int free_Hash(Hash *h)
+void free_Hash(Hash *h)
 {
 //	for (int i=0; i<h->size; i++) {
 //		if (h->hashes[i].name == NULL) continue;
@@ -189,6 +190,4 @@ int free_Hash(Hash *h)
 
 	free(h->hashes);
 	free(h);
-
-	return 0;
 }
