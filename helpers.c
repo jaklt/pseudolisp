@@ -59,6 +59,7 @@ int print_Symbol(t_point s)
 
 int print_List(Cons *l)
 {
+	if (l == NULL) printf("NIL\n");
 	int first = 1;
 
 	while (l != NULL) {

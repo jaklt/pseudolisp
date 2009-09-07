@@ -54,7 +54,7 @@ inline Hash *new_Hash()
 }
 
 
-static unsigned int free_space(Hash *h, unsigned long int hash)
+static inline unsigned int free_space(Hash *h, unsigned long int hash)
 {
 	unsigned int index = (unsigned int) hash % h->size;
 
@@ -81,6 +81,7 @@ static int expand_hash(Hash *h)
 	int stara_size = h->size;
 
 	h->size *= 2;
+	h->used = 0;
 	h->hashes = (HashMember *) malloc((h->size)*sizeof(HashMember));
 	if (h->hashes == NULL) return 1;
 	empty_Hash(h);
@@ -102,10 +103,10 @@ static int expand_hash(Hash *h)
 
 HashMember *add_Hash(Hash *h, unsigned long int hash, unsigned long int p)
 {
-	h->used++;
-
 	if (h->used > (3 * (h->size)/4))
 		if (expand_hash(h)) return NULL;
+
+	h->used++;
 
 	unsigned int index = free_space(h, hash);
 	if (h->hashes[index].full == FULL_HASH) h->used--;
@@ -173,6 +174,7 @@ inline HashMember *get_string_Hash(Hash *h, char *name)
 Hash *clone_Hash(Hash *recent)
 {
 	Hash *h = new_sized_Hash(recent->size);
+	h->used = recent->used;
 	memcpy(h->hashes, recent->hashes, h->size * sizeof(HashMember));
 
 	return h;

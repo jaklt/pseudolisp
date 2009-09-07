@@ -50,7 +50,7 @@ int gc_dec_immortal(t_point p) { return !gc_change(p, -1, change_immort); }
 
 void gc_score()
 {
-	printf("%d collected, %d freed\n", collected, freed);
+	printf("%d collected, %d freed (%d left)\n", collected, freed, col->used);
 }
 
 
