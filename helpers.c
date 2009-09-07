@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <stdio.h>
 #include "helpers.h"
 #include "execute.h"
@@ -91,7 +90,7 @@ int print_Function(Function *f)
 	if (f == NULL) return 1;
 	odsazeni++;
 
-	odsadit(); printf("Number of parameters: %d\n", f->params_count);
+	odsadit(); printf("Number of parameters: %d%s\n", f->params_count, f->more_params ? "+" : "");
 
 	if (f->built_in) {
 		odsadit(); printf("Build in\n");

@@ -283,6 +283,7 @@ Symbol *apply(List *params)
 	}
 
 	Symbol *s2 = resolve_Thunk(params->next->symbol);
+	if (is_NIL(s2)) return s;
 	if (s2->type != LIST) ERROR(OPERACE_NEMA_SMYSL);
 
 	List *l = new_List(s);

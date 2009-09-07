@@ -291,7 +291,7 @@ int play()
 		if (c == OPEN_TAG) {
 			parsed = parse_pipe(h, 0);
 			if (parsed != NULL) {
-				print_Symbol(resolve_Thunk(new_Symbol(LIST, parsed)));
+				print_Symbol(new_Symbol(LIST, parsed));
 			} else if (prompt)
 				printf("OK\n");
 			gc();
