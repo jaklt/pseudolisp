@@ -103,6 +103,7 @@ t_point init_def(Hash *h, char *name, int level)
 	if (name != NULL) {
 		hm = add_string_Hash(h, name, s);
 		hm->info = level;
+		if (level == 0) gc_inc_immortal(s);
 	}
 
 	Hash *new_h = clone_Hash(h);
@@ -186,18 +187,18 @@ t_point create_token(Hash *h, char *string, int level)
 	}
 
 	if (s == NIL) {
-		HashMember *hp = get_string_Hash(h, string);
+		HashMember *hm = get_string_Hash(h, string);
 
-		if (hp == NULL) {
-			hp = add_string_Hash(h, string, get_Undefined());
+		if (hm == NULL) {
+			hm = add_string_Hash(h, string, get_Undefined());
 		}
 
-		s = hp->link;
+		s = hm->link;
 
 		// doplneni kontextu do volani funkce
 		// TODO delat jen kdyz je treba
 		if (is_Func(s))
-			s = kontext_params(s, min(hp->info, level));
+			s = kontext_params(s, min(hm->info, level));
 	}
 
 	return s;

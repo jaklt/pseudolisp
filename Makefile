@@ -7,9 +7,10 @@ HEADERS = structs.h error.h execute.h testy.h helpers.h hashovani.h parser.h fun
 
 OBJ = ${SRC:.c=.o}
 
-PARAMS = -std=c99 -Wall -pedantic -D'VERSION="${VERSION}"' -g -DDEBUG -pg
-# -pg je pro gprof
+PARAMS = -std=c99 -Wall -pedantic -D'VERSION="${VERSION}"' -g -DDEBUG
 # -g je pro gdb/valgrind
+# PARAMS += -pg # je pro gprof
+# PARAMS += -fprofile-arcs -ftest-coverage # je pro gcov
 
 # optimalizace kompilace podle vysledku profielru
 # http://www.abclinuxu.cz/blog/kazdy_den_jinak/2007/5/gcc-a-optimalizace-s-profilerem
@@ -31,7 +32,7 @@ ${NAME}: ${OBJ} ${HEADERS}
 
 clean:
 	@echo Cleaning
-	@rm -f ${OBJ}
+	@rm -f ${OBJ} *.gcda *.gcno *.gcov gmon.out
 
 dist: ${SRC} ${HEADERS}
 	@rm -f ${NAME}-${VERSION}.tar.bz2
