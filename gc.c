@@ -77,31 +77,17 @@ static void to_change_linked(t_point s, int c)
 
 static void to_free(HashMember *hm)
 {
-	hm->full = DELETED_HASH;
-	col->used--;
-	to_change_linked(hm->hash, -1);
-	free((void *) p2n(hm->hash));
+	t_point p = hm->hash;
+	del_HashMember(col, hm);
+	to_change_linked(p, -1);
+	free((void *) p2n(p));
 	freed++;
 }
 
 
 void gc()
 {
-	HashMember *hm;
-
-	for (int i=0; i<col->size; i++) {
-		if (col->hashes[i].full != FULL_HASH) continue;
-		to_change_linked(col->hashes[i].hash, 1);
-	}
-
-	for (int i=0; i<col->size; i++) {
-		if (col->hashes[i].full != FULL_HASH) continue;
-		hm = &col->hashes[i];
-		check(hm);
-	}
-
-	for (int i=0; i<col->size; i++) {
-		if (col->hashes[i].full != FULL_HASH) continue;
-		col->hashes[i].link = 0;
-	}
+	FOR_ALL_HASHES(col, hm, { to_change_linked(hm->hash, 1); })
+	FOR_ALL_HASHES(col, hm, { check(hm); })
+	FOR_ALL_HASHES(col, hm, { hm->link = 0; })
 }

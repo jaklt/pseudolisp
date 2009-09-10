@@ -9,7 +9,7 @@
  *
  * http://www.cse.yorku.ca/~oz/hash.html
  */
-static unsigned long int hash_string(char *s)
+unsigned long int hash_string(char *s)
 {
 	unsigned long int h = 5381;
 	char *c = s;
@@ -74,13 +74,13 @@ static inline unsigned int free_space(Hash *h, unsigned long int hash)
 }
 
 
-static int expand_hash(Hash *h)
+static int resize_hash(Hash *h, int new_size)
 {
 	HashMember *old_hashes = h->hashes;
 	HashMember *hm;
 	int stara_size = h->size;
 
-	h->size *= 2;
+	h->size = new_size;
 	h->used = 0;
 	h->hashes = (HashMember *) malloc((h->size)*sizeof(HashMember));
 	if (h->hashes == NULL) return 1;
@@ -104,7 +104,7 @@ static int expand_hash(Hash *h)
 HashMember *add_Hash(Hash *h, unsigned long int hash, unsigned long int p)
 {
 	if (h->used > (3 * (h->size)/4))
-		if (expand_hash(h)) return NULL;
+		if (resize_hash(h, h->size * 2)) return NULL;
 
 	h->used++;
 
@@ -131,21 +131,17 @@ HashMember *add_string_Hash(Hash *h, char *name, unsigned long int p)
 }
 
 
-HashMember *del_Hash(Hash *h, unsigned int hash)
+Hash *del_HashMember(Hash *h, HashMember *hm)
 {
-	HashMember *hm = get_Hash(h, hash);
-	if (hm) {
+	if (hm && hm->full == FULL_HASH) {
 		hm->full = DELETED_HASH;
 		h->used--;
 	}
 
-	return hm;
-}
+	if (h->used > BASIC_HASH_SIZE && h->used < (h->size)/4)
+		if (resize_hash(h, h->size / 2)) return NULL;
 
-
-inline HashMember *del_string_Hash(Hash *h, char *name)
-{
-	return del_Hash(h, hash_string(name));
+	return h;
 }
 
 
@@ -162,12 +158,6 @@ HashMember *get_Hash(Hash *h, unsigned long int hash)
 		return NULL;
 
 	return &h->hashes[i];
-}
-
-
-inline HashMember *get_string_Hash(Hash *h, char *name)
-{
-	return get_Hash(h, hash_string(name));
 }
 
 

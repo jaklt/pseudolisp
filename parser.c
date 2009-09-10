@@ -6,7 +6,6 @@
 #include "parser.h"
 #include "helpers.h"
 #include "error.h"
-#include "execute.h"
 #include "gc.h"
 
 extern t_point f_plus(Cons *params);

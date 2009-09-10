@@ -57,6 +57,7 @@ t_point f_print_string(Cons *params)
 					ERROR(TYPE_ERROR);
 
 				putchar(get_Num(la->a));
+				la->b = resolve_Thunk(la->b);
 				la = next(la);
 			}
 		}
