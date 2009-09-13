@@ -34,6 +34,9 @@ int throw_full_error(E_ERROR t, int line, char file[])
 		case SYNTAX_ERROR:
 			fprintf(stderr, "Syntax error");
 			break;
+		case INT_OVERFLOW:
+			fprintf(stderr, "Integer owerflow");
+			break;
 		default:
 			fprintf(stderr, "Unknown error");
 			break;

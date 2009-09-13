@@ -43,6 +43,9 @@ Vypisovani rekurzivnich funkci v DEBUG modu je nekonecne
 
 [tail [list 1 2 2] 4] --> Thunk
 
+GC neodalokuje vse - viz testy/fib
+GC dokaze udelat stack overflow - viz testy/parse-test
+
 ----------------------------------------------
 Potencionalni leaky:
 	pri pamatovani jmen vseho, z hashe se nemazou

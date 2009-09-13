@@ -87,7 +87,7 @@ int print_Cons(Cons *c)
 	if (c == NULL) { printf("NIL\n"); return 1; }
 	if (type_match((t_point) c, NUMBER)) {
 		// printovan parametr jako Thunk
-		return __MAKE_ERROR(INNER_ERROR);
+		return (int) ERROR_RET(INNER_ERROR);
 	}
 
 	odsazeni++;

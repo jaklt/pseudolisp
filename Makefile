@@ -3,7 +3,7 @@ VERSION = 0.5.0
 NAME = pseudolisp
 
 SRC = ${NAME}.c structs.c error.c execute.c testy.c helpers.c hashovani.c reader.c parser.c funkce.c funkce-sideef.c gc.c
-HEADERS = structs.h error.h execute.h testy.h helpers.h hashovani.h parser.h funkce.h gc.h
+HEADERS = structs.h error.h execute.h helpers.h hashovani.h parser.h funkce.h gc.h
 
 OBJ = ${SRC:.c=.o}
 
@@ -28,7 +28,7 @@ ${OBJ}: ${SRC}
 
 ${NAME}: ${OBJ} ${HEADERS}
 	@echo "  Building ${NAME}"
-	@gcc -o $@ ${OBJ} ${PARAMS} -lm
+	@gcc -o $@ ${OBJ} ${PARAMS}
 
 clean:
 	@echo Cleaning

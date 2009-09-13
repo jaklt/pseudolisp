@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "testy.h"
 #include "parser.h"
+extern void test();
 
 #ifndef VERSION
 #define VERSION "?.?.?"

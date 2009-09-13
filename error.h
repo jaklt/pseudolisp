@@ -19,6 +19,7 @@ typedef enum {
 	NOT_IMPLEMENTED,
 	UNDEFINED,
 	SYNTAX_ERROR,
+	INT_OVERFLOW,
 } E_ERROR;
 
 int throw_error(E_ERROR t);

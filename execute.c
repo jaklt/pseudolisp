@@ -84,7 +84,7 @@ t_point insert_params(Cons *params, Function *kam)
 }
 
 
-static t_point result(Thunk *t, int *done)
+static inline t_point result(Thunk *t, int *done)
 {
 	if (is_Func(t->function)) {
 		Function *f = get_Func(t->function);

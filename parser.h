@@ -9,6 +9,10 @@
 #define REMAIN_PARAMS_TAG '&'
 #define PROMPT "~~> "
 
+static inline int is_whitespace(char c)
+{
+	return (c == ' ' || c == '\n' || c == '\t' || c == EOF);
+}
 
 Hash *get_basic_hash();
 void set_prompt(int set);

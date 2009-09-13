@@ -134,28 +134,18 @@ static inline t_point is_not_null(t_point vysl)
 }
 
 
-static inline t_point f_eq(t_number a, t_number b)
-{
-	return (a == b) ? make_Num(a) : NIL;
-}
+static t_point f_gt(t_number a, t_number b) { return (a >  b) ? make_Num(b) : NIL; }
+static t_point f_ge(t_number a, t_number b) { return (a >= b) ? make_Num(b) : NIL; }
+static t_point f_eq(t_number a, t_number b) { return (a == b) ? make_Num(a) : NIL; }
+static t_point f_le(t_number a, t_number b) { return (a <= b) ? make_Num(b) : NIL; }
+static t_point f_lt(t_number a, t_number b) { return (a <  b) ? make_Num(b) : NIL; }
 
 
-static inline t_point f_gt(t_number a, t_number b)
-{
-	return (a > b) ? make_Num(b) : NIL;
-}
-
-
-t_point op_eq(Cons *params)
-{
-	return is_not_null(inner_reduce(f_eq, nubers_ok, params));
-}
-
-
-t_point op_gt(Cons *params)
-{
-	return is_not_null(inner_reduce(f_gt, nubers_ok, params));
-}
+t_point op_gt(Cons *params) { return is_not_null(inner_reduce(f_gt, nubers_ok, params)); }
+t_point op_ge(Cons *params) { return is_not_null(inner_reduce(f_ge, nubers_ok, params)); }
+t_point op_eq(Cons *params) { return is_not_null(inner_reduce(f_eq, nubers_ok, params)); }
+t_point op_le(Cons *params) { return is_not_null(inner_reduce(f_le, nubers_ok, params)); }
+t_point op_lt(Cons *params) { return is_not_null(inner_reduce(f_lt, nubers_ok, params)); }
 
 
 t_point op_if(Cons *params)
@@ -170,7 +160,7 @@ t_point op_if(Cons *params)
 }
 
 
-static inline t_point f_and(t_number a, t_number b)
+static t_point f_and(t_number a, t_number b)
 {
 	return (a == BOOL_TRUE && b == BOOL_TRUE) ? a : NIL;
 }

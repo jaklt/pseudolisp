@@ -29,8 +29,11 @@ t_point op_bool(Cons *params);
 t_point op_func(Cons *params);
 
 /** Function pro porovnavani */
-t_point op_eq(Cons *params);
 t_point op_gt(Cons *params);
+t_point op_ge(Cons *params);
+t_point op_eq(Cons *params);
+t_point op_le(Cons *params);
+t_point op_lt(Cons *params);
 
 /** Funkce pro praci s dvojici */
 t_point list(Cons *params);

@@ -8,8 +8,7 @@
 
 
 #define NEXT printf("\n-- next test:\n")
-#define SPRAVNE(a) printf("\t** SPRAVNE: " a " **\n");
-#define SPRAVNE_NUMBER(a,b) printf("\t** SPRAVNE: " a " **\n", b);
+#define SPRAVNE(a) printf("\t** " a " is OK **\n");
 
 
 Function *getter(int params_count, t_point (*link)(Cons *))
@@ -55,7 +54,7 @@ static void zakladni_fce();
 void test()
 {
 	gc_init();
-	printf("-- Zacatek testovani:\n");
+	printf("-- Begining:\n");
 	zakladni(); NEXT;
 	parametry(); NEXT;
 	resolvovani(); NEXT;
@@ -68,16 +67,11 @@ static void zakladni()
 {
 	Cons *c = new_Cons(NIL, pnew_Cons(make_Num(-12), NIL));
 	Thunk *par = new_Param(1);
-//	Function *f = get_fplus();
-//	Thunk *t = new_Thunk(make_Func(f), NULL);
 
 	printf("%li\n", get_Num(next(c)->a));
 	SPRAVNE("-12");
 
 	printf("Is param: %i\n", is_Param(make_Thunk(par)));
-//	print_List(c);
-//	print_Thunk(new_Thunk(make_Thunk(t), new_Cons(make_Num(12), NIL)));
-//	print_Cons(c);
 }
 
 
@@ -88,7 +82,6 @@ static void parametry()
 	Function *fce = new_Function(t, 1);
 	Cons *l = new_List(make_Num(4));
 
-//	print_Symbol(make_Func(fce));
 	print_Symbol(insert_params(l, fce));
 	SPRAVNE("9");
 }

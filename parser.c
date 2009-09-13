@@ -13,7 +13,6 @@ extern t_point f_if(Cons *params);
 extern t_point f_eq(Cons *params);
 
 t_point parse_pipe(Hash *h, int level);
-extern int is_whitespace(char c);
 
 
 int prompt = 1;
@@ -58,8 +57,11 @@ Hash *get_basic_hash()
 		{"bool?",   op_bool, 1,     0},
 		{"func?",   op_func, 1,     0},
 
-		{"=",       op_eq,   2,     1},
 		{">",       op_gt,   2,     1},
+		{">=",      op_ge,   2,     1},
+		{"=",       op_eq,   2,     1},
+		{"<=",      op_le,   2,     1},
+		{"<",       op_lt,   2,     1},
 
 		{"head",    car,     1,     0},
 		{"car",     car,     1,     0},
@@ -113,9 +115,8 @@ t_point init_def(Hash *h, char *name, int level)
 	while (is_whitespace(chars[0] = read_char()));
 	if (chars[0] != OPEN_TAG) ERROR(SYNTAX_ERROR);
 
-	while (read_word(chars, 1)) {
+	while (read_word(chars, 1))
 		add_string_Hash(new_h, chars, pnew_Param(++param_counter));
-	}
 
 	if (chars[0] != '\0') {
 		add_string_Hash(new_h, chars, pnew_Param(++param_counter));
@@ -182,7 +183,7 @@ t_point create_token(Hash *h, char *string, int level)
 	if (('0' <= string[0] && string[0] <= '9')
 			|| (string[0] == '-' && '0' <= string[1] && string[1] <= '9'))
 	{
-		s = make_Num((t_number) atof(string));
+		s = make_Num((t_number) atol(string));
 	}
 
 	if (s == NIL) {
@@ -268,7 +269,7 @@ t_point parse_pipe(Hash *h, int level)
 			case '"':  s = parse_string(); break;
 			case OPEN_TAG: s = parse_pipe(h, level); break;
 
-			default: c++; whitespaces = 0; break;
+			default: c++; whitespaces = 0; continue;
 		}
 
 		if (s != NIL) {

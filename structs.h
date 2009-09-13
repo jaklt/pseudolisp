@@ -15,10 +15,10 @@ typedef unsigned long int t_point;
 #define NUMBER    3
 
 #define BOOL_TRUE  ((t_point) 1)
-#define BOOL_FALSE ((t_point) 0) // zalezi zda chci, aby NIL == BOOL_FALSE
+#define BOOL_FALSE ((t_point) 0) // --> NIL == BOOL_FALSE
 
-#define MAX_NUM 0x1FFFFFFF
-#define MIN_NUM 0xE0000000
+#define MAX_NUM ((t_number) 0x1FFFFFFF)
+#define MIN_NUM ((t_number) 0xE0000000)
 
 #define p2n(p) (((t_point) (p)) & (~(t_point)3))
 #define type_match(p,t) (((p) & 3) == (t))
@@ -28,8 +28,13 @@ typedef unsigned long int t_point;
 #define make_Cons(p)  ((t_point) p2n(p)   | CONS)
 #define make_Thunk(p) ((t_point) p2n(p)   | THUNK)
 #define make_Func(p)  ((t_point) p2n(p)   | FUNCTION)
-#define make_Num(p)   ((t_point) ((p) << 2) | NUMBER)
 #define make_Bool(t)  ((t) ? BOOL_TRUE : BOOL_FALSE)
+static inline t_point make_Num(t_number num)
+{
+	if (num >= MAX_NUM && num <= MIN_NUM)
+		ERROR(INT_OVERFLOW);
+	return (t_point) (num << 2 | NUMBER);
+}
 
 #define get_NIL(p)   (is_NIL(p) ? (void *) NULL : ERROR_RET(TYPE_ERROR))
 #define get_Cons(p)  ((Cons *)     get_p(p, CONS))

@@ -65,6 +65,5 @@ t_point f_print_string(Cons *params)
 		l = next(l);
 	}
 
-	printf("\n");
 	return BOOL_TRUE;
 }

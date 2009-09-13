@@ -12,12 +12,6 @@ void set_input(FILE *inp)
 }
 
 
-extern inline int is_whitespace(char c)
-{
-	return (c == ' ' || c == '\n' || c == '\t' || c == EOF);
-}
-
-
 char read_char()
 {
 	static int is_prev = 0;
