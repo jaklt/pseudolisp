@@ -8,6 +8,7 @@
 #define CLOSE_TAG ']'
 #define REMAIN_PARAMS_TAG '&'
 #define PROMPT "~~> "
+#define MAX_NAME_LENGTH 101
 
 static inline int is_whitespace(char c)
 {

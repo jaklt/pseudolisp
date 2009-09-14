@@ -108,7 +108,7 @@ t_point init_def(Hash *h, char *name, int level)
 	}
 
 	Hash *new_h = clone_Hash(h);
-	char chars[101];
+	char chars[MAX_NAME_LENGTH];
 	int param_counter = level;
 
 	// nacteni parametru funkce
@@ -173,7 +173,7 @@ static t_point kontext_params(t_point function, int level)
 
 /**
  * TODO Neumi tohle:
- *   [def b [] [+ a 3]]
+ *   [def b [] [+ [a] 3]]
  *   [def a [] 3]
  */
 t_point create_token(Hash *h, char *string, int level)
@@ -196,7 +196,6 @@ t_point create_token(Hash *h, char *string, int level)
 		s = hm->link;
 
 		// doplneni kontextu do volani funkce
-		// TODO delat jen kdyz je treba
 		if (is_Func(s))
 			s = kontext_params(s, min(hm->info, level));
 	}
@@ -207,7 +206,7 @@ t_point create_token(Hash *h, char *string, int level)
 
 t_point parse_pipe(Hash *h, int level)
 {
-	char chars[101];
+	char chars[MAX_NAME_LENGTH];
 	char *c = chars;
 	int whitespaces = 1; // cetli jsme whitespace?
 	int first = 1;
@@ -218,7 +217,7 @@ t_point parse_pipe(Hash *h, int level)
 	t_point s = NIL;
 
 
-	while ((*c = read_char()) != EOF) {
+	while ((c - chars) < MAX_NAME_LENGTH && (*c = read_char()) != EOF) {
 		if (is_whitespace(*c) || (is_close_tag = (*c == CLOSE_TAG))) {
 			if (whitespaces && !is_close_tag) continue;
 
@@ -285,6 +284,9 @@ t_point parse_pipe(Hash *h, int level)
 			s = NIL;
 		}
 	}
+
+	if ((c - chars) >= MAX_NAME_LENGTH)
+		ERROR(SYNTAX_ERROR);
 	
 	if (all.b == NIL && !is_Func(all.a))
 		return all.a;

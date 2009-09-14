@@ -7,14 +7,11 @@ Formatovany vystup:
 ??? nefunguje [def ahoj[n] n] <~ treba opravit za ~> [def ahoj [n] n]
 
 Dopsat vsude komentare :-)
-Osetrit cteni vstupu - omezeni na 101!
 Sofistikovanejsi hlaseni chyb
 Nemelo by zaviset na poradi definic funkci!
 Pridat funkce na porovnavani symbolu
-Kontrolovat meze u cisel
 
 Optimalizovat hashovani!
-Promyslet collect u GC!
 Při spuštění souboru nakonec volat main.
 Jak delat skladani funkci? -> Hladovy zpusob dozirani parametru
 

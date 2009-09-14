@@ -50,9 +50,11 @@ int read_word(char *chars, int if_remain)
 	while (is_whitespace(*c = read_char()));
 
 	while (*c != OPEN_TAG && *c != CLOSE_TAG
-			&& !is_whitespace(*(++c) = read_char()));
+			&& !is_whitespace(*(++c) = read_char())
+			&& (c - chars) < MAX_NAME_LENGTH);
 
-	if (*c == OPEN_TAG) ERROR(SYNTAX_ERROR);
+	if (*c == OPEN_TAG || (c - chars) >= MAX_NAME_LENGTH)
+		ERROR(SYNTAX_ERROR);
 	if (*c == CLOSE_TAG) {
 		*c = '\0';
 		return 0;
