@@ -12,7 +12,7 @@
 #define TO_READ  2
 
 static Hash *opened_files = NULL;
-static int c2 = 0;
+static int counter = 0;
 
 static Hash *get_opened_files()
 {
@@ -127,11 +127,11 @@ static t_point open_file(t_point p, const int mode)
 	hash = hash_string(name);
 	if (mode == TO_READ)
 		// cist jeden soubor muzeme i vickrat najednou
-		hash = p2n(hash + (++c2)*8161);
-	else {
-		hash = p2n(hash);
+		hash = hash + (++counter)*8161;
+	else
 		if (get_Hash(of, hash)) ERROR(FILE_OPENED);
-	}
+
+	hash = p2n(hash) | NUMBER;
 
 	if (!(f = fopen(name, mode == TO_READ ? "r" : "w"))
 			|| !(hm = add_Hash(of, hash, (t_point) f)))
@@ -142,7 +142,7 @@ static t_point open_file(t_point p, const int mode)
 		hm->name[0] = '\0';
 	}
 
-	return make_Num(hash);
+	return hash;
 }
 
 
@@ -160,24 +160,28 @@ t_point write_open(Cons *params)
 }
 
 
+#define check_and_set_fd(s, hm) \
+	if (!is_Num((s) = resolve_Thunk(s))) ERROR(TYPE_ERROR); \
+	(hm) = get_Hash(get_opened_files(), (s)); \
+	if ((hm) == NULL) ERROR(FILE_NOT_OPENED);
+
+
 t_point f_close(Cons *params)
 {
-	Hash *of = get_opened_files();
-	HashMember *hm = get_Hash(of, get_Num(resolve_Thunk(params->a)));
-	if (hm == NULL) ERROR(FILE_NOT_OPENED);
-	FILE *f = (FILE *) hm->link;
+	HashMember *hm;
+	check_and_set_fd(params->a, hm);
 
-	fclose(f);
+	fclose((FILE *) hm->link);
 	if (hm->name != NULL) free(hm->name);
-	del_HashMember(of, hm);
+	del_HashMember(get_opened_files(), hm);
 	return BOOL_TRUE;
 }
 
 
 t_point f_read(Cons *params)
 {
-	HashMember *hm = get_Hash(get_opened_files(), get_Num(resolve_Thunk(params->a)));
-	if (hm == NULL) ERROR(FILE_NOT_OPENED);
+	HashMember *hm;
+	check_and_set_fd(params->a, hm);
 	FILE *f = (FILE *) hm->link;
 
 	// hm->name docteno -> treba nacist dalsi
@@ -188,15 +192,15 @@ t_point f_read(Cons *params)
 
 	return pnew_Cons(
 			make_Num(hm->name[hm->info++]),
-			pnew_Thunk(rw_func(TO_READ), new_List(make_Num(hm->hash))));
+			pnew_Thunk(rw_func(TO_READ), new_List(hm->hash)));
 }
 
 
 t_point f_write(Cons *params)
 {
-	HashMember *hm = get_Hash(get_opened_files(), get_Num(resolve_Thunk(params->a)));
-	if (hm == NULL) ERROR(FILE_NOT_OPENED);
+	HashMember *hm;
+	check_and_set_fd(params->a, hm);
 	
-	to_output(get_Cons( resolve_Thunk(next(params)->a)), (FILE *) hm->link);
+	to_output(get_Cons(resolve_Thunk(next(params)->a)), (FILE *) hm->link);
 	return BOOL_TRUE;
 }

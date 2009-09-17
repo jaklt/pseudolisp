@@ -10,12 +10,12 @@ extern void test();
 
 
 static int prompt = 1;
+static int cmd = 0;
 
 void init()
 {
 	set_prompt(prompt);
 	set_input(stdin);
-//	set_show_collected(0);
 }
 
 
@@ -29,8 +29,7 @@ void runargs(char *arg)
 			printf("PseudoLISP " VERSION ", made by Jakl Tomas.\n");
 			break;
 		case 'c':
-			init();
-			play();
+			cmd = 1;
 			break;
 		case 'q':
 			fprintf(stderr, "Not implemented yet.\n");
@@ -69,11 +68,16 @@ int main(int argc, char *argv[])
 		if (word[0] == '-') runargs(++word);
 		else {
 			FILE *f = fopen(word, "r");
+			if (f == NULL) {
+				fprintf(stderr, "Cannot read file '%s'\n", word);
+				continue;
+			}
 			set_prompt(0); set_input(f);
 			play();
 			fclose(f);
 		}
 	}
 
+	if (cmd) { init(); play(); }
 	return 0;
 }
