@@ -39,3 +39,14 @@ Thunk *new_Thunk(t_point fce, Cons *params)
 	gc_collect(make_Thunk(t));
 	return t;
 }
+
+
+Function *new_inner_Func(int params_count, int more_params, t_point (*link)(Cons *))
+{
+	Function *f = new_Function(NIL, params_count);
+	f->built_in = 1;
+	f->body.link = link;
+
+	gc_inc_immortal(make_Func(f));
+	return f;
+}

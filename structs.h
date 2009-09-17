@@ -75,6 +75,7 @@ typedef struct SFunction {
 
 
 Function *new_Function(t_point body_function, int params_count);
+Function *new_inner_Func(int params_count, int more_params, t_point (*link)(Cons *));
 Thunk *new_Thunk(t_point fce, Cons *params);
 Cons *new_Cons(t_point a, t_point b);
 #define new_List(a)  new_Cons(a, NIL)

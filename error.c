@@ -37,6 +37,15 @@ int throw_full_error(E_ERROR t, int line, char file[])
 		case INT_OVERFLOW:
 			fprintf(stderr, "Integer owerflow");
 			break;
+		case FILE_OPENED:
+			fprintf(stderr, "File has already been opened for writing");
+			break;
+		case FILE_NOT_OPENED:
+			fprintf(stderr, "File is not opened");
+			break;
+		case CANNOT_OPEN_FILE:
+			fprintf(stderr, "Cannot open file for read/write");
+			break;
 		default:
 			fprintf(stderr, "Unknown error");
 			break;

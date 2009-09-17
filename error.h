@@ -20,6 +20,9 @@ typedef enum {
 	UNDEFINED,
 	SYNTAX_ERROR,
 	INT_OVERFLOW,
+	FILE_OPENED,
+	FILE_NOT_OPENED,
+	CANNOT_OPEN_FILE,
 } E_ERROR;
 
 int throw_error(E_ERROR t);

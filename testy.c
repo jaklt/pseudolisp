@@ -11,19 +11,10 @@
 #define SPRAVNE(a) printf("\t** " a " is OK **\n");
 
 
-Function *getter(int params_count, t_point (*link)(Cons *))
-{
-	Function *f = new_Function(NIL, params_count);
-	f->built_in = 1;
-	f->body.link = link;
-
-	return f;
-}
-
 Function *get_fplus()
 {
 	static Function *f = NULL;
-	if (f == NULL) f = getter(2, op_plus);
+	if (f == NULL) f = new_inner_Func(2, 0, op_plus);
 	return f;
 }
 
@@ -31,7 +22,7 @@ Function *get_fplus()
 Function *get_fif()
 {
 	static Function *f = NULL;
-	if (f == NULL) f = getter(3, op_if);
+	if (f == NULL) f = new_inner_Func(3, 0, op_if);
 	return f;
 }
 
@@ -39,7 +30,7 @@ Function *get_fif()
 Function *get_feq()
 {
 	static Function *f = NULL;
-	if (f == NULL) f = getter(2, op_eq);
+	if (f == NULL) f = new_inner_Func(2, 0, op_eq);
 	return f;
 }
 

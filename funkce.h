@@ -47,4 +47,10 @@ t_point env(Cons *params);
 t_point f_dump(Cons *params);
 t_point f_print_string(Cons *params);
 
+t_point read_open(Cons *params);
+t_point write_open(Cons *params);
+t_point f_close(Cons *params);
+t_point f_read(Cons *params);
+t_point f_write(Cons *params);
+
 #endif

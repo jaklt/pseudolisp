@@ -71,10 +71,16 @@ Hash *get_basic_hash()
 		{"list",    list,    1,     1},
 		{"cons",    cons,    2,     0},
 
-		{"dump",  f_dump,    1,     1},
-		{"print-string", f_print_string, 1,     1},
-		{"env",     env,     0,     0},
 		{"apply",   apply,   2,     0},
+		{"dump",  f_dump,    1,     1},
+		{"env",     env,     0,     0},
+		{"print-string", f_print_string, 1, 1},
+
+		{"read-open",  read_open,  1, 0},
+		{"write-open", write_open, 1, 0},
+		{"close",   f_close, 1,     0},
+		{"read",    f_read,  1,     0},
+		{"write",   f_write, 2,     0},
 	};
 
 	for (int i=0; i<NUM_FUN; i++) {

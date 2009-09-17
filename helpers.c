@@ -24,7 +24,8 @@ int print_Symbol(t_point s)
 				printf("TRUE\n");
 			else
 #ifndef DEBUG
-				printf("Function: %sbuilt in, %d%s parameters\n",
+				printf("Function (%lX): %sbuilt in, %d%s parameters\n",
+						s,
 						(get_Func(s))->built_in ? "" : "not ",
 						(get_Func(s))->params_count,
 						(get_Func(s))->more_params ? "+" : "");
@@ -37,7 +38,7 @@ int print_Symbol(t_point s)
 				printf("%li. Parameter\n", get_Num((t_point) get_Thunk(s)->params));
 			else
 #ifndef DEBUG
-				printf("Thunk\n");
+				printf("Thunk (%lX)\n", s);
 #else
 				return print_Thunk(get_Thunk(s));
 #endif
