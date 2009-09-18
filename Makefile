@@ -1,5 +1,5 @@
 
-VERSION = 0.5.0
+VERSION = 0.5.1
 NAME = pseudolisp
 
 SRC = ${NAME}.c structs.c error.c execute.c testy.c helpers.c hashovani.c reader.c parser.c funkce.c funkce-sideef.c gc.c

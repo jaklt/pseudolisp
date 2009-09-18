@@ -17,6 +17,7 @@ static inline int is_whitespace(char c)
 
 Hash *get_basic_hash();
 void set_prompt(int set);
+void set_quiet (int set);
 void set_input(FILE *inp);
 
 char read_char();

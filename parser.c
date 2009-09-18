@@ -5,6 +5,7 @@
 #include "funkce.h"
 #include "parser.h"
 #include "helpers.h"
+#include "execute.h"
 #include "error.h"
 #include "gc.h"
 
@@ -16,11 +17,10 @@ t_point parse_pipe(Hash *h, int level);
 
 
 int prompt = 1;
+static int quiet = 0;
 
-void set_prompt(int set)
-{
-	prompt = set;
-}
+void set_prompt(int set) { prompt = set; }
+void set_quiet (int set) {  quiet = set; }
 
 
 Hash *get_basic_hash()
@@ -312,7 +312,9 @@ void play()
 	while ((c = read_char()) != EOF) {
 		if (c == OPEN_TAG) {
 			parsed = parse_pipe(h, 0);
-			if (parsed != NIL) {
+			if (parsed != NIL && quiet) {
+				resolve_Thunk(parsed);
+			} else if (parsed != NIL && !quiet) {
 				print_Symbol(parsed);
 			} else if (prompt)
 				printf("OK\n");

@@ -1,0 +1,12 @@
+-- spojeni dvou soboru
+[[lambda [fw fr1 fr2]
+	[and
+		[write [car fw]
+			[append [cdr fr1] [cdr fr2]]
+		]
+
+		[close [car fw ]]
+		[close [car fr1]]
+		[close [car fr2]]
+	]
+] [write-open "soubor-spojeno"] [read-open "soubor1"] [read-open "soubor2"]]

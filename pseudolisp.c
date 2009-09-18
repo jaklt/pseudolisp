@@ -32,7 +32,7 @@ void runargs(char *arg)
 			cmd = 1;
 			break;
 		case 'q':
-			fprintf(stderr, "Not implemented yet.\n");
+			set_quiet(1);
 			break;
 		case 'p':
 			prompt = 0;

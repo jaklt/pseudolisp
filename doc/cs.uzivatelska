@@ -1,0 +1,178 @@
+Uživatelská dokumentace
+#######################
+
+Program vyžaduje gcc (nebo jiný C99 kompilátor) a make, kde druhý uvedený je
+jen pro pohodlí. Klasicky "make" zkompiluje a sestaví program. Vznikne soubor
+pseudolisp. Další informace viz "./pseudolisp -h". Při jakémkoliv problému
+program skončí a vypíše i proč se tak stalo (velmi jednoduše).
+
+Pokud je program zkompilován s volbou DEBUG tak při chybě vypíše ještě, na
+kterém řádku zdrojových souborů bylo voláno ukončení a vynutí SEGFAULT.
+
+
+Definice
+========
+
+Cons - dvojice prvků, jde o základní datovou strukturou
+Funkce - mezi funkce se počítá i volání funkce, bez dostatečného množství
+         parametrů, které daná funkce požaduje
+Thunk - nevyhodnocená funkce (nemá všechny potřebné parametry)
+
+P1,P2,P3, ... - první parametr funkce, druhý, třetí, ...
+seznam = zřetězení dvojic [cons A [cons B ... [cons cokoliv NIL] ... ]]
+
+Pokud funkce dostane více parametrů než potřebuje předá přebytečné výsledku volání.
+Program selže pokud je voláno jako funkce něco co není funkce (Too many parameters).
+
+
+Konstatny
+=========
+
+TRUE - logické ANO
+NIL - odpovídá prázdnému seznamu
+FALSE - opak TRUE, ale i stejné jako NIL
+čísla - fungují pouze celá čísla
+
+
+Syntaxe
+=======
+
+Komentář je cokoliv co není v hranatých závorkách a/nebo vše od "--" do konce
+řádku. Klíčová slova jsou def a lambda.
+
+K syntaxi - klasická prefixová po otevírací závorce následuje:
+	- jméno funkce a parametry oddělené prázdnými znaky
+	- def/lambda
+
+Syntaxe def/lambda:
+[def jméno-funkce [první-parametr druhý &zbytek] návratová-hodnota]
+[lambda [první-parametr druhý &zbytek] návratová-hodnota]
+
+Délka jména funkce je omezená na 100 znaků (viz MAX_NAME_LENGTH).
+
+Počet parametrů je volitelný. Poslední parametr může začínat & - v tom případě
+jsou mu v seznamu uloženy všechny zbývající parametry.
+
+Znaky uvedené v jednoduchých uvozovkách převádí na jejich odpovídající ASCII
+hodnotu. Řetězce ve složených závorkách převede na seznam znaků.
+
+Takže "Ahoj" == [list 'A' 'h' 'o' 'j'] == [list 65 104 111 106].
+
+Vyjímku při parsování mají některé backslashované znaky, rozlišuje se:
+  \t \n \r \\ \- \' a \".
+
+Ukázky syntaxe jsou ve složce examples.
+
+
+Předdefinované funkce
+=====================
+
+Pokud není uvedeno jinak tak pokud v popisu funkce je požadován nějaký typ
+parametru a funkce je volána s jiným type, program skončí s Type error.
+
++--------------+-----------+-----------+
+| Název funkce | Parametrů | Neomezené |
++--------------+-----------+-----------+
+| + - * /      |     2     |    ANO    |
+| > >= = <= <  |     2     |    ANO    |
+| if           |     3     |     NE    |
+| and or       |     2     |    ANO    |
+| not          |     1     |     NE    |
+| nil?         |     1     |     NE    |
+| cons?        |     1     |     NE    |
+| number?      |     1     |     NE    |
+| bool?        |     1     |     NE    |
+| func?        |     1     |     NE    |
+| cons         |     2     |     NE    |
+| car cdr      |     1     |     NE    |
+| head tail    |     1     |     NE    |
+| list         |     1     |    ANO    |
+| append       |     2     |    ANO    |
+| dump         |     1     |    ANO    |
+| print-string |     1     |    ANO    |
+| env          |     0     |     NE    |
+| apply        |     2     |     NE    |
+| read-open    |     1     |     NE    |
+| write-open   |     1     |     NE    |
+| close        |     1     |     NE    |
+| read         |     1     |     NE    |
+| write        |     2     |     NE    |
++--------------+-----------+-----------+
+
+
+Neomezené značí zda funkce může přijmout i více parametrů než je uvedeno ve
+sloupci Počet parametrů.
+
+
+Logické funkce
+--------------
+
+nil?, number?, cons?, bool?, func?
+- vrátí TRUE pokud předaná hodnota odpovídá typu podle jména funkce
+- pozn: NIL == FALSE i zde
+
+Skupina funkcí požadujících pouze booleanovské hodnoty:
+and - vrátí FALSE pokud některý z parametrů je FALSE
+or- vrátí TRUE pokud některý z parametrů je TRUE
+not - neguje vstupní parametr
+
+Funkce pracující se seznamy/dvojicemi
+-------------------------------------
+
+cons - vrací dvojici - (P1, P2)
+car - z dvojice vrátí první složku
+cdr - ------||------- druhou složku
+
+list - vrátí seznam parametrů
+head/tail - odpovídají car/cdr
+
+append - spojí seznamy na vstupu do jednoho
+- přeskakuje prázdné seznamy (= NILy)
+- POZOR: tato funkce umí nestandartně brát neseznamové parametry, s vyjímkou
+         posledního
+
+
+Aritmetické a matematické funkce
+--------------------------------
+
+Tyto funkce selžou pokud některý z parametrů není číslo.
+
++ * - sečte/vynásobí parametry
+- / - odečte/vydělí parametry od prvního z nich
+
+>, >=, =, <=, <
+- vrací TRUE pokud je posloupnost parametrů klesající/nerostoucí/
+  si rovna/neklesající/rostoucí
+
+
+I/O funkce
+----------
+
+read-open/write-open
+- jako P1 požaduje název souboru k otevření pro čtení/zápis
+- vrací [cons IO-hash [read/write IO-hash]], kde IO-hash je značka IO operace
+
+close - jako P1 požaduje IO-hash, bezpečně zavře čtení/zápis P1
+read - vrátí [cons C [read P1]], kde C je přečtený znak ze souboru značeného P1
+write - vrátí TRUE, P1 je IO-hash souboru, do kterého se zapisuje, P2 je
+        řetězec znaků
+
+print-string - očekává jako parametry seznamy čísel reprezentující ACII hodnoty
+               znaků, které vypíše, návratová hodnota je true
+dump - vypíše P1 a vrátí ho
+env - vypíše seznam všech funkcí, jak jsou uloženy v hashovací tabulce (včetně
+      jmen) a vrátí TRUE
+
+
+Ostatní
+-------
+
+if
+- pokud je P1 TRUE vrací P2, jinak P3
+- selže pokud P1 není boolean
+
+apply
+- zavolá funkci z P1 s parametry uvedenými v P2
+- selže pokud P1 není funkce a P2 není seznam
+- není možné předat nekonečný seznam
+

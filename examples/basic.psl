@@ -1,0 +1,161 @@
+[def not [a] [if a FALSE TRUE]]
+
+-- FOLDL
+[def reduce [f first l]
+	[if [nil? l]
+		first
+		[reduce f [f first [head l]] [tail l]]
+	]
+]
+
+-- MAP
+[def map [f l]
+	[def _m [l]
+		[if [nil? l]
+			NIL
+			[append [f [head l]] [_m [tail l]]]
+		]
+	]
+	[_m l]
+]
+-- trochu lepe
+[def map [f l]
+	[if [nil? l]
+		NIL
+		[append [f [head l]] [map f [tail l]]]
+	]
+]
+
+-- take
+[def take [n l]
+	[if [and [not [nil? l]] [> n 0]]
+		[append [head l] [take [- n 1] [tail l]]]
+		NIL
+	]
+]
+
+-- COND
+[def cond [x y &c]
+	[def _c [b c l]
+		[if [b]
+			c
+		[if [nil? l]
+			undef
+			[_c [head l] [head [tail l]] [tail [tail l]]]
+		]]
+	]
+
+	[_c x y &c]
+]
+
+Usage for example:
+[def sgn [x]
+	[cond
+		[> x 0] 1
+		[= x 0] 0
+		[> 0 x] -1
+	]
+]
+
+-- ZIP
+[def zip [la lb]
+	[if [or [nil? la] [nil? lb]]
+		[if [and [nil? la] [nil? lb]] NIL undef]
+		[append [list [list [head la] [head lb]]] [zip [tail la] [tail lb]]]
+	]
+]
+
+-- filter
+[def filter [f l]
+	[if [nil? l]
+		NIL
+		[if [f [car l]]
+			[cons [car l] [filter f [cdr l]]]
+			[filter f [cdr l]]
+		]
+	]
+]
+
+-- REVERSE
+[def reverse [l]
+	[if [nil? l]
+		l
+		[append [reverse [tail l]] [list [head l]]]
+	]
+]
+
+-- some Math
+------------
+[def mod [a b]
+	[- a [* [/ a b] b]]
+]
+
+
+[def fact [n]
+	[if [> n 1]
+		[* [fact [- n 1]] n]
+		1
+	]
+]
+
+[def factn [n]
+	[def add_next [l n]
+		[if [> n 1]
+			[append [* n [head l]] l]
+			[list 1]
+		]
+	]
+	
+	[def run [l i n]
+		[if [> n i]
+			[run [add_next l [+ i 1]] [+ i 1] n]
+			l
+		]
+	]
+
+	[run NIL 0 n]
+]
+
+(reverse (factn 15))
+(reverse (list 1 2 3))
+
+[def is_prime? [p]
+	[def _it [p t]
+		[if [> [* t t] p]
+			TRUE
+		[if [= 0 [- p [* [/ p t] t]]]
+			FALSE
+			[_it p [+ t 1]]
+		]]
+	]
+	
+	[_it p 2]
+]
+
+-- Fibonaciho cisla v linearnim case
+[def fib [n]
+	[def fibn [n i l]
+		[if [> i n]
+			l
+			[fibn n [+ i 1] [append [+ [head l] [head [tail l]]] l]]
+		]
+	]
+	
+	[if [> n 1]
+		[head [fibn n 2 [list 1 0]]]
+		1
+	]
+]
+
+
+[def map2 [f la lb]
+	[append
+		[f [head la] [head lb]]
+		[map2 f [tail la] [tail lb]]
+	]
+]
+
+
+[def fibs []
+	[take 20 [append 1 1 [map2 [+] [fibs] [tail [fibs]]]]]
+]

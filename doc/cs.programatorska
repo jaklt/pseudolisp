@@ -1,0 +1,90 @@
+Programátorská dokumentace
+##########################
+
+
+Základní datové struktury
+=========================
+
+Odkaz, neboli t_point je pointer, kterému je do posledních dvou nevyužitých
+bitů doplněno na co ukazuje. Vyjímku tvoří čísla (t_number), která jsou o dva
+bity posunuty a na jejich místo je jim jen doplněna informace o typu.
+
+Základní struktury jsou uloženy v "structs.h". Jde o Cons, Function a Thunk.
+
+Cons je základní datová struktura Lispu. Jde o dvojici t_pointů Cons.a a Cons.b.
+
+Thunk je záznam nevyhodnoceného volání funkce, v Thunk.function je odkaz na to
+co je voláno a Thunk.params jsou parametry volání.
+
+Thunk je také zneužit k zapamatování čísla parametru v těle funkce (využíváno
+pouze interně). Pokud v Thunk.function je NIL tak v Thunk.params je číslo
+parametru.
+
+Function obsahuje buď ukazatel na některou z vnitřních funkcí v body.link, nebo
+t_point na tělo/volání funkce v body.structure. Která možnost je využita je v
+built_in. params_count značí kolik má funkce parametrů a more_params značí, zda
+jich může být i víc než je uvedeno.
+
+
+Parsování
+=========
+
+Syntaxe viz uživatelská dokumentace.
+
+Propojení funkcí se jejím jménem je udržováno v hashovací tabulce (viz
+hashovani.h) a ve chvíli, kdy se načte jakákoliv nekonstanta tak se vyhledá v
+hashovací tabulce a dál už se pracuje s tím co bylo nalezeno.
+
+Vstup je zpracováván po znacích. Ve chvíli kdy narazí na otevřenou hranatou
+závorku zjistí zda jde o def/lambda a pokud ne jde o volání funkce -> sestaví
+Thunk, jinak sestaví funkci a pokud šlo o "def", tak přidá a spojí v hashovací
+tabulce tuto funkci s jejím jménem.
+
+Když se definuje vnořená funkce, je vytvořen klon hashovací tabulky, se kterým
+se potom pracuje při definování této vnořené funkce.
+
+
+Vyhodnocování
+=============
+
+Vyhodnocování je uloženo v "execute.c" a probíhá pomocí funkce resolve_Thunk,
+která nejprve zjistí co vyhodnocuje a tedy jestli je to vůbec potřeba.
+
+Celý proces je velmi jednoduchý. Na začátku se přidá to co vyhodnocujeme na
+zásobník. Pak už se jen iterativně vybírá ze zásobníku - pokud jde o Thunk,
+udělá si značku, že už byl viděn, a na zásobník přidá Thunk.function, nebo
+pokud jde o Thunk, ale už byl viděn zkusí se vyhodnotit v závislosti co je v
+Thunk.function - jedná-li se o:
+- Thunk - zřetězí parametry a zjistí, jestli to stačí na zavolání funkce
+- Funkce - zjistí zda parametry co jsou v Thunk.params stačí na zavolání funkce
+- něco jiného a Thunk.params je neprázdný -> vyhodí chybu Too many params
+
+
+Život programu
+==============
+
+Parsování probíhá po řádcích a od otevírací hranaté závorky do další jí
+odpovídající (v hiearchii závorek). Poté je výsledek parsování předán pro
+vypsání, ale protože jde o nevyhodnocený výraz, je nejdříve vyhodnocen pomocí
+resolve_Thunk().
+
+
+Garbage Collector
+=================
+
+Je velmi jednoduchý. Při alokaci jakéhokoliv objektu je zavolána funkce
+gc_collect(), které je předán t_point na ten objekt.
+
+Ve chvíli kdy se zavolá gc() se projdou všechny sesbírané objekty, spočítají se
+reference a odstraní se všechny, na které žádná reference nevede. Když je
+uvolňován nějaký objekt jsou ještě sníženy počty referncí u objektů, na které
+ukazuje a pokud je tímto způsobem sníží na nulu uvolní se taky.
+
+
+Closures
+--------
+
+Closures je vyřešený poněkud nešikovně a to tak, že každá funkce má podle
+zanoření ještě navíc tolik parametrů, kolik různých proměnných z nadřazených
+funkcí ještě může přijmout a při parsování jsou jí všechny z kontextu doplněny.
+

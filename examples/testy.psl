@@ -1,0 +1,171 @@
+-- POMOCNE FCE
+--------------
+
+[def test [string &testy]
+	[def _t [t b]
+		[if [nil? t]
+			b
+		[if [head t]
+			[_t [tail t] b]
+			[_t [tail t] FALSE]
+		]]
+	]
+
+	[if [and [print-string string] [_t &testy TRUE]]
+		[print-string " OK\n"]
+		[and [print-string "\n"] [nil? [dump &testy]]]
+	]
+]
+
+-- porovnani dvou ciselnych nerekurzivnich seznamu
+[def eq [a b]
+	[if [and [nil? a] [nil? b]]
+		TRUE
+		[and [= [head a] [head b]]
+			[eq [tail a] [tail b]]
+		]
+	]
+]
+
+------------------------------
+
+[def a [b] [+ b]]
+[def b [] [[a 3] 4]]
+[def taiil [] [tail [tail]]]
+
+[test "1. Neuplne definovane funkce:"
+	[= [b] 7]
+	[= [a 0 0] 0]
+	-- [eq [taiil [list 1 2 3]] [list 3]] -- TODO nefunguje, ma fungovat?
+]
+
+------------------------------
+
+[def a [b]
+	[if [> b 0]
+		[append [a [- b 1]] [list b]]
+		NIL
+	]
+]
+
+[def reverse [l]
+	[if [nil? l]
+		NIL
+		[append [reverse [tail l]] [list [head l]]]
+	]
+]
+
+[test "2. Rekurze:"
+	[eq [reverse [list 1 2 3]] [list 3 2 1]]
+	[eq [a 3] [list 1 2 3]]
+]
+
+------------------------------
+
+(reverse NIL)
+(reverse (list 1 2 3))
+
+------------------------------
+[print-string "3. Zpusob vyhodnocovani - netestovano\n"]
+
+spravne to ma jen psat neco jako
+
+List:
+List:
+  Number: 4
+List:
+  Number: 3
+  Number: 4
+List:
+  Number: 2
+  Number: 3
+  Number: 4
+List:
+  Number: 1
+  Number: 2
+  Number: 3
+  Number: 4
+
+[def cp [l]
+	[if [nil? l]
+		NIL
+		[append [head l] [dump [cp [tail l]]]]
+	]
+]
+
+(cp (list 1 2 3 4))
+
+(NIL)
+(list 4)
+(list 3 4)
+(list 2 3 4)
+(list 1 2 3 4)
+
+------------------------------
+
+[def a1 [a b c d] [+ a b c d]]
+[def a2 [&c] &c]
+[test "4. Viceparametrove funkce:"
+	[= [a1 1 2 3 4] [+ 1 2 3 4]]
+	[eq [a2 3 4] [list 3 4]]
+	[nil? [a2]]
+	[eq [a2 2] [list 2]]
+]
+
+------------------------------
+-- TODO lepsi testy zabudovanych funkci
+
+[test "5. Overovaci funkce:"
+	[number? 1]  [number? [+ 1 2]]
+	[nil? NIL]   [nil? [tail [list 1]]]
+	[func? +]    [func? [+ 1]] [func? func?]
+	[cons? NIL]  [cons? [tail [list 1 2 3]]]
+	[bool? TRUE] [bool? FALSE] [bool? [and TRUE FALSE]]
+
+	[eq "http://www.patoca.com\n" [append "http://" "www.patoca.com\n"]]
+]
+
+------------------------------
+[def a [b]
+	[def c [d] [+ d d]]
+	[c [+ b 1]]
+]
+[def res1 [] [a 5]]
+
+[def a [b]
+	[lambda [c] [+ b c]]
+]
+[def res2 [] [[a 3] 4]]
+
+[test "6. Closures:"
+	[number? [res1]]
+	[= [res1] 12]
+
+	[number? [res2]]
+	[= [res2] 7]
+]
+
+
+------------------------------
+[def apply-closure-append [b &a]
+	[def c [d] [apply + [append [list b d] &a]]]
+	[c b]
+]
+
+[test
+	"7. Dalsi testy:"
+
+	-- kombinace apply + append/tail
+	[=
+		[[lambda [x &a] [apply + [append [list x] &a]]] 1 2]
+		[[lambda [x &a] [apply + [append       x  &a]]] 1 2]
+	]
+	[=
+		[apply + [tail [list 1 2 3 4 5]]]
+		[apply +       [list   2 3 4 5]]
+	]
+	[= [apply-closure-append 1 2 3] 7]
+
+	-- TODO vice testu (napr IO)
+]
+
