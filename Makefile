@@ -40,5 +40,5 @@ dist: ${SRC} ${HEADERS}
 
 znova: clean all
 
-tags:
+tags: ${SRC} ${HEADERS}
 	ctags -R .
