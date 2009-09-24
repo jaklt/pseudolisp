@@ -1,5 +1,5 @@
 if has("gui_running")
-	:!make tags
+	:!make TAGS
 
 	:e structs.h
 	:e TODO

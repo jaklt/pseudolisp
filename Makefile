@@ -8,9 +8,9 @@ HEADERS = structs.h error.h execute.h helpers.h hashovani.h parser.h funkce.h gc
 OBJ = ${SRC:.c=.o}
 
 PARAMS = -std=c99 -Wall -pedantic -D'VERSION="${VERSION}"'
-# PARAMS += -g -DDEBUG # je pro gdb/valgrind a DEBUG mod
-# PARAMS += -pg # je pro gprof
-# PARAMS += -fprofile-arcs -ftest-coverage # je pro gcov
+DEBUG = -g -DDEBUG # je pro gdb/valgrind a DEBUG mod
+PROFILER = -pg # je pro gprof
+GCOVERAGE = -fprofile-arcs -ftest-coverage # je pro gcov
 
 # optimalizace kompilace podle vysledku profielru
 # http://www.abclinuxu.cz/blog/kazdy_den_jinak/2007/5/gcc-a-optimalizace-s-profilerem
@@ -19,6 +19,15 @@ PARAMS = -std=c99 -Wall -pedantic -D'VERSION="${VERSION}"'
 
 
 all: ${NAME}
+
+debug: PARAMS += ${DEBUG}
+debug: znova
+
+prof: PARAMS += ${PROFILER}
+prof: debug
+
+gcov: PARAMS += ${GCOVERAGE}
+gcov: prof
 
 .c.o:
 	@echo "  Compiling $<"
@@ -40,5 +49,5 @@ dist: ${SRC} ${HEADERS}
 
 znova: clean all
 
-tags: ${SRC} ${HEADERS}
+TAGS: ${SRC} ${HEADERS}
 	ctags -R .
