@@ -73,7 +73,6 @@ static inline void to_output(Cons *la, FILE *fd)
 		if (!is_Num(la->a)) ERROR_RET(TYPE_ERROR);
 
 		putc(get_Num(la->a), fd);
-		la->b = resolve_Thunk(la->b);
 		la = next(la);
 	}
 }
@@ -85,6 +84,7 @@ static inline void to_output(Cons *la, FILE *fd)
  */
 t_point f_print_string(Cons *params)
 {
+
 	Cons *l = params;
 	Cons *la;
 	t_point s;
@@ -119,7 +119,6 @@ static t_point open_file(t_point p, const int mode)
 	while ((c - name) < MAX_NAME_LENGTH && l) {
 		l->a = resolve_Thunk(l->a);
 		*c++ = get_Num(l->a);
-		l->b = resolve_Thunk(l->b);
 		l = next(l);
 	}
 	*c = '\0';

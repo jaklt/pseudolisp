@@ -44,9 +44,10 @@ static inline t_point make_Num(t_number num)
 		(t_number) ((p) >> 2) | ((p) & 0x80000000 ? 0xC0000000 : 0x00000000) \
 		: (t_number) ERROR_RET(TYPE_ERROR))
 
+extern t_point resolve_Thunk(t_point p);
 #define next(p)                  \
 	(type_match((p)->b, CONS) ?  \
-	 get_Cons((p)->b) : (Cons *) get_NIL((p)->b))
+	 get_Cons((p)->b) : get_Cons(resolve_Thunk((p)->b)))
 
 #define pnext(p)  make_Cons(next(p))
 

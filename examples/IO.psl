@@ -9,4 +9,4 @@
 		[close [car fr1]]
 		[close [car fr2]]
 	]
-] [write-open "soubor-spojeno"] [read-open "soubor1"] [read-open "soubor2"]]
+] [write-open "examples/concat"] [read-open "examples/file1"] [read-open "examples/file2"]]
