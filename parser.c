@@ -308,7 +308,6 @@ void play()
 	t_point parsed;
 	char c;
 
-	if (prompt) printf(PROMPT);
 	while ((c = read_char()) != EOF) {
 		if (c == OPEN_TAG) {
 			parsed = parse_pipe(h, 0);

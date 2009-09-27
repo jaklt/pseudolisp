@@ -15,6 +15,9 @@ Optimalizovat hashovani!
 Při spuštění souboru nakonec volat main.
 Jak delat skladani funkci? -> Hladovy zpusob dozirani parametru
 
+V Makefile lreadline jen u reader.c
+U readline nastavit normalni TAB (+ treba i s doplnovanim)
+
 Vysledek volani = posledni vyraz -> def muze vracet funkci?
 
 ----------------------------------------------

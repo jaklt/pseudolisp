@@ -1,6 +1,29 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "parser.h"
 #include "error.h"
+#ifndef READLINE
+#define READLINE 0
+#endif
+
+#if READLINE
+#define _FUNCTION_DEF
+#include <readline/readline.h>
+#include <readline/history.h>
+
+#define IF_READLINE if (input != stdin) {
+#define ELSE_READLINE(b) } else { b
+#define ENDIF_READLINE }
+#else
+#define IF_READLINE
+#define ELSE_READLINE(b)
+#define ENDIF_READLINE
+#endif
+
+static char *readed_line = NULL;
+
+#define READING_DONE -2
+static int position = 0;
 
 
 extern int prompt;
@@ -8,37 +31,53 @@ static FILE *input = NULL;
 
 void set_input(FILE *inp)
 {
+	position = READING_DONE;
 	input = inp;
+
+	IF_READLINE
+		if (readed_line == NULL)
+			readed_line = malloc(sizeof(char) * MAX_NAME_LENGTH);
+	ELSE_READLINE(
+		if (readed_line != NULL) {
+			free(readed_line); readed_line = NULL; })
+	ENDIF_READLINE;
 }
 
 
 char read_char()
 {
-	static int is_prev = 0;
-	static char prev;
+	if (position == EOF) return EOF;
 	char c;
-	if (input == NULL) ERROR(INNER_ERROR);
-
-	if (is_prev) {
-		c = prev;
-		is_prev = 0;
-	} else {
-		c = getc(input);
-
-		if (c == '-') {
-			c = getc(input);
-
-			if (c == '-') {
-				while ((c = getc(input)) != '\n' && c != '\0');
-			} else {
-				prev = c;
-				is_prev = 1;
-				c = '-';
-			}
-		}
+	
+	if (position == READING_DONE) {
+		IF_READLINE
+			if (prompt) printf(PROMPT);
+			if (fgets(readed_line, MAX_NAME_LENGTH, input) == NULL)
+				return EOF;
+		ELSE_READLINE(
+			if ((readed_line = readline(prompt ? PROMPT : NULL)) == NULL)
+				return EOF;)
+		ENDIF_READLINE
+		position = 0;
 	}
 
-	if (c == '\n' && prompt) printf(PROMPT);
+	c = readed_line[position++];
+	if (c == '\0' || c == EOF) {
+		position = c == EOF ? EOF : READING_DONE;
+		IF_READLINE
+			if (c == '\0') return read_char();
+		ELSE_READLINE(
+			add_history(readed_line);
+			free(readed_line);
+			readed_line = NULL;
+			if (c == '\0') return '\n'; )
+		ENDIF_READLINE
+	}
+
+	if (c == '-' && readed_line[position] == '-') {
+		position = READING_DONE;
+		return read_char();
+	}
 	return c;
 }
 

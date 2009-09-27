@@ -1,6 +1,7 @@
 
 VERSION = 0.5.1
 NAME = pseudolisp
+READLINE = 1
 
 SRC = ${NAME}.c structs.c error.c execute.c testy.c helpers.c hashovani.c reader.c parser.c funkce.c funkce-sideef.c gc.c
 HEADERS = structs.h error.h execute.h helpers.h hashovani.h parser.h funkce.h gc.h
@@ -8,6 +9,7 @@ HEADERS = structs.h error.h execute.h helpers.h hashovani.h parser.h funkce.h gc
 OBJ = ${SRC:.c=.o}
 
 PARAMS = -std=c99 -Wall -pedantic -D'VERSION="${VERSION}"'
+PARAMS+= -D"READLINE=${READLINE}" -lreadline
 DEBUG = -g -DDEBUG # je pro gdb/valgrind a DEBUG mod
 PROFILER = -pg # je pro gprof
 GCOVERAGE = -fprofile-arcs -ftest-coverage # je pro gcov

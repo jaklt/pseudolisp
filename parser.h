@@ -10,9 +10,9 @@
 #define PROMPT "~~> "
 #define MAX_NAME_LENGTH 101
 
-static inline int is_whitespace(char c)
+static inline int is_whitespace(const char c)
 {
-	return (c == ' ' || c == '\n' || c == '\t' || c == EOF);
+	return (c == ' ' || c == '\n' || c == '\t' || c == '\r');
 }
 
 Hash *get_basic_hash();
