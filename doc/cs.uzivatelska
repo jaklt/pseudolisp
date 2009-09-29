@@ -6,8 +6,12 @@ jen pro pohodlí. Klasicky "make" zkompiluje a sestaví program. Vznikne soubor
 pseudolisp. Další informace viz "./pseudolisp -h". Při jakémkoliv problému
 program skončí a vypíše i proč se tak stalo (velmi jednoduše).
 
-Pokud je program zkompilován s volbou DEBUG tak při chybě vypíše ještě, na
+Pokud je program zkompilován pomocí "make debug" tak při chybě vypíše ještě, na
 kterém řádku zdrojových souborů bylo voláno ukončení a vynutí SEGFAULT.
+
+Program je standartně kompilován s knihovnou readline, pokud knihovnu
+nevlastníte, nebo nechcete používat jejích vlastností při čtení ze standartního
+vstupu přidejte k parametrům make ještě READLINE=0.
 
 
 Definice

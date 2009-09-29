@@ -11,7 +11,7 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
-#define IF_READLINE if (input != stdin) {
+#define IF_READLINE if (input == stdin) {
 #define ELSE_READLINE(b) } else { b
 #define ENDIF_READLINE }
 #else
@@ -35,11 +35,12 @@ void set_input(FILE *inp)
 	input = inp;
 
 	IF_READLINE
-		if (readed_line == NULL)
-			readed_line = malloc(sizeof(char) * MAX_NAME_LENGTH);
-	ELSE_READLINE(
+		rl_bind_key ('\t', rl_insert);
 		if (readed_line != NULL) {
-			free(readed_line); readed_line = NULL; })
+			free(readed_line); readed_line = NULL; }
+	ELSE_READLINE(
+		if (readed_line == NULL)
+			readed_line = malloc(sizeof(char) * MAX_NAME_LENGTH); )
 	ENDIF_READLINE;
 }
 
@@ -51,11 +52,11 @@ char read_char()
 	
 	if (position == READING_DONE) {
 		IF_READLINE
-			if (prompt) printf(PROMPT);
-			if (fgets(readed_line, MAX_NAME_LENGTH, input) == NULL)
+			if ((readed_line = readline(prompt ? PROMPT : NULL)) == NULL)
 				return EOF;
 		ELSE_READLINE(
-			if ((readed_line = readline(prompt ? PROMPT : NULL)) == NULL)
+			if (prompt) printf(PROMPT);
+			if (fgets(readed_line, MAX_NAME_LENGTH, input) == NULL)
 				return EOF;)
 		ENDIF_READLINE
 		position = 0;
@@ -65,12 +66,12 @@ char read_char()
 	if (c == '\0' || c == EOF) {
 		position = c == EOF ? EOF : READING_DONE;
 		IF_READLINE
-			if (c == '\0') return read_char();
-		ELSE_READLINE(
 			add_history(readed_line);
 			free(readed_line);
 			readed_line = NULL;
-			if (c == '\0') return '\n'; )
+			if (c == '\0') return '\n';
+		ELSE_READLINE(
+			if (c == '\0') return read_char(); )
 		ENDIF_READLINE
 	}
 
