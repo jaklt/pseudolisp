@@ -12,6 +12,9 @@ extern void test();
 static int prompt = 1;
 static int cmd = 1;
 
+void cmd_not_needed() { cmd &= ~1; }
+
+
 void init()
 {
 	set_prompt(prompt);
@@ -24,7 +27,8 @@ void runargs(char *arg)
 	switch (arg[0]) {
 		case 't':
 			test();
-			exit(0);
+			cmd_not_needed();
+			break;
 		case 'v':
 			printf("PseudoLISP " VERSION ", made by Jakl Tomas.\n");
 			break;
@@ -46,6 +50,7 @@ void runargs(char *arg)
 					"  -q\tquiet (only forced ouptut)\n"
 					"  -p\tdisable prompt\n"
 					"  -h\tprint this help\n\n");
+				  cmd_not_needed();
 			break;
 		default:
 			fprintf(stderr, "Invalid argument. Use -h for help.\n");
@@ -66,7 +71,7 @@ int main(int argc, char *argv[])
 		word = argv[i];
 		if (word[0] == '-') runargs(++word);
 		else {
-			cmd &= ~1;
+			cmd_not_needed();
 			FILE *f = fopen(word, "r");
 			if (f == NULL) {
 				fprintf(stderr, "Cannot read file '%s'\n", word);

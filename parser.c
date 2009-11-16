@@ -315,7 +315,7 @@ void play()
 				resolve_Thunk(parsed);
 			} else if (parsed != NIL && !quiet) {
 				print_Symbol(parsed);
-			} else if (prompt)
+			} else if (prompt && !quiet)
 				printf("OK\n");
 			gc();
 		}
