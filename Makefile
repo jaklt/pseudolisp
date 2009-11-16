@@ -35,8 +35,6 @@ gcov: prof
 	@echo "  Compiling $<"
 	@gcc -c $< ${PARAMS}
 
-${OBJ}: ${SRC}
-
 ${NAME}: ${OBJ} ${HEADERS}
 	@echo "  Building ${NAME}"
 	@gcc -o $@ ${OBJ} ${PARAMS}
