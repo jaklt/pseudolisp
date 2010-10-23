@@ -1,0 +1,17 @@
+[def a [b c] [+ b c]]
+[def b [c]   [+ c c]]
+
+-- we have:
+--    f: X^2 -> Y
+--    g: X   -> X
+-- result (f . g): X^2 -> Y
+[def . [f g]
+	[lambda [x &args]
+		[f [apply g [append [list x] &args]]]]]
+
+[def test []
+	[=
+		[[. b a] 1 1]
+		4
+	]
+]

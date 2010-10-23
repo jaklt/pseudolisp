@@ -18,33 +18,17 @@ Jak delat skladani funkci? -> Hladovy zpusob dozirani parametru
 V Makefile lreadline jen u reader.c
 U readline nastavit normalni TAB (+ treba i s doplnovanim)
 
+stav sveta ??
+
 Vysledek volani = posledni vyraz -> def muze vracet funkci?
 
 ----------------------------------------------
 BUGREPORT:
 ---------
-
-~~> [def fib [n]
-~~> 	[if [> n 1]
-~~> 		[+ [fib [- n 2]] [fib [- n  1]]]
-~~> 		1
-~~> 	]
-~~> ]
-OK.
-~~> [fib 15]
-Number: 987
-
-39510 collected, 39462 freed (48 left)
--- nejde toto cislo jeste snizit?
-
-----------------------------------------------
-
 Vypisovani rekurzivnich funkci v DEBUG modu je nekonecne
 
-[tail [list 1 2 2] 4] --> Thunk
-
-GC neodalokuje vse - viz testy/fib
-GC dokaze udelat stack overflow - viz testy/parse-test
+GC neodalokuje vse - viz to_test/fib
+GC dokaze udelat stack overflow - viz to_test/parse-test
 
 ----------------------------------------------
 Potencionalni leaky:
@@ -52,13 +36,10 @@ Potencionalni leaky:
 
 ----------------------------------------------
 Do dokumentace
-	zminit rekurzi na miste = bez zaplneni stacku
+	zminit tail rekurzi
 	closures
 
 ----------------------------------------------
-
-stav sveta - jak na nej?
-
 rozmyslet zda nema byt u Tanku i aktualni pocet parametru
 = rychlejsi pri porovnavani zda je to jeste tank, nebo vysledek tanku
 = pomalejsi pri pripojovani parametru, ale stejne se tenhle pruchod musi provist
@@ -79,7 +60,6 @@ Nejak takto:?
 	[defm fib [n] [+ [fib [- n 1]] [fib [- n 2]]]]
 
 ----------------------------------------------
-
 Co tohle?
 
 List comprehension

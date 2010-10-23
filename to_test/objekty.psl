@@ -1,0 +1,47 @@
+-- TODO zkusit jinak
+-- viz http://ksp.mff.cuni.cz/tasks/13/tasks5.html#task5
+
+-- TODO nefunguje
+[def extends [la &lb]
+	[if [nil? la]
+		lb
+	[if [nil? &lb]
+		la
+	[if [nil? [car [&lb]]]
+		[append [car la] [apply extends [append [list [cdr la]] [cdr &lb]]]]
+	-- else
+		[append [car lb] [apply extends [append [list [cdr la]] [cdr &lb]]]]
+	]]]
+]
+
+
+-- Class A
+-- verejna metoda
+[def A.getCena [self] [car [cdr self]]]
+[def A.pripocti [self] [car self]]
+
+
+[def A.new [cena-v-eurech]
+	[def naEura [] [* cena-v-eurech 23]]
+
+	[list
+		-- pripocist
+		[lambda [x] [+ [naEura] x]]
+		cena-v-eurech
+	]
+]
+
+[A.getCena [A.new 3]]
+
+
+-- TODO vymyslet lip dedicnost
+
+-- Class B extends A
+
+[def B.new [cena-v-kc]
+	[extends [A.new [/ cena-v-kc 23]]
+		[lambda [x] [+ cena-v-kc x]]		
+		x
+	]
+]
+		
